@@ -4,9 +4,9 @@ using SCCM.Core;
 namespace SCCM.Tests;
 
 [TestFixture]
-public class DataReader_Read_Tests
+public class MappingImporter_Read_Tests
 {
-    private readonly DataReader _reader;
+    private readonly MappingImporter _importer;
     private MappingData? _data;
 
     private static string GetSamplesDir()
@@ -20,19 +20,19 @@ public class DataReader_Read_Tests
         return new System.IO.FileInfo(System.IO.Path.Combine(GetSamplesDir(), "actionmaps.3.17.4.xml")).FullName;
     }
 
-    public DataReader_Read_Tests()
+    public MappingImporter_Read_Tests()
     {
-        _reader = new DataReader(GetSampleXmlPath());
+        _importer = new MappingImporter(GetSampleXmlPath());
         // TODO figure out how to make this show
-        _reader.StandardOutput += s => System.Diagnostics.Debug.WriteLine($"[STD  ] {s}");
-        _reader.WarningOutput  += s => System.Diagnostics.Debug.WriteLine($"[WARN ] {s}");
-        _reader.DebugOutput    += s => System.Diagnostics.Debug.WriteLine($"[DEBUG] {s}");
+        _importer.StandardOutput += s => System.Diagnostics.Debug.WriteLine($"[STD  ] {s}");
+        _importer.WarningOutput  += s => System.Diagnostics.Debug.WriteLine($"[WARN ] {s}");
+        _importer.DebugOutput    += s => System.Diagnostics.Debug.WriteLine($"[DEBUG] {s}");
     }
 
     [OneTimeSetUp]
     public async Task Init()
     {
-        this._data = await _reader.Read();
+        this._data = await _importer.Read();
     }
 
     [Test]

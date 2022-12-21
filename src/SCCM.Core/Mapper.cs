@@ -46,19 +46,19 @@ public class Mapper
         return actionmapsxml;
     }
 
-    public async Task ReadAndSave()
+    public async Task ImportAndSave()
     {
-        await this.Read();
+        await this.Import();
         await this.Save();
     }
 
-    public async Task Read()
+    public async Task Import()
     {
         // check for SC mapping file
         var actionmapsxml = GetActionMapsXmlPath();
 
         // read-in XML file
-        var reader = new DataReader(actionmapsxml);
+        var reader = new MappingImporter(actionmapsxml);
         reader.StandardOutput += this.StandardOutput;
         reader.WarningOutput += this.WarningOutput;
         reader.DebugOutput += this.DebugOutput;
@@ -70,6 +70,16 @@ public class Mapper
         System.IO.Directory.CreateDirectory(this.SaveLocation);
         var writer = new DataWriter(this.SaveLocation);
         await writer.Write(this._data);
+    }
+
+    public async Task LoadAndRestore()
+    {
+        await Load();
+        await Restore();
+    }
+
+    public async Task Load()
+    {
     }
 
     public async Task Restore()
