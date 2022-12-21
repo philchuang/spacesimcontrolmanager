@@ -16,7 +16,7 @@ public class ReaderTests
 
     private static string GetSampleXmlPath()
     {
-        return new System.IO.FileInfo(System.IO.Path.Combine(GetSamplesDir(), "actionmaps.3.18.4.xml")).FullName;
+        return new System.IO.FileInfo(System.IO.Path.Combine(GetSamplesDir(), "actionmaps.3.17.4.xml")).FullName;
     }
 
     public ReaderTests()
@@ -29,7 +29,7 @@ public class ReaderTests
     {
         await _reader.Read();
 
-        AssertEquals.ListEquals(new InputDevice[] {
+        Assert2.ListEquals(new InputDevice[] {
             new InputDevice { Type = "keyboard", Instance = 1, Product = "Keyboard  {6F1D2B61-D5A0-11CF-BFC7-444553540000}" },
             new InputDevice { Type = "gamepad", Instance = 1, Product = "Controller (Gamepad)" },
             new InputDevice { Type = "joystick", Instance = 1, Product = " VKB-Sim Gladiator NXT R    {0200231D-0000-0000-0000-504944564944}" },
