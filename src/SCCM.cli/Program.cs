@@ -10,26 +10,34 @@ class Program
 
     private static Command BuildRootCommand(SCCM.Core.Mapper mapper)
     {
+        var debugOption = new Option<bool>(
+            aliases: new [] { "--debug", "-d" },
+            description: "Display debug output"
+        );
+
         var root = new RootCommand("Star Citizen Control Mapper Tool");
-        root.AddCommand(BuildReadCommand(mapper));
-        root.AddCommand(BuildWriteCommand(mapper));
+        root.AddCommand(BuildReadCommand(mapper, debugOption));
+        root.AddCommand(BuildWriteCommand(mapper, debugOption));
         return root;
     }
 
-    private static Command BuildReadCommand(SCCM.Core.Mapper mapper)
+    private static Command BuildReadCommand(SCCM.Core.Mapper mapper, Option<bool> debugOption)
     {
         var cmd = new Command("copy", "Reads in the current Star Citizen control mappings and saves it locally.");
-        cmd.SetHandler(async () => {
-            await mapper.Read();
-        });
+        cmd.Add(debugOption);
+        cmd.SetHandler(async (debug) => {
+            if (debug) ShowDebugOutput = true;
+            await mapper.ReadAndSave();
+        },
+        debugOption);
         return cmd;
     }
 
-    private static Command BuildWriteCommand(SCCM.Core.Mapper mapper)
+    private static Command BuildWriteCommand(SCCM.Core.Mapper mapper, Option<bool> debugOption)
     {
         var cmd = new Command("paste", "Updates the Star Citizen control mappings from the local copy.");
-        cmd.SetHandler(async () => {
-            await mapper.Write();
+        cmd.SetHandler(async (debug) => {
+            await mapper.Restore();
         });
         return cmd;
     }
@@ -38,7 +46,8 @@ class Program
     {
         var mapper = new Mapper();
         mapper.StandardOutput += Console.WriteLine;
-        mapper.DebugOutput += s => System.Diagnostics.Debug.WriteLineIf(ShowDebugOutput, s);
+        mapper.WarningOutput += Console.WriteLine;
+        mapper.DebugOutput += s => { if (ShowDebugOutput) Console.WriteLine(s); };
         return mapper;
     }
 

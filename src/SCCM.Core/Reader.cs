@@ -8,6 +8,10 @@ namespace SCCM.Core;
 
 public class Reader
 {
+    public event Action<string> StandardOutput = delegate {};
+    public event Action<string> WarningOutput = delegate {};
+    public event Action<string> DebugOutput = delegate {};
+
     public string ActionMapsXmlPath { get; private set; }
 
     private IList<InputDevice> _inputs = new InputDevice[] {};
@@ -33,6 +37,9 @@ public class Reader
 
             ReadXDocument(xd);
         }
+
+        this.StandardOutput($"Read in {this._inputs.Count} input devices.");
+        this.StandardOutput($"Read in {this._mappings.Count} mappings.");
     }
 
     private IEnumerable<XElement> GetChildren(XNode node, string childName)
@@ -75,6 +82,8 @@ public class Reader
 
     private void ReadActionProfiles(XElement actionProfiles)
     {
+        var actionProfilesName = GetAttribute(actionProfiles, "profileName");
+        this.DebugOutput($"Processing ActionProfiles [{actionProfilesName}]...");
         var optionsNodes = GetChildren(actionProfiles, "options");
         foreach (var o in optionsNodes)
         {
@@ -89,10 +98,12 @@ public class Reader
 
     private void ReadOptions(XElement option)
     {
-        if (string.IsNullOrWhiteSpace(GetAttribute(option, "Product"))) return;
+        var product = GetAttribute(option, "Product");
+        if (string.IsNullOrWhiteSpace(product)) return;
 
-        var input = new InputDevice { Type = GetAttribute(option, "type"), Instance = IntTryParseOrDefault(GetAttribute(option, "instance"), -1), Product = GetAttribute(option, "Product") };
-        // TODO if joystick check for other child nodes
+        this.DebugOutput($"Processing options [{product}]...");
+
+        var input = new InputDevice { Type = GetAttribute(option, "type"), Instance = IntTryParseOrDefault(GetAttribute(option, "instance"), -1), Product = product };
         foreach (var prop in option.Descendants())
         {
             input.Settings.Add(
@@ -108,5 +119,43 @@ public class Reader
 
     private void ReadActionMap(XElement actionmap)
     {
+        var actionmapName = GetAttribute(actionmap, "name");
+        if (string.IsNullOrWhiteSpace(actionmapName))
+        {
+            this.WarningOutput($"Found actionmap node without a name: {actionmap}");
+            return;
+        }
+
+        this.DebugOutput($"Processing actionmap [{actionmapName}]...");
+        var actions = GetChildren(actionmap, "action");
+        foreach (var a in actions)
+        {
+            ReadAction(a, actionmapName);
+        }
+    }
+
+    private void ReadAction(XElement action, string actionmapName)
+    {
+        var actionName = GetAttribute(action, "name");
+        if (string.IsNullOrWhiteSpace(actionName))
+        {
+            this.WarningOutput($"Found action node without a name: {action}");
+            return;
+        }
+        var rebind = GetChildren(action, "rebind").FirstOrDefault();
+        if (rebind == null)
+        {
+            this.WarningOutput($"Found action node without rebind childnodes: {actionName}");
+            return;
+        }
+        var input = GetAttribute(rebind, "input");
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            this.WarningOutput($"Found rebind node without input value: {actionName}");
+            return;
+        }
+        var multitapStr = GetAttribute(rebind, "multiTap");
+        if (!int.TryParse(multitapStr, out var multitap)) multitap = -1;
+        this._mappings.Add(new Mapping { ActionMap = actionmapName, Action = actionName, Input = input, MultiTap = multitap != -1 ? multitap : null, Preserve = true });
     }
 }
