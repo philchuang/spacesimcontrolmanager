@@ -50,7 +50,7 @@ public class Mapper
 
         // TODO read-in XML file
         var reader = new Reader(actionmapsxml);
-        var mappings = await reader.Read();
+        await reader.Read();
         // TODO save joystick instance data
         // TODO save actionmap-action-rebind data in Mapping class
     }
