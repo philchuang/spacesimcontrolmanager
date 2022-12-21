@@ -6,7 +6,7 @@ using static SCCM.Core.Extensions;
 
 namespace SCCM.Core;
 
-public class Reader
+public class DataReader
 {
     public event Action<string> StandardOutput = delegate {};
     public event Action<string> WarningOutput = delegate {};
@@ -14,21 +14,16 @@ public class Reader
 
     public string ActionMapsXmlPath { get; private set; }
 
-    private IList<InputDevice> _inputs = new InputDevice[] {};
-    public IReadOnlyList<InputDevice> Inputs { get { return (IReadOnlyList<InputDevice>) _inputs; } }
+    private MappingData _data = new MappingData();
 
-    private IList<Mapping> _mappings = new Mapping[] {};
-    public IReadOnlyList<Mapping> Mappings { get { return (IReadOnlyList<Mapping>) _mappings; } }
-
-    public Reader(string path)
+    public DataReader(string path)
     {
         this.ActionMapsXmlPath = path;
     }
 
-    public async Task Read()
+    public async Task<MappingData> Read()
     {
-        this._inputs = new List<InputDevice>();
-        this._mappings = new List<Mapping>();
+        this._data = new MappingData { ReadTime = DateTime.UtcNow };
 
         using (var fs = new FileStream(this.ActionMapsXmlPath, FileMode.Open))
         {
@@ -38,8 +33,9 @@ public class Reader
             ReadXDocument(xd);
         }
 
-        this.StandardOutput($"Read in {this._inputs.Count} input devices.");
-        this.StandardOutput($"Read in {this._mappings.Count} mappings.");
+        this.StandardOutput($"Read in {this._data.Inputs.Count} input devices.");
+        this.StandardOutput($"Read in {this._data.Mappings.Count} mappings.");
+        return this._data;
     }
 
     private IEnumerable<XElement> GetChildren(XNode node, string childName)
@@ -114,7 +110,7 @@ public class Reader
                 }
             );
         }
-        this._inputs.Add(input);
+        this._data.Inputs.Add(input);
     }
 
     private void ReadActionMap(XElement actionmap)
@@ -156,6 +152,6 @@ public class Reader
         }
         var multitapStr = GetAttribute(rebind, "multiTap");
         if (!int.TryParse(multitapStr, out var multitap)) multitap = -1;
-        this._mappings.Add(new Mapping { ActionMap = actionmapName, Action = actionName, Input = input, MultiTap = multitap != -1 ? multitap : null, Preserve = true });
+        this._data.Mappings.Add(new Mapping { ActionMap = actionmapName, Action = actionName, Input = input, MultiTap = multitap != -1 ? multitap : null, Preserve = true });
     }
 }
