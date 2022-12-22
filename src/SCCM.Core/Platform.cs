@@ -5,7 +5,6 @@ public interface IPlatform
     public DateTime UtcNow { get; }
     public string ProgramFilesDir { get; }
     public string UserDocumentsDir { get; }
-    public string SccmDir { get; }
 }
 
 public class Platform : IPlatform
@@ -13,5 +12,4 @@ public class Platform : IPlatform
     public DateTime UtcNow { get { return DateTime.UtcNow; } }
     public string ProgramFilesDir { get { return Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles); } }
     public string UserDocumentsDir { get { return System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments); } }
-    public string SccmDir { get { return System.IO.Path.Combine(this.UserDocumentsDir, "SCCM"); } }
 }

@@ -11,6 +11,7 @@ public class MappingUpdater_Update_Tests
 {
     private readonly MappingUpdater _updater;
     private readonly IPlatform _platform;
+    private readonly IFolders _folders;
 
     private string GetTestXmlPath()
     {
@@ -21,8 +22,9 @@ public class MappingUpdater_Update_Tests
     public MappingUpdater_Update_Tests()
     {
         this._platform = new PlatformForTest(DateTime.UtcNow);
+        this._folders = new FoldersForTest();
         System.IO.File.Copy(Samples.GetActionMapsXmlPath(), this.GetTestXmlPath(), true);
-        this._updater = new MappingUpdater(this._platform, this.GetTestXmlPath());
+        this._updater = new MappingUpdater(this._platform, this._folders, this.GetTestXmlPath());
     }
 
     [Test]
