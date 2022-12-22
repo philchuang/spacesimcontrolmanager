@@ -8,20 +8,9 @@ public class DataSerializer_Read_Tests
 {
     private readonly DataSerializer _serializer;
 
-    private static string GetSamplesDir()
-    {
-        var working = System.IO.Directory.GetCurrentDirectory();
-        return new System.IO.DirectoryInfo(System.IO.Path.Combine(working, "../../../../../samples")).FullName;
-    }
-
-    private static string GetSampleJsonPath()
-    {
-        return new System.IO.FileInfo(System.IO.Path.Combine(GetSamplesDir(), "mappings.3.17.4.sample.json")).FullName;
-    }
-
     public DataSerializer_Read_Tests()
     {
-        _serializer = new DataSerializer(GetSampleJsonPath());
+        _serializer = new DataSerializer(Samples.GetPartialMappingsJsonPath());
     }
 
     [OneTimeSetUp]

@@ -10,17 +10,6 @@ public class DataSerializer_Write_Tests
     private readonly DataSerializer _serializer;
     private MappingData? _data;
 
-    private static string GetSamplesDir()
-    {
-        var working = System.IO.Directory.GetCurrentDirectory();
-        return new System.IO.DirectoryInfo(System.IO.Path.Combine(working, "../../../../../samples")).FullName;
-    }
-
-    private static string GetSampleJsonPath()
-    {
-        return new System.IO.FileInfo(System.IO.Path.Combine(GetSamplesDir(), "mappings.3.17.4.sample.json")).FullName;
-    }
-
     private static string GetTestJsonPath()
     {
         return new System.IO.FileInfo(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "mappings.json")).FullName;
@@ -63,7 +52,7 @@ public class DataSerializer_Write_Tests
     [Test]
     public async Task Write_MatchesSampleJson()
     {
-        var expectedStrRead = await System.IO.File.ReadAllTextAsync(GetSampleJsonPath());
+        var expectedStrRead = await System.IO.File.ReadAllTextAsync(Samples.GetPartialMappingsJsonPath());
         var expectedData = JsonConvert.DeserializeObject<MappingData>(expectedStrRead);
         var expectedStrWrite = JsonConvert.SerializeObject(expectedData);
         var actualStrRead = await System.IO.File.ReadAllTextAsync(GetTestJsonPath());

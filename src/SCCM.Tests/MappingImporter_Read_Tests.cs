@@ -12,21 +12,10 @@ public class MappingImporter_Read_Tests
 
     private MappingData? _data;
 
-    private static string GetSamplesDir()
-    {
-        var working = System.IO.Directory.GetCurrentDirectory();
-        return new System.IO.DirectoryInfo(System.IO.Path.Combine(working, "../../../../../samples")).FullName;
-    }
-
-    private static string GetSampleXmlPath()
-    {
-        return new System.IO.FileInfo(System.IO.Path.Combine(GetSamplesDir(), "actionmaps.3.17.4.xml")).FullName;
-    }
-
     public MappingImporter_Read_Tests()
     {
         _platform = new PlatformForTest(DateTime.UtcNow);
-        _importer = new MappingImporter(_platform, GetSampleXmlPath());
+        _importer = new MappingImporter(_platform, Samples.GetActionMapsXmlPath());
         _importer.StandardOutput += s => TestContext.Out.WriteLine($"[STD  ] {s}");
         _importer.WarningOutput  += s => TestContext.Out.WriteLine($"[WARN ] {s}");
         _importer.DebugOutput    += s => TestContext.Out.WriteLine($"[DEBUG] {s}");
