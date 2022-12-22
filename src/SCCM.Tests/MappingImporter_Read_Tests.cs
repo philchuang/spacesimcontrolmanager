@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using SCCM.Core;
+using SCCM.Tests.Mocks;
 
 namespace SCCM.Tests;
 
@@ -7,6 +8,8 @@ namespace SCCM.Tests;
 public class MappingImporter_Read_Tests
 {
     private readonly MappingImporter _importer;
+    private readonly IPlatform _platform;
+
     private MappingData? _data;
 
     private static string GetSamplesDir()
@@ -22,17 +25,29 @@ public class MappingImporter_Read_Tests
 
     public MappingImporter_Read_Tests()
     {
-        _importer = new MappingImporter(GetSampleXmlPath());
-        // TODO figure out how to make this show
-        _importer.StandardOutput += s => System.Diagnostics.Debug.WriteLine($"[STD  ] {s}");
-        _importer.WarningOutput  += s => System.Diagnostics.Debug.WriteLine($"[WARN ] {s}");
-        _importer.DebugOutput    += s => System.Diagnostics.Debug.WriteLine($"[DEBUG] {s}");
+        _platform = new PlatformForTest(DateTime.UtcNow);
+        _importer = new MappingImporter(_platform, GetSampleXmlPath());
+        _importer.StandardOutput += s => TestContext.Out.WriteLine($"[STD  ] {s}");
+        _importer.WarningOutput  += s => TestContext.Out.WriteLine($"[WARN ] {s}");
+        _importer.DebugOutput    += s => TestContext.Out.WriteLine($"[DEBUG] {s}");
     }
 
     [OneTimeSetUp]
     public async Task Init()
     {
         this._data = await _importer.Read();
+    }
+
+    [Test]
+    public void Read_HasCorrectDataCounts()
+    {
+        Assert.NotNull(this._data);
+
+        Assert.AreEqual(this._platform.UtcNow, this._data.ReadTime);
+        Assert.AreEqual(4, this._data.Inputs.Count);
+        Assert.AreEqual(114, this._data.Mappings.Count);
+        Assert.AreEqual(97, this._data.Mappings.Count(m => m.Preserve));
+        Assert.AreEqual(17, this._data.Mappings.Count(m => !m.Preserve));
     }
 
     [Test]
@@ -73,6 +88,7 @@ public class MappingImporter_Read_Tests
             new Mapping { ActionMap = "seat_general", Action = "v_toggle_mining_mode", Input = "js2_button56", MultiTap = null, Preserve = true },
             new Mapping { ActionMap = "seat_general", Action = "v_toggle_quantum_mode", Input = "js2_button19", MultiTap = null, Preserve = true },
             new Mapping { ActionMap = "spaceship_targeting", Action = "v_target_unlock_selected", Input = "js1_button16", MultiTap = 2, Preserve = true },
+            new Mapping { ActionMap = "spaceship_view", Action = "v_view_pitch", Input = "js1_ ", MultiTap = null, Preserve = false },
         };
 
         var expected = mappings.ToDictionary(m => $"{m.ActionMap}-{m.Action}");

@@ -9,10 +9,13 @@ public class Mapper
     public string ReadLocation { get; set; } = string.Empty;
     public string SaveLocation { get; set; } = string.Empty;
 
-    private MappingData _data = new MappingData();
+    private readonly IPlatform _platform;
 
-    public Mapper()
+    private MappingData? _data = null;
+
+    public Mapper(IPlatform platform)
     {
+        this._platform = platform;
         Initialize();
     }
 
@@ -33,17 +36,17 @@ public class Mapper
             this.ReadLocation = scpath2;
         }
 
-        this.SaveLocation = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments), "SCCM", "mappings.json");
+        this.SaveLocation = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments), "SCCM");
     }
 
-    private string GetActionMapsXmlPath()
+    private string GetStarCitizenActionmapsXmlPath()
     {
-        var actionmapsxml = System.IO.Path.Combine(this.ReadLocation, "actionmaps.xml");
-        if (!System.IO.File.Exists(actionmapsxml))
-        {
-            throw new FileNotFoundException($"Could not find the Star Citizen mappings file at [{actionmapsxml}]!");
-        }
-        return actionmapsxml;
+        return System.IO.Path.Combine(this.ReadLocation, "actionmaps.xml");
+    }
+
+    private string GetSccmMappingsJsonPath()
+    {
+        return System.IO.Path.Combine(this.SaveLocation, "mappings.json");
     }
 
     public async Task ImportAndSave()
@@ -54,11 +57,9 @@ public class Mapper
 
     public async Task Import()
     {
-        // check for SC mapping file
-        var actionmapsxml = GetActionMapsXmlPath();
-
+        var actionmapsxml = GetStarCitizenActionmapsXmlPath();
         // read-in XML file
-        var reader = new MappingImporter(actionmapsxml);
+        var reader = new MappingImporter(this._platform, actionmapsxml);
         reader.StandardOutput += this.StandardOutput;
         reader.WarningOutput += this.WarningOutput;
         reader.DebugOutput += this.DebugOutput;
@@ -67,9 +68,15 @@ public class Mapper
 
     public async Task Save()
     {
-        System.IO.Directory.CreateDirectory(this.SaveLocation);
-        var writer = new DataWriter(this.SaveLocation);
-        await writer.Write(this._data);
+        if (this._data == null)
+        {
+            throw new ArgumentNullException(nameof(_data));
+        }
+
+        System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(this.SaveLocation));
+        var serializer = new DataSerializer(this.SaveLocation);
+        await serializer.Write(this._data);
+        this.StandardOutput($"Mappings backed up to [{this.SaveLocation}].");
     }
 
     public async Task LoadAndRestore()
@@ -80,15 +87,24 @@ public class Mapper
 
     public async Task Load()
     {
+        var serializer = new DataSerializer(this.GetSccmMappingsJsonPath());
+        this._data = await serializer.Read();
     }
 
     public async Task Restore()
     {
-        // TODO check for SC mapping file
-        var actionmapsxml = GetActionMapsXmlPath();
-        // TODO back it up
-        // TODO load local copy
-        // TODO iterate over Mappings and apply to XML
-        // TODO svae
+        if (this._data == null)
+        {
+            throw new ArgumentNullException(nameof(_data));
+        }
+
+        var actionmapsxml = GetStarCitizenActionmapsXmlPath();
+        var updater = new MappingUpdater(this._platform, actionmapsxml);
+        updater.StandardOutput += this.StandardOutput;
+        updater.WarningOutput += this.WarningOutput;
+        updater.DebugOutput += this.DebugOutput;
+        await updater.Backup();
+        await updater.Update(this._data);
+        this.StandardOutput($"Mappings restored to [{actionmapsxml}].");
     }
 }

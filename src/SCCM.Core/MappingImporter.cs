@@ -14,16 +14,24 @@ public class MappingImporter
 
     public string ActionMapsXmlPath { get; private set; }
 
+    private readonly IPlatform _platform;
+
     private MappingData _data = new MappingData();
 
-    public MappingImporter(string path)
+    public MappingImporter(IPlatform platform, string actionmapsxmlpath)
     {
-        this.ActionMapsXmlPath = path;
+        this._platform = platform;
+        this.ActionMapsXmlPath = actionmapsxmlpath;
     }
 
     public async Task<MappingData> Read()
     {
-        this._data = new MappingData { ReadTime = DateTime.UtcNow };
+        if (!System.IO.File.Exists(this.ActionMapsXmlPath))
+        {
+            throw new FileNotFoundException($"Could not find the Star Citizen mappings file at [{this.ActionMapsXmlPath}]!");
+        }
+
+        this._data = new MappingData { ReadTime = this._platform.UtcNow };
 
         using (var fs = new FileStream(this.ActionMapsXmlPath, FileMode.Open))
         {
@@ -132,6 +140,7 @@ public class MappingImporter
 
     private void ReadAction(XElement action, string actionmapName)
     {
+        var preserve = true;
         var actionName = GetAttribute(action, "name");
         if (string.IsNullOrWhiteSpace(actionName))
         {
@@ -150,8 +159,13 @@ public class MappingImporter
             this.WarningOutput($"Found rebind node without input value: {actionName}");
             return;
         }
+        if (string.IsNullOrWhiteSpace(input.Split("_").LastOrDefault()))
+        {
+            this.WarningOutput($"Found rebind node with invalid input value: {actionName}, {input}");
+            preserve = false;
+        }
         var multitapStr = GetAttribute(rebind, "multiTap");
         if (!int.TryParse(multitapStr, out var multitap)) multitap = -1;
-        this._data.Mappings.Add(new Mapping { ActionMap = actionmapName, Action = actionName, Input = input, MultiTap = multitap != -1 ? multitap : null, Preserve = true });
+        this._data.Mappings.Add(new Mapping { ActionMap = actionmapName, Action = actionName, Input = input, MultiTap = multitap != -1 ? multitap : null, Preserve = preserve });
     }
 }
