@@ -115,9 +115,15 @@ public class Mapper
 
     public async Task Restore()
     {
-        // TODO write test
         var updater = CreateUpdater();
         var backup = updater.RestoreLatest();
         this.StandardOutput($"actionmaps.xml restored from [{backup}].");
+    }
+
+    public async Task Open()
+    {
+        // TODO write test
+        this._platform.Open(this.GetSccmMappingsJsonPath());
+        this.StandardOutput($"Opening [{this.GetSccmMappingsJsonPath()}] in the default editor, change the Preserve property to choose which settings are overwritten.");
     }
 }
