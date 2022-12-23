@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace SCCM.Core;
 
 public class MappingMerger
@@ -22,12 +24,12 @@ public class MappingMerger
             m => $"{m.ActionMap}-{m.Action}",
             (p, c) => p.Input != c.Input || p.MultiTap != c.MultiTap);
 
-        if (inputDiffs.Any()) this.PrintDiffs(inputDiffs, "inputs");
-        if (mappingDiffs.Any()) this.PrintDiffs(mappingDiffs, "mappings");
-        return inputDiffs.Any() && mappingDiffs.Any();
+        if (inputDiffs.Any()) this.PrintDiffs(inputDiffs, "inputs", PrintInputDevice);
+        if (mappingDiffs.Any()) this.PrintDiffs(mappingDiffs, "mappings", PrintMapping);
+        return inputDiffs.Any() || mappingDiffs.Any();
     }
 
-    private void PrintDiffs<T>(ComparisonResult<T> comp, string type)
+    private void PrintDiffs<T>(ComparisonResult<T> comp, string type, Func<T, string> formatter)
     {
         if (comp.AddedKeys.Any())
         {
@@ -42,10 +44,33 @@ public class MappingMerger
             this.StandardOutput($"The following {type} were modified:");
             foreach (var changed in comp.ChangedPairs)
             {
-                this.StandardOutput($"CURRENT [{changed.Key}] = {changed.Current}");
-                this.StandardOutput($"UPDATED [{changed.Key}] = {changed.Updated}");
+                this.StandardOutput($"CURRENT [{changed.Key}] = {formatter(changed.Current)}");
+                this.StandardOutput($"UPDATED [{changed.Key}] = {formatter(changed.Updated)}");
             }
         }
+        this.StandardOutput("");
+    }
+
+    private static string PrintDictionary(IDictionary<string, string> dict)
+    {
+        return string.Join(", ", dict.Select(kvp => $"{kvp.Key} = {kvp.Value}"));
+    }
+
+    private static string PrintInputDevice(InputDevice input)
+    {
+        var sb = new StringBuilder();
+        sb.Append($"{input.Type}-{input.Instance}, Settings = [");
+        foreach (var setting in input.Settings)
+        {
+            sb.Append($"{setting.Name}: [{PrintDictionary(setting.Properties)}]\n");
+        }
+        sb.Append("]");
+        return sb.ToString();
+    }
+
+    private static string PrintMapping(Mapping mapping)
+    {
+        return $"{mapping.Input}{(mapping.MultiTap != null ? $" multitap = {mapping.MultiTap}" : "")}";
     }
 
     public MappingData Merge(MappingData current, MappingData updated)

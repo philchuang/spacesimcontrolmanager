@@ -75,3 +75,12 @@ Restores the latest local backup of the Star Citizen actionmaps.xml.
 > SCCM.exe restore
 actionmaps.xml restored from [My Documents\SCCM\actionmaps.xml.20221223022032.bak].
 ```
+
+### Edit the Star Citizen actionmaps.xml
+
+Opens the Star Citizen actionmaps.xml in the system default editor.
+
+```cmd
+> SCCM.exe editsc
+Opening [C:\Program Files\Roberts Space Industries\StarCitizen\LIVE\USER\Client\0\Profiles\default\actionmaps.xml] in the default editor.
+```
