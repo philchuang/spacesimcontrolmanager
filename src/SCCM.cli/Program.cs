@@ -57,8 +57,8 @@ class Program
     private static Command BuildEditCommand(SCCM.Core.Mapper mapper)
     {
         var cmd = new Command("edit", "Opens the mappings JSON file in the system default editor. Edit the \"Preserve\" property to affect the export behavior.");
-        cmd.SetHandler(async () => {
-            await mapper.Open();
+        cmd.SetHandler(() => {
+            mapper.Open();
         });
         return cmd;
     }
@@ -79,9 +79,9 @@ class Program
     {
         var cmd = new Command("backup", "Makes a local copy of the Star Citizen actionmaps.xml which can be restored later.");
         cmd.Add(debugOption);
-        cmd.SetHandler(async (debug) => {
+        cmd.SetHandler((debug) => {
             if (debug) ShowDebugOutput = true;
-            await mapper.Backup();
+            mapper.Backup();
         },
         debugOption);
         return cmd;
@@ -90,9 +90,9 @@ class Program
     private static Command BuildRestoreCommand(SCCM.Core.Mapper mapper, Option<bool> debugOption)
     {
         var cmd = new Command("restore", "Restores the latest local backup of the Star Citizen actionmaps.xml.");
-        cmd.SetHandler(async (debug) => {
+        cmd.SetHandler((debug) => {
             if (debug) ShowDebugOutput = true;
-            await mapper.Restore();
+            mapper.Restore();
         },
         debugOption);
         return cmd;
