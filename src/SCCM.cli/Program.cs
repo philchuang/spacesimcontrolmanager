@@ -57,6 +57,7 @@ class Program
     private static Command BuildEditCommand(SCCM.Core.Mapper mapper)
     {
         var cmd = new Command("edit", "Opens the mappings JSON file in the system default editor. Edit the \"Preserve\" property to affect the export behavior.");
+        cmd.AddAlias("open");
         cmd.SetHandler(() => {
             mapper.Open();
         });
