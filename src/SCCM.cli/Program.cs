@@ -16,42 +16,60 @@ class Program
         );
 
         var root = new RootCommand("Star Citizen Control Mapper Tool");
-        root.AddCommand(BuildReadCommand(mapper, debugOption));
+        root.AddGlobalOption(debugOption);
+        root.AddCommand(BuildImportCommand(mapper, debugOption));
         root.AddCommand(BuildEditCommand(mapper));
-        root.AddCommand(BuildUpdateCommand(mapper, debugOption));
+        root.AddCommand(BuildExportCommand(mapper, debugOption));
         root.AddCommand(BuildBackupCommand(mapper, debugOption));
         root.AddCommand(BuildRestoreCommand(mapper, debugOption));
         return root;
     }
 
-    private static Command BuildReadCommand(SCCM.Core.Mapper mapper, Option<bool> debugOption)
+    private static Command BuildImportCommand(SCCM.Core.Mapper mapper, Option<bool> debugOption)
     {
-        var cmd = new Command("read", "Reads the current Star Citizen control mappings and saves it locally.");
+        var cmd = new Command("import", "Imports the Star Citizen actionmaps.xml and saves it locally in a mappings JSON file.");
         cmd.Add(debugOption);
         cmd.SetHandler(async (debug) => {
-            if (debug) ShowDebugOutput = true;
-            await mapper.ImportAndSave();
-        },
-        debugOption);
+                if (debug) ShowDebugOutput = true;
+                await mapper.ImportAndSave(mode: ImportMode.Default);
+            },
+            debugOption);
+
+        var merge = new Command("merge", "Merges the latest mappings into the saved mappings.");
+        merge.SetHandler(async (debug) => {
+                if (debug) ShowDebugOutput = true;
+                await mapper.ImportAndSave(mode: ImportMode.Merge);
+            },
+            debugOption);
+        cmd.AddCommand(merge);
+
+        var overwrite = new Command("overwrite", "Overwrites the saved mappings with the latest mappings.");
+        overwrite.SetHandler(async (debug) => {
+                if (debug) ShowDebugOutput = true;
+                await mapper.ImportAndSave(mode: ImportMode.Overwrite);
+            },
+            debugOption);
+        cmd.AddCommand(overwrite);
+
         return cmd;
     }
 
     private static Command BuildEditCommand(SCCM.Core.Mapper mapper)
     {
-        var cmd = new Command("edit", "Opens the imported Star Citizen control mappings JSON file.");
+        var cmd = new Command("edit", "Opens the mappings JSON file in the system default editor. Edit the \"Preserve\" property to affect the export behavior.");
         cmd.SetHandler(async () => {
             await mapper.Open();
         });
         return cmd;
     }
 
-    private static Command BuildUpdateCommand(SCCM.Core.Mapper mapper, Option<bool> debugOption)
+    private static Command BuildExportCommand(SCCM.Core.Mapper mapper, Option<bool> debugOption)
     {
-        var cmd = new Command("update", "Updates the Star Citizen control mappings from the local copy.");
+        var cmd = new Command("export", "Updates the Star Citizen bindings based on the locally saved mappings file.");
         cmd.Add(debugOption);
         cmd.SetHandler(async (debug) => {
             if (debug) ShowDebugOutput = true;
-            await mapper.LoadAndUpdate();
+            await mapper.Export();
         },
         debugOption);
         return cmd;
@@ -59,7 +77,7 @@ class Program
 
     private static Command BuildBackupCommand(SCCM.Core.Mapper mapper, Option<bool> debugOption)
     {
-        var cmd = new Command("backup", "Backs up the current Star Citizen control mappings.");
+        var cmd = new Command("backup", "Makes a local copy of the Star Citizen actionmaps.xml which can be restored later.");
         cmd.Add(debugOption);
         cmd.SetHandler(async (debug) => {
             if (debug) ShowDebugOutput = true;
@@ -71,7 +89,7 @@ class Program
 
     private static Command BuildRestoreCommand(SCCM.Core.Mapper mapper, Option<bool> debugOption)
     {
-        var cmd = new Command("restore", "Restores the Star Citizen control mappings from the last backup.");
+        var cmd = new Command("restore", "Restores the latest local backup of the Star Citizen actionmaps.xml.");
         cmd.SetHandler(async (debug) => {
             if (debug) ShowDebugOutput = true;
             await mapper.Restore();

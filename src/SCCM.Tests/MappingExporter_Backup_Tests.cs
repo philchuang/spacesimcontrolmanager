@@ -5,17 +5,17 @@ using SCCM.Tests.Mocks;
 namespace SCCM.Tests;
 
 [TestFixture]
-public class MappingUpdater_Backup_Tests
+public class MappingExporter_Backup_Tests
 {
-    private readonly MappingUpdater _updater;
+    private readonly MappingExporter _updater;
     private readonly IPlatform _platform;
     private readonly IFolders _folders;
 
-    public MappingUpdater_Backup_Tests()
+    public MappingExporter_Backup_Tests()
     {
         this._platform = new PlatformForTest(DateTime.UtcNow);
         this._folders = new FoldersForTest(sccmDir: System.IO.Directory.GetCurrentDirectory());
-        this._updater = new MappingUpdater(this._platform, this._folders, Samples.GetActionMapsXmlPath());
+        this._updater = new MappingExporter(this._platform, this._folders, Samples.GetActionMapsXmlPath());
     }
 
     [Test]

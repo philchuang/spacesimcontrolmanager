@@ -4,7 +4,7 @@ using System.Xml.Linq;
 
 namespace SCCM.Core;
 
-public class MappingUpdater
+public class MappingExporter
 {
     public event Action<string> StandardOutput = delegate {};
     public event Action<string> WarningOutput = delegate {};
@@ -15,7 +15,7 @@ public class MappingUpdater
     private readonly IPlatform _platform;
     private readonly IFolders _folders;
     
-    public MappingUpdater(IPlatform platform, IFolders folders, string actionmapsxmlpath)
+    public MappingExporter(IPlatform platform, IFolders folders, string actionmapsxmlpath)
     {
         this._platform = platform;
         this._folders = folders;
