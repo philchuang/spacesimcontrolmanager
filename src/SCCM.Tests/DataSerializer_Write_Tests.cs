@@ -12,7 +12,7 @@ public class DataSerializer_Write_Tests
 
     private static string GetTestJsonPath()
     {
-        return new System.IO.FileInfo(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "mappings.json")).FullName;
+        return new System.IO.FileInfo(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), Constants.SCCM_SCMAPPINGS_JSON_NAME)).FullName;
     }
 
     public DataSerializer_Write_Tests()
