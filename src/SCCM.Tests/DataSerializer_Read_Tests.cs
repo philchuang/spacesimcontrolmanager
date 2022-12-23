@@ -47,4 +47,8 @@ public class DataSerializer_Read_Tests
 
         AssertSccm.AreEqual(expected, actual);
     }
+
+    // TODO test FNF exception
+
+    // TODO test malformed JSON handling
 }

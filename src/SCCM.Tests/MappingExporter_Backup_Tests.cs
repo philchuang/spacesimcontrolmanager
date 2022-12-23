@@ -19,7 +19,7 @@ public class MappingExporter_Backup_Tests
     }
 
     [Test]
-    public async Task Backup_Creates_Copy()
+    public void Backup_Creates_Copy()
     {
         var expected = System.IO.Path.Combine(this._folders.SccmDir, $"actionmaps.xml.{this._platform.UtcNow.ToLocalTime().ToString("yyyyMMddHHmmss")}.bak");
         var actual = this._updater.Backup();

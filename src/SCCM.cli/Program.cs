@@ -31,14 +31,14 @@ class Program
         cmd.Add(debugOption);
         cmd.SetHandler(async (debug) => {
                 if (debug) ShowDebugOutput = true;
-                await mapper.ImportAndSave(mode: ImportMode.Default);
+                await mapper.Import(mode: ImportMode.Default);
             },
             debugOption);
 
         var merge = new Command("merge", "Merges the latest mappings into the saved mappings.");
         merge.SetHandler(async (debug) => {
                 if (debug) ShowDebugOutput = true;
-                await mapper.ImportAndSave(mode: ImportMode.Merge);
+                await mapper.Import(mode: ImportMode.Merge);
             },
             debugOption);
         cmd.AddCommand(merge);
@@ -46,7 +46,7 @@ class Program
         var overwrite = new Command("overwrite", "Overwrites the saved mappings with the latest mappings.");
         overwrite.SetHandler(async (debug) => {
                 if (debug) ShowDebugOutput = true;
-                await mapper.ImportAndSave(mode: ImportMode.Overwrite);
+                await mapper.Import(mode: ImportMode.Overwrite);
             },
             debugOption);
         cmd.AddCommand(overwrite);
