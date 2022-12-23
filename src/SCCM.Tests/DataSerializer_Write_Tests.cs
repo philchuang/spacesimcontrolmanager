@@ -17,7 +17,7 @@ public class DataSerializer_Write_Tests
 
     public DataSerializer_Write_Tests()
     {
-        _serializer = new DataSerializer(GetTestJsonPath());
+        _serializer = new DataSerializer(GetTestJsonPath()) { Formatting = Formatting.None };
     }
 
     [OneTimeSetUp]
