@@ -7,4 +7,14 @@ public static class Extensions
         if (s != null && int.TryParse(s, out var i)) { return i; }
         return def;
     }
+
+    public static bool HasChangedInputInstanceId(this ComparisonResult<InputDevice> self)
+    {
+        return self.ChangedPairs.Any(HasChangedInputInstanceId);
+    }
+
+    public static bool HasChangedInputInstanceId(this ComparisonPair<InputDevice> self)
+    {
+        return self.Current.Instance != self.Updated.Instance;
+    }
 }
