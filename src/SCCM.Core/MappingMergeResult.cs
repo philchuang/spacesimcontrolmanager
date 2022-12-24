@@ -4,6 +4,8 @@ namespace SCCM.Core;
 
 public class MappingMergeResult
 {
+    public MappingData Current { get; init; }
+    public MappingData Updated { get; init; }
     public ComparisonResult<InputDevice> InputDiffs { get; init; }
     public ComparisonResult<Mapping> MappingDiffs { get; init; }
 
@@ -11,8 +13,10 @@ public class MappingMergeResult
     public bool CanMerge { get; set; }
     public IList<MappingMergeAction> MergeActions { get; set; } = new List<MappingMergeAction>();
 
-    public MappingMergeResult(ComparisonResult<InputDevice> inputs, ComparisonResult<Mapping> mappings)
+    public MappingMergeResult(MappingData current, MappingData updated, ComparisonResult<InputDevice> inputs, ComparisonResult<Mapping> mappings)
     {
+        this.Current = current;
+        this.Updated = updated;
         this.InputDiffs = inputs;
         this.MappingDiffs = mappings;
     }
@@ -38,18 +42,18 @@ public class MappingMergeResult
     private string PrintDiffs<T>(ComparisonResult<T> comp, string type, Func<T, string> formatter)
     {
         var sb = new StringBuilder();
-        if (comp.AddedKeys.Any())
+        if (comp.Added.Any())
         {
-            sb.AppendLine($"The following {type} were added: [{string.Join(", ", comp.AddedKeys)}]");
+            sb.AppendLine($"The following {type} were added: [{string.Join(", ", comp.Added)}]");
         }
-        if (comp.RemovedKeys.Any())
+        if (comp.Removed.Any())
         {
-            sb.AppendLine($"The following {type} were removed: [{string.Join(", ", comp.RemovedKeys)}]");
+            sb.AppendLine($"The following {type} were removed: [{string.Join(", ", comp.Removed)}]");
         }
-        if (comp.ChangedPairs.Any())
+        if (comp.Changed.Any())
         {
             sb.AppendLine($"The following {type} were modified:");
-            foreach (var changed in comp.ChangedPairs)
+            foreach (var changed in comp.Changed)
             {
                 sb.AppendLine($"CURRENT [{changed.Key}] = {formatter(changed.Current)}");
                 sb.AppendLine($"UPDATED [{changed.Key}] = {formatter(changed.Updated)}");

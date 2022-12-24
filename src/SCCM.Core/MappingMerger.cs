@@ -6,12 +6,14 @@ public class MappingMerger
     public event Action<string> WarningOutput = delegate {};
     public event Action<string> DebugOutput = delegate {};
 
-    private MappingMergeResult _result = new MappingMergeResult(new ComparisonResult<InputDevice>(), new ComparisonResult<Mapping> ());
+    private MappingMergeResult _result = new MappingMergeResult(new MappingData(), new MappingData(), new ComparisonResult<InputDevice>(), new ComparisonResult<Mapping> ());
 
     private void CalculateDiffs(MappingData current, MappingData updated)
     {
         // capture differences
         this._result = new MappingMergeResult(
+            current,
+            updated,
             ComparisonHelper.Compare(
                 current.Inputs, updated.Inputs,
                 i => $"{i.Type}-{i.Product}",
@@ -30,57 +32,78 @@ public class MappingMerger
     private void AnalyzeResult()
     {
         this._result.HasDifferences = this._result.InputDiffs.Any() || this._result.MappingDiffs.Any();
+        this._result.CanMerge = true;
         this.AnalyzeInputDiffs();
         this.AnalyzeMappingDiffs();
     }
 
+    private void StopMerge()
+    {
+        this._result.CanMerge = false;
+        this._result.MergeActions.Clear();
+    }
+
     private void AnalyzeInputDiffs()
     {
-        /* what to do
-         * - input device added - add to current
-         * - input device removed - if referenced by preserved binding, can't merge - else remove current
-         * - input device changed - if instance changed, can't merge because that would change all the bindings
-         *   - setting added - add with preserve = true
-         *   - setting removed - remove if current preserve == false - else keep current
-         *   - setting changed - update if preserve == false - else keep current
-         */
+        if (!this._result.CanMerge) return;
 
-        foreach (var inputId in this._result.InputDiffs.AddedKeys)
+        if (this._result.InputDiffs.HasChangedInputInstanceId())
         {
-            // TODO implement
+            // input device changed - if instance changed, can't merge because that would change all the bindings
+            this.StopMerge();
+            return;
         }
 
-        foreach (var inputId in this._result.InputDiffs.RemovedKeys)
+        foreach (var input in this._result.InputDiffs.Added)
         {
-            // TODO implement
+            // input device added - add to current
+            this._result.MergeActions.Add(new MappingMergeAction(null, MappingMergeActionMode.Add, input));
         }
 
-        foreach (var pair in this._result.InputDiffs.ChangedPairs)
+        foreach (var input in this._result.InputDiffs.Removed)
         {
-            if (pair.HasChangedInputInstanceId()) this._result.CanMerge = false;
-            // TODO continue
+            // input device removed - if referenced by preserved binding, can't merge - else remove current
+            if (this._result.Current.GetRelatedMappings(input).Any(m => m.Preserve))
+            {
+                this.StopMerge();
+                return;
+            }
+
+            this._result.MergeActions.Add(new MappingMergeAction(null, MappingMergeActionMode.Remove, input));
+        }
+
+        foreach (var pair in this._result.InputDiffs.Changed)
+        {
+            // check settings
+            /* - setting added - add with preserve = true
+             * - setting removed - remove if current preserve == false - else keep current
+             * - setting changed - update if preserve == false - else keep current
+             */
+            // TODO implement
         }
     }
 
     private void AnalyzeMappingDiffs()
     {
+        if (!this._result.CanMerge) return;
+        
         /* what to do:
          * - binding added - add to current
          * - binding removed - remove if current preserve == false - else keep current
          * - binding changed - update if preserve == false - else keep current
          */
 
-        foreach (var mappingId in this._result.MappingDiffs.AddedKeys)
+        foreach (var mapping in this._result.MappingDiffs.Added)
         {
             // TODO implement
         }
 
-        foreach (var mappingId in this._result.MappingDiffs.RemovedKeys)
+        foreach (var mapping in this._result.MappingDiffs.Removed)
         {
             // TODO implement
         }
 
-        foreach (var pair in this._result.MappingDiffs.ChangedPairs)
+        foreach (var pair in this._result.MappingDiffs.Changed)
         {
             // TODO implement
         }
