@@ -24,6 +24,7 @@ public class MappingMerger
             m => $"{m.ActionMap}-{m.Action}",
             (p, c) => p.Input != c.Input || p.MultiTap != c.MultiTap);
 
+        // TODO if product ID has changed, report must overwrite
         if (inputDiffs.Any()) this.PrintDiffs(inputDiffs, "inputs", PrintInputDevice);
         if (mappingDiffs.Any()) this.PrintDiffs(mappingDiffs, "mappings", PrintMapping);
         return inputDiffs.Any() || mappingDiffs.Any();
@@ -75,7 +76,15 @@ public class MappingMerger
 
     public MappingData Merge(MappingData current, MappingData updated)
     {
-        // TODO implement
+        /* what to do:
+         * 1. input ID changed - can't merge because that would change all the bindings
+         * 2. input setting added - add with preserve = true
+         * 3. input setting removed - remove if preserve == false
+         * 4. input setting changed - ?
+         * 5. binding added - ?
+         * 6. binding removed - ?
+         * 7. binding changed - ?
+         */
         return current;
     }
 }

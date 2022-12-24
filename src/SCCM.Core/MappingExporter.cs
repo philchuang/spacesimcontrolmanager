@@ -51,6 +51,11 @@ public class MappingExporter
         return latest;
     }
 
+    public async Task Preview(MappingData data)
+    {
+        // TODO implement
+    }
+
     public async Task Update(MappingData data)
     {
         if (!System.IO.File.Exists(this.ActionMapsXmlPath))
