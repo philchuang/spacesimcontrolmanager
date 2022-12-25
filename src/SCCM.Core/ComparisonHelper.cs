@@ -11,30 +11,40 @@ public static class ComparisonHelper
         Dictionary<string, T> currentMap = current.ToDictionary(keyGenerator);
         Dictionary<string, T> updatedMap = updated.ToDictionary(keyGenerator);
 
+        return Compare(currentMap, updatedMap, comparer);
+    }
+
+    public static ComparisonResult<T> Compare<T>(
+        IDictionary<string, T> current, 
+        IDictionary<string, T> updated, 
+        Func<T, T, bool> comparer)
+    {
         var result = new ComparisonResult<T>();
 
-        result.Removed.AddRange(currentMap.Keys.Except(updatedMap.Keys).OrderBy(s => s).Select(s => currentMap[s]));
-        result.Added.AddRange(updatedMap.Keys.Except(currentMap.Keys).OrderBy(s => s).Select(s => updatedMap[s]));
-        result.Changed.AddRange(updatedMap
-            .Where(ukvp => currentMap.ContainsKey(ukvp.Key))
-            .Select(ukvp => new ComparisonPair<T> { Key = ukvp.Key, Current = currentMap[ukvp.Key], Updated = ukvp.Value })
-            .Where(pair => comparer(pair.Current, pair.Updated)));
+        result.Removed.AddRange(current.Keys.Except(updated.Keys).OrderBy(s => s).Select(s => current[s]));
+        result.Added.AddRange(updated.Keys.Except(current.Keys).OrderBy(s => s).Select(s => updated[s]));
+        result.Changed.AddRange(updated
+            .Where(ukvp => current.ContainsKey(ukvp.Key))
+            .Select(ukvp => new ComparisonPair<T> { Key = ukvp.Key, Current = current[ukvp.Key], Updated = ukvp.Value })
+            .Where(pair => !comparer(pair.Current, pair.Updated)));
         
         return result;
     }
 
-    public static bool DictionariesAreDifferent<K, V>(IDictionary<K,V> left, IDictionary<K,V> right)
+    public static bool DictionariesAreEqual<K, V>(IDictionary<K, V> left, IDictionary<K, V> right, Func<V, V, bool>? comparer = null)
     {
-        if (left == null && right == null) return false;
-        if (left == null || right == null) return true;
-        if (left.Count != right.Count) return true;
-        if (left.Keys.Except(right.Keys).Any()) return true;
+        if (object.ReferenceEquals(left, right)) return true;
+        if (left == null || right == null) return false;
+        if (left.Count != right.Count) return false;
+        if (left.Keys.Except(right.Keys).Any()) return false;
 
-        return left.Any(lkvp => {
-            if (!right.TryGetValue(lkvp.Key, out var rval)) return true;
-            if (lkvp.Value == null && rval == null) return false;
-            if (lkvp.Value == null || rval == null) return true;
-            return !lkvp.Value.Equals(rval);
+        if (comparer == null) comparer = (v1, v2) => object.Equals(v1, v2);
+
+        return left.All(lkvp => {
+            if (!right.TryGetValue(lkvp.Key, out var rval)) return false;
+            if (lkvp.Value == null && rval == null) return true;
+            if (lkvp.Value == null || rval == null) return false;
+            return comparer(lkvp.Value, rval);
         });
     }
 }

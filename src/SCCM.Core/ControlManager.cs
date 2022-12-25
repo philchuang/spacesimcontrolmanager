@@ -84,7 +84,7 @@ public class ControlManager
             this.DebugOutput($"Previewing merge...");
             if (merger.Preview(currentData, updatedData))
             {
-                this.StandardOutput("Changes NOT saved! Run in merge or overwrite modes to save changes.");
+                this.StandardOutput($"{merger.ChangesCount} changes NOT saved! Run in merge or overwrite modes to save changes.");
             }
             else
             {
