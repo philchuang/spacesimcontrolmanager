@@ -2,6 +2,7 @@ using NUnit.Framework;
 using SCCM.Core;
 using SCCM.Tests.Mocks;
 using System.Xml.Linq;
+using System.Xml.XPath;
 using static SCCM.Tests.Extensions;
 
 namespace SCCM.Tests;
@@ -13,7 +14,8 @@ public class MappingExporter_Update_Tests
     private readonly IPlatform _platform;
     private readonly IFolders _folders;
     private MappingData _data = new MappingData();
-    private XDocument? _result = null;
+    private XDocument? _originalXml = null;
+    private XDocument? _updatedXml = null;
     private XElement? _actionMapsElement = null;
     private XElement? _actionProfilesDefaultElement = null;
 
@@ -40,23 +42,29 @@ public class MappingExporter_Update_Tests
         this._updater = new MappingExporter(this._platform, this._folders, this.GetTestXmlPath());
     }
 
+    [SetUp]
+    protected async Task Init()
+    {
+        this._originalXml = await this.LoadTestXml();
+    }
+
     private async Task Act()
     {
         await this._updater.Update(this._data);
-        this._result = await this.LoadTestXml();
-        if (this._result != null)
+        this._updatedXml = await this.LoadTestXml();
+        if (this._updatedXml != null)
         {
-            if (this._result.Root == null)
+            if (this._updatedXml.Root == null)
             {
                 throw new InvalidDataException($"Expecting <ActionMaps>, found nothing!");
             }
 
-            if (!this._result.Root.Name.LocalName.Equals("ActionMaps"))
+            if (!this._updatedXml.Root.Name.LocalName.Equals("ActionMaps"))
             {
-                throw new InvalidDataException($"Expecting <ActionMaps>, found <{this._result.Root.Name.LocalName}>!");
+                throw new InvalidDataException($"Expecting <ActionMaps>, found <{this._updatedXml.Root.Name.LocalName}>!");
             }
 
-            this._actionMapsElement = this._result.Root;
+            this._actionMapsElement = this._updatedXml.Root;
             this._actionProfilesDefaultElement = this._actionMapsElement.GetChildren("ActionProfiles").Single(ap => ap.GetAttribute("profileName") == "default");
         }
     }
@@ -78,68 +86,63 @@ public class MappingExporter_Update_Tests
                 } },
             },
             Mappings = {
-                new Mapping { ActionMap = "seat_general", Action = "v_toggle_mining_mode", Input = "js2_button56" },
-                new Mapping { ActionMap = "seat_general", Action = "v_toggle_quantum_mode", Input = "js2_button19" },
-                new Mapping { ActionMap = "seat_general", Action = "v_toggle_scan_mode", Input = "js2_button56" },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_close_all_doors", Input = "js2_button49" },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_flightready", Input = "js2_button52" },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_lock_all_doors", Input = "js2_button46" },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_open_all_doors", Input = "js2_button51" },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_toggle_all_doorlocks", Input = "js2_button47" },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_toggle_all_doors", Input = "js2_button50" },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_unlock_all_doors", Input = "js2_button48" },
-                new Mapping { ActionMap = "spaceship_view", Action = "v_view_cycle_fwd", Input = "js2_button1" },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_afterburner", Input = "js2_button3" },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_atc_request", Input = "js2_button8" },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_autoland", Input = "js2_button10" },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_ifcs_speed_limiter_reset_scm", Input = "js2_hat1_right" },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_ifcs_toggle_cruise_control", Input = "js2_hat1_left" },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_ifcs_toggle_vector_decoupling", Input = "js2_button4" },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_roll", Input = "js1_x" },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_space_brake", Input = "js2_button5" },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_speed_range_down", Input = "js2_hat1_down" },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_speed_range_up", Input = "js2_hat1_up" },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_strafe_lateral", Input = "js2_x" },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_strafe_longitudinal", Input = "js2_y" },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_strafe_vertical", Input = "js2_rotz" },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_toggle_landing_system", Input = "js2_button7" },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_toggle_relative_mouse_mode", Input = "kb1_slash" },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_toggle_vtol", Input = "js2_button9" },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_transform_deploy", Input = "js2_button61" },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_transform_retract", Input = "js2_button58" },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_yaw", Input = "js1_rotz" },
+                new Mapping { ActionMap = "seat_general", Action = "v_toggle_mining_mode", Input = "js2_button56", Preserve = true },
+                new Mapping { ActionMap = "seat_general", Action = "v_toggle_quantum_mode", Input = "js2_button19", Preserve = true },
+                new Mapping { ActionMap = "seat_general", Action = "v_toggle_scan_mode", Input = "js2_button54", Preserve = true },
+                new Mapping { ActionMap = "spaceship_general", Action = "v_close_all_doors", Input = "js2_button49", Preserve = true },
+                new Mapping { ActionMap = "spaceship_general", Action = "v_flightready", Input = "js2_button52", Preserve = true },
+                new Mapping { ActionMap = "spaceship_general", Action = "v_lock_all_doors", Input = "js2_button46", Preserve = true },
+                new Mapping { ActionMap = "spaceship_general", Action = "v_open_all_doors", Input = "js2_button51", Preserve = true },
+                new Mapping { ActionMap = "spaceship_general", Action = "v_toggle_all_doorlocks", Input = "js2_button47", Preserve = true },
+                new Mapping { ActionMap = "spaceship_general", Action = "v_toggle_all_doors", Input = "js2_button50", Preserve = true },
+                new Mapping { ActionMap = "spaceship_general", Action = "v_unlock_all_doors", Input = "js2_button48", Preserve = true },
+                new Mapping { ActionMap = "spaceship_view", Action = "v_view_cycle_fwd", Input = "js2_button1", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_afterburner", Input = "js2_button3", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_atc_request", Input = "js2_button8", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_autoland", Input = "js2_button10", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_ifcs_speed_limiter_reset_scm", Input = "js2_hat1_right", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_ifcs_toggle_cruise_control", Input = "js2_hat1_left", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_ifcs_toggle_vector_decoupling", Input = "js2_button4", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_roll", Input = "js1_x", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_space_brake", Input = "js2_button5", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_speed_range_down", Input = "js2_hat1_down", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_speed_range_up", Input = "js2_hat1_up", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_strafe_lateral", Input = "js2_x", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_strafe_longitudinal", Input = "js2_y", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_strafe_vertical", Input = "js2_rotz", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_toggle_landing_system", Input = "js2_button7", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_toggle_relative_mouse_mode", Input = "kb1_slash", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_toggle_vtol", Input = "js2_button9", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_transform_deploy", Input = "js2_button61", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_transform_retract", Input = "js2_button58", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_yaw", Input = "js1_rotz", Preserve = true },
             }
         };
     }
 
     private void AssertBasics()
     {
-        Assert.NotNull(this._result);
+        Assert.NotNull(this._updatedXml);
         Assert.NotNull(this._actionMapsElement);
         Assert.NotNull(this._actionProfilesDefaultElement);
     }
 
-    private XElement GetActionElement(string actionmapName, string actionName)
+    private XElement GetActionRebindElement(XDocument xd, Mapping mapping)
     {
-        // silly code to prevent warnings
-        if (this._result == null || this._actionMapsElement == null || this._actionProfilesDefaultElement == null) throw new Exception();
-
-        return this._actionProfilesDefaultElement
-            .GetChildren("actionmap").Single(actionmap => actionmap.GetAttribute("name") == actionmapName)
-            .GetChildren("action").Single(action => action.GetAttribute("name") == actionName);
+        return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/actionmap[@name='{mapping.ActionMap}']/action[@name='{mapping.Action}']/rebind").SingleOrDefault();
     }
 
     [Test]
-    public async Task Update_removes_inputs()
+    public async Task Update_overwrites_mapping_change()
     {
-        // NOTE I did this wrong, won't ever happen - rewrite into another test
-
         // Arrange
         this.Arrange_Default_MappingData();
-        // remove joystick 2
-        var removedInput = this._data.Inputs[3];
-        this._data.Inputs.Remove(removedInput);
-        this._data.GetRelatedMappings(removedInput).ToList().ForEach(m => this._data.Mappings.Remove(m));
+        this._data.Mappings.ToList().ForEach(m => m.Preserve = false);
+        var mapping = this._data.Mappings.Single(m => m.ActionMap == "spaceship_movement" && m.Action == "v_ifcs_toggle_cruise_control");
+        mapping.Preserve = true;
+        var actionRebindElement = this.GetActionRebindElement(this._originalXml, mapping);
+        var originalInput = actionRebindElement.GetAttribute("input");
+        mapping.Input = mapping.Input == originalInput ? RandomString() : mapping.Input;
 
         // Act
         await this.Act();
@@ -147,34 +150,24 @@ public class MappingExporter_Update_Tests
         // Assert
         this.AssertBasics();
         // silly code to prevent warnings
-        if (this._result == null || this._actionMapsElement == null || this._actionProfilesDefaultElement == null) throw new Exception();
+        if (this._updatedXml == null || this._actionMapsElement == null || this._actionProfilesDefaultElement == null) return;
 
-        // match remaining inputs
-        var inputElements = this._actionProfilesDefaultElement.GetChildren("options").ToList();
-        Assert.AreEqual(3, inputElements.Where((option, idx) => {
-            var input = this._data.Inputs[idx];
-            return option.GetAttribute("type") == input.Type &&
-                option.GetAttribute("instance") == input.Instance.ToString() &&
-                option.GetAttribute("product") == input.Product;
-        }));
-        // assert no related mappings
-        Assert.IsFalse(
-            this._actionProfilesDefaultElement.GetChildren("actionmaps")
-                .SelectMany(amElement => amElement.GetChildren("action"))
-                .SelectMany(aElement => aElement.GetChildren("rebind"))
-                .Select(rebindElement => rebindElement.GetAttribute("input"))
-                .Where(input => input != null && input.StartsWith(removedInput.GetMappingPrefix()))
-                .Any());
+        var changedActionRebindElement = this.GetActionRebindElement(this._updatedXml, mapping);
+        Assert.NotNull(changedActionRebindElement, nameof(changedActionRebindElement));
+        Assert.AreEqual(mapping.Input, changedActionRebindElement.GetAttribute("input"));
     }
 
     [Test]
-    public async Task Update_overwrites_mapping()
+    public async Task Update_ignores_mapping_change()
     {
         // Arrange
         this.Arrange_Default_MappingData();
-        var changedMapping = this._data.Mappings.Single(m => m.ActionMap == "spaceship_movement" && m.Action == "v_ifcs_toggle_cruise_control");
-        var originalInput = changedMapping.Input;
-        var changedInput = changedMapping.Input = RandomString();
+        this._data.Mappings.ToList().ForEach(m => m.Preserve = false);
+        var mapping = this._data.Mappings.Single(m => m.ActionMap == "spaceship_movement" && m.Action == "v_ifcs_toggle_cruise_control");
+        mapping.Preserve = false;
+        var actionRebindElement = this.GetActionRebindElement(this._originalXml, mapping);
+        var originalInput = actionRebindElement.GetAttribute("input");
+        mapping.Input = mapping.Input == originalInput ? RandomString() : mapping.Input;
 
         // Act
         await this.Act();
@@ -182,22 +175,75 @@ public class MappingExporter_Update_Tests
         // Assert
         this.AssertBasics();
         // silly code to prevent warnings
-        if (this._result == null || this._actionMapsElement == null || this._actionProfilesDefaultElement == null) return;
+        if (this._updatedXml == null) return;
 
-        var changedActionElement = this.GetActionElement(changedMapping.ActionMap, changedMapping.Action);
-        Assert.NotNull(changedActionElement, nameof(changedActionElement));
-        Assert.AreEqual(changedInput, changedActionElement.GetChildren("rebind").Single().GetAttribute("input"));
+        var changedActionRebindElement = this.GetActionRebindElement(this._updatedXml, mapping);
+        Assert.NotNull(changedActionRebindElement, nameof(changedActionRebindElement));
+        Assert.AreEqual(originalInput, changedActionRebindElement.GetAttribute("input"));
     }
 
     [Test]
-    public async Task Update_ignores_mapping()
+    public async Task Update_adds_actionmap_and_action()
     {
-        Assert.Fail();
+        // Arrange
+        this.Arrange_Default_MappingData();
+        this._data.Mappings.ToList().ForEach(m => m.Preserve = false);
+        var mapping = new Mapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}", Preserve = true };
+        this._data.Mappings.Add(mapping);
+
+        // Act
+        await this.Act();
+
+        // Assert
+        this.AssertBasics();
+        // silly code to prevent warnings
+        if (this._updatedXml == null || this._originalXml == null) return;
+
+        var originalActionRebindElement = this.GetActionRebindElement(this._originalXml, mapping);
+        Assert.IsNull(originalActionRebindElement, nameof(originalActionRebindElement));
+        var addedActionRebindElement = this.GetActionRebindElement(this._updatedXml, mapping);
+        Assert.NotNull(addedActionRebindElement, nameof(addedActionRebindElement));
+        Assert.AreEqual(mapping.Input, addedActionRebindElement.GetAttribute("input"));
+    }
+
+    [Test]
+    public async Task Update_adds_action()
+    {
+        // Arrange
+        this.Arrange_Default_MappingData();
+        this._data.Mappings.ToList().ForEach(m => m.Preserve = false);
+        var mapping = new Mapping { ActionMap = this._data.Mappings.First().ActionMap, Action = RandomString(), Input = $"js2_{RandomString()}", Preserve = true };
+        this._data.Mappings.Add(mapping);
+
+        // Act
+        await this.Act();
+
+        // Assert
+        this.AssertBasics();
+        // silly code to prevent warnings
+        if (this._updatedXml == null || this._originalXml == null) return;
+
+        var originalActionRebindElement = this.GetActionRebindElement(this._originalXml, mapping);
+        Assert.IsNull(originalActionRebindElement, nameof(originalActionRebindElement));
+        var addedActionRebindElement = this.GetActionRebindElement(this._updatedXml, mapping);
+        Assert.NotNull(addedActionRebindElement, nameof(addedActionRebindElement));
+        Assert.AreEqual(mapping.Input, addedActionRebindElement.GetAttribute("input"));
     }
 
     [Test]
     public async Task Update_overwrites_input_setting()
     {
+        // Arrange
+        this.Arrange_Default_MappingData();
+
+        // Act
+        await this.Act();
+
+        // Assert
+        this.AssertBasics();
+        // silly code to prevent warnings
+        if (this._updatedXml == null) return;
+
         Assert.Fail();
     }
 
