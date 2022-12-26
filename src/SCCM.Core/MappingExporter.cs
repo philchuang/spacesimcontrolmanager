@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using static SCCM.Core.XmlExtensions;
 
 namespace SCCM.Core;
 
@@ -61,6 +62,14 @@ public class MappingExporter
         await this.Export(data, true);
     }
 
+    private void Validate(MappingData data)
+    {
+        // TODO implement
+
+        // if inputs are preserved, they need to preserved in contiguous order (e.g. 1, 1-2, and not 2, 1-3)
+        // all preserved mappings need to reference a preserved input
+    }
+
     private async Task Export(MappingData data, bool apply)
     {
         if (!System.IO.File.Exists(this.ActionMapsXmlPath))
@@ -68,18 +77,65 @@ public class MappingExporter
             throw new FileNotFoundException($"Could not find the Star Citizen mappings file at [{this.ActionMapsXmlPath}]!");
         }
 
-        XDocument? xd = null;
+        this.Validate(data);
+
         using (var fs = new FileStream(this.ActionMapsXmlPath, FileMode.Open))
         {
             var ct = new CancellationToken();
-            xd = await XDocument.LoadAsync(fs, LoadOptions.None, ct);
+            var xd = await XDocument.LoadAsync(fs, LoadOptions.None, ct);
+
+            this.SetupXDocument(xd);
         }
 
         await this.ExportInputDevices(data.Inputs, apply);
+        await this.ExportMappings(data.Mappings, apply);
+    }
+
+    private XDocument? _xd;
+    private XElement? _actionMapsElement;
+    private XElement? _actionProfilesDefaultElement;
+    private Dictionary<string, XElement> _actionElementMap;
+
+    private void SetupXDocument(XDocument xd)
+    {
+        if (xd.Root == null)
+        {
+            throw new InvalidDataException($"Expecting <ActionMaps>, found nothing!");
+        }
+
+        if (!xd.Root.Name.LocalName.Equals("ActionMaps"))
+        {
+            throw new InvalidDataException($"Expecting <ActionMaps>, found <{xd.Root.Name.LocalName}>!");
+        }
+
+        this._xd = xd;
+        this._actionMapsElement = this._xd.Root;
+        this._actionProfilesDefaultElement = this._actionMapsElement.GetChildren("ActionProfiles").Single(ap => ap.GetAttribute("profileName") == "default");
+        if (this._actionProfilesDefaultElement == null)
+        {
+            throw new InvalidDataException($"Could not find <ActionProfiles> with profileName [default].");
+        }
+
+        // TODO not quite
+        this._actionElementMap = this._actionProfilesDefaultElement.GetChildren("actionmaps").Where(e => e.GetAttribute("name") != string.Empty).ToDictionary(e => e.GetAttribute("name"));
     }
 
     private async Task ExportInputDevices(IEnumerable<InputDevice> inputs, bool apply)
     {
-        
+    }
+
+    private XElement GetActionElement(string actionmapName, string actionName)
+    {
+        // silly code to prevent warning
+        if (this._actionProfilesDefaultElement == null) throw new Exception();
+
+        return this._actionProfilesDefaultElement
+            .GetChildren("actionmap").SingleOrDefault(actionmap => actionmap.GetAttribute("name") == actionmapName)
+            .GetChildren("action").SingleOrDefault(action => action.GetAttribute("name") == actionName);
+    }
+
+    private async Task ExportMappings(IEnumerable<Mapping> mappings, bool apply)
+    {
+        // TODO implement
     }
 }
