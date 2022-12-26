@@ -33,6 +33,7 @@ public static class AssertSccm
         if (actual == null) return;
 
         Assert.AreEqual(expected.Instance, actual.Instance, nameof(expected.Instance));
+        Assert.AreEqual(expected.Preserve, actual.Preserve, nameof(expected.Preserve));
         Assert.AreEqual(expected.Product, actual.Product, nameof(expected.Product));
         Assert2.EnumerableEquals(expected.Settings, actual.Settings, AreEqual);
     }

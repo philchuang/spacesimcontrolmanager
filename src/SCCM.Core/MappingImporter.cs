@@ -47,7 +47,7 @@ public class MappingImporter
         return this._data;
     }
 
-    private IEnumerable<XElement> GetChildren(XNode node, string childName)
+    private static IEnumerable<XElement> GetChildren(XNode node, string childName)
     {
         var xe = node as XElement;
         if (xe == null) return new XElement[] {};
@@ -55,7 +55,7 @@ public class MappingImporter
         return xe.Elements().Where(n => n is XElement xe && xe.Name.LocalName.Equals(childName)).Select(n => (XElement) n);
     }
 
-    private string? GetAttribute(XElement node, string attrName)
+    private static string? GetAttribute(XElement node, string attrName)
     {
         return node?.Attribute(attrName)?.Value;
     }
@@ -108,7 +108,7 @@ public class MappingImporter
 
         this.DebugOutput($"Processing options [{product}]...");
 
-        var input = new InputDevice { Type = GetAttribute(option, "type"), Instance = IntTryParseOrDefault(GetAttribute(option, "instance"), -1), Product = product };
+        var input = new InputDevice { Type = GetAttribute(option, "type"), Instance = IntTryParseOrDefault(GetAttribute(option, "instance"), -1), Preserve = true, Product = product };
         foreach (var prop in option.Elements())
         {
             var setting = new InputDeviceSetting
