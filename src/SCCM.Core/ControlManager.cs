@@ -55,12 +55,6 @@ public class ControlManager
         return merger;
     }
 
-    private async Task<MappingData?> LoadMappingData()
-    {
-        var serializer = new DataSerializer(this.SccmMappingsJsonPath);
-        return await serializer.Read();
-    }
-
     public async Task Import(ImportMode mode)
     {
         var importer = this.CreateImporter();
@@ -99,19 +93,6 @@ public class ControlManager
             var mergedData = merger.Merge(currentData, updatedData);
             await this.Save(mergedData);
         }
-    }
-
-    public async Task Save(MappingData data)
-    {
-        if (data == null)
-        {
-            throw new ArgumentNullException(nameof(data));
-        }
-
-        System.IO.Directory.CreateDirectory(this.SaveLocation);
-        var serializer = new DataSerializer(this.SccmMappingsJsonPath);
-        await serializer.Write(data);
-        this.StandardOutput($"Mappings backed up to [{this.SccmMappingsJsonPath}].");
     }
 
     public async Task ExportPreview()
@@ -161,5 +142,24 @@ public class ControlManager
         // TODO write simple test
         this._platform.Open(this.StarCitizenActionmapsXmlPath);
         this.StandardOutput($"Opening [{this.StarCitizenActionmapsXmlPath}] in the default editor.");
+    }
+
+    private async Task<MappingData?> LoadMappingData()
+    {
+        var serializer = new DataSerializer(this.SccmMappingsJsonPath);
+        return await serializer.Read();
+    }
+
+    private async Task Save(MappingData data)
+    {
+        if (data == null)
+        {
+            throw new ArgumentNullException(nameof(data));
+        }
+
+        System.IO.Directory.CreateDirectory(this.SaveLocation);
+        var serializer = new DataSerializer(this.SccmMappingsJsonPath);
+        await serializer.Write(data);
+        this.StandardOutput($"Mappings backed up to [{this.SccmMappingsJsonPath}].");
     }
 }

@@ -83,7 +83,7 @@ public static class AssertSccm
         if (actual == null) return;
 
         Assert.AreEqual(expected.Mode, actual.Mode, nameof(expected.Mode));
-        Assert.AreSame(expected.NewValue, actual.NewValue, nameof(expected.NewValue));
-        Assert.AreSame(expected.Target, actual.Target, nameof(expected.Target));
+        Assert.AreSame(expected.Value, actual.Value, nameof(expected.Value));
+        Assert.AreSame(expected.Parent, actual.Parent, nameof(expected.Parent));
     }
 }
