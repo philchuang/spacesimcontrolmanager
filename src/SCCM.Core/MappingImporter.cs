@@ -3,6 +3,7 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using static SCCM.Core.Extensions;
+using static SCCM.Core.XmlExtensions;
 
 namespace SCCM.Core;
 
@@ -47,19 +48,6 @@ public class MappingImporter
         return this._data;
     }
 
-    private static IEnumerable<XElement> GetChildren(XNode node, string childName)
-    {
-        var xe = node as XElement;
-        if (xe == null) return new XElement[] {};
-
-        return xe.Elements().Where(n => n is XElement xe && xe.Name.LocalName.Equals(childName)).Select(n => (XElement) n);
-    }
-
-    private static string? GetAttribute(XElement node, string attrName)
-    {
-        return node?.Attribute(attrName)?.Value;
-    }
-
     private void ReadXDocument(XDocument xd)
     {
         if (xd.Root == null)
@@ -78,7 +66,7 @@ public class MappingImporter
 
     private void ReadActionMaps(XElement actionMaps)
     {
-        var actionProfiles = GetChildren(actionMaps, "ActionProfiles");
+        var actionProfiles = actionMaps.GetChildren("ActionProfiles");
         foreach (var ap in actionProfiles)
         {
             ReadActionProfiles(ap);
@@ -87,14 +75,14 @@ public class MappingImporter
 
     private void ReadActionProfiles(XElement actionProfiles)
     {
-        var actionProfilesName = GetAttribute(actionProfiles, "profileName");
+        var actionProfilesName = actionProfiles.GetAttribute("profileName");
         this.DebugOutput($"Processing ActionProfiles [{actionProfilesName}]...");
-        var optionsNodes = GetChildren(actionProfiles, "options");
+        var optionsNodes = actionProfiles.GetChildren("options");
         foreach (var o in optionsNodes)
         {
             ReadOptions(o);
         }
-        var actionmapNodes = GetChildren(actionProfiles, "actionmap");
+        var actionmapNodes = actionProfiles.GetChildren("actionmap");
         foreach (var am in actionmapNodes)
         {
             ReadActionMap(am);
@@ -103,12 +91,12 @@ public class MappingImporter
 
     private void ReadOptions(XElement option)
     {
-        var product = GetAttribute(option, "Product");
+        var product = option.GetAttribute("Product");
         if (string.IsNullOrWhiteSpace(product)) return;
 
         this.DebugOutput($"Processing options [{product}]...");
 
-        var input = new InputDevice { Type = GetAttribute(option, "type"), Instance = IntTryParseOrDefault(GetAttribute(option, "instance"), -1), Preserve = true, Product = product };
+        var input = new InputDevice { Type = option.GetAttribute("type"), Instance = IntTryParseOrDefault(option.GetAttribute("instance"), -1), Preserve = true, Product = product };
         foreach (var prop in option.Elements())
         {
             var setting = new InputDeviceSetting
@@ -134,7 +122,7 @@ public class MappingImporter
 
     private void ReadActionMap(XElement actionmap)
     {
-        var actionmapName = GetAttribute(actionmap, "name");
+        var actionmapName = actionmap.GetAttribute("name");
         if (string.IsNullOrWhiteSpace(actionmapName))
         {
             this.WarningOutput($"Found actionmap node without a name: {actionmap}");
@@ -142,7 +130,7 @@ public class MappingImporter
         }
 
         this.DebugOutput($"Processing actionmap [{actionmapName}]...");
-        var actions = GetChildren(actionmap, "action");
+        var actions = actionmap.GetChildren("action");
         foreach (var a in actions)
         {
             ReadAction(a, actionmapName);
@@ -152,19 +140,19 @@ public class MappingImporter
     private void ReadAction(XElement action, string actionmapName)
     {
         var preserve = true;
-        var actionName = GetAttribute(action, "name");
+        var actionName = action.GetAttribute("name");
         if (string.IsNullOrWhiteSpace(actionName))
         {
             this.WarningOutput($"Found action node without a name: {action}");
             return;
         }
-        var rebind = GetChildren(action, "rebind").FirstOrDefault();
+        var rebind = action.GetChildren("rebind").FirstOrDefault();
         if (rebind == null)
         {
             this.WarningOutput($"Found action node without rebind childnodes: {actionName}");
             return;
         }
-        var input = GetAttribute(rebind, "input");
+        var input = rebind.GetAttribute("input");
         if (string.IsNullOrWhiteSpace(input))
         {
             this.WarningOutput($"Found rebind node without input value: {actionName}");
@@ -175,7 +163,7 @@ public class MappingImporter
             this.WarningOutput($"Found rebind node with invalid input value: {actionName}, {input}");
             preserve = false;
         }
-        var multitapStr = GetAttribute(rebind, "multiTap");
+        var multitapStr = rebind.GetAttribute("multiTap");
         if (!int.TryParse(multitapStr, out var multitap)) multitap = -1;
         this._data.Mappings.Add(new Mapping { ActionMap = actionmapName, Action = actionName, Input = input, MultiTap = multitap != -1 ? multitap : null, Preserve = preserve });
     }

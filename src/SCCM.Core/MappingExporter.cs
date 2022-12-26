@@ -53,10 +53,15 @@ public class MappingExporter
 
     public async Task Preview(MappingData data)
     {
-        // TODO implement
+        await this.Export(data, false);
     }
 
     public async Task Update(MappingData data)
+    {
+        await this.Export(data, true);
+    }
+
+    private async Task Export(MappingData data, bool apply)
     {
         if (!System.IO.File.Exists(this.ActionMapsXmlPath))
         {
@@ -70,6 +75,11 @@ public class MappingExporter
             xd = await XDocument.LoadAsync(fs, LoadOptions.None, ct);
         }
 
-        // TODO
+        await this.ExportInputDevices(data.Inputs, apply);
+    }
+
+    private async Task ExportInputDevices(IEnumerable<InputDevice> inputs, bool apply)
+    {
+        
     }
 }
