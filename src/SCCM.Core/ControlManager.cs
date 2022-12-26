@@ -46,9 +46,9 @@ public class ControlManager
         return exporter;
     }
 
-    private MappingMerger CreateMerger()
+    private MappingImportMerger CreateMerger()
     {
-        var merger = new MappingMerger();
+        var merger = new MappingImportMerger();
         merger.StandardOutput += this.StandardOutput;
         merger.WarningOutput += this.WarningOutput;
         merger.DebugOutput += this.DebugOutput;

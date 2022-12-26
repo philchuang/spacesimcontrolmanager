@@ -1,6 +1,6 @@
 namespace SCCM.Core;
 
-public class MappingMerger
+public class MappingImportMerger
 {
     public event Action<string> StandardOutput = delegate {};
     public event Action<string> WarningOutput = delegate {};
@@ -10,7 +10,7 @@ public class MappingMerger
 
     public MappingMergeResult Result { get; private set; } = new MappingMergeResult(new MappingData(), new MappingData(), new ComparisonResult<InputDevice>(), new ComparisonResult<Mapping> ());
 
-    public MappingMerger()
+    public MappingImportMerger()
     {
     }
 

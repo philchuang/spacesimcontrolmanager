@@ -4,11 +4,11 @@ using SCCM.Core;
 namespace SCCM.Tests;
 
 [TestFixture]
-public class MappingMerger_Preview_Tests : MappingMerger_TestBase
+public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
 {
     private bool _result;
 
-    public MappingMerger_Preview_Tests()
+    public MappingImportMerger_Preview_Tests()
     {
     }
 

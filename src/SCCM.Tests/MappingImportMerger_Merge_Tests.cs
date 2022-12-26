@@ -4,12 +4,12 @@ using SCCM.Core;
 namespace SCCM.Tests;
 
 [TestFixture]
-public class MappingMerger_Merge_Tests : MappingMerger_TestBase
+public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 {
     private MappingData _result = new MappingData();
     private MappingData _expected = new MappingData();
 
-    public MappingMerger_Merge_Tests()
+    public MappingImportMerger_Merge_Tests()
     {
     }
 
