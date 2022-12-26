@@ -26,6 +26,68 @@ public class MappingMerger
     public MappingData Merge(MappingData current, MappingData updated)
     {
         this.CalculateDiffs(current, updated);
+
+        if (!this.Result.CanMerge) return current;
+
+        foreach (var action in this.Result.MergeActions)
+        {
+            if (action.NewValue is InputDevice input)
+            {
+                if (action.Mode == MappingMergeActionMode.Add)
+                {
+                    current.Inputs.Add(input);
+                }
+                else if (action.Mode == MappingMergeActionMode.Remove)
+                {
+                    current.Inputs.Remove(input);
+                }
+                else if (action.Mode == MappingMergeActionMode.Replace)
+                {
+                    throw new InvalidOperationException($"Invalid combination of MappingMergeActionMode.Replace and InputDevice.");
+                }
+            }
+            else if (action.NewValue is InputDeviceSetting setting)
+            {
+                if (!(action.Target is InputDevice target))
+                {
+                    throw new InvalidCastException($"Expected type of {typeof(InputDevice).Name}, got {action.Target?.GetType().Name ?? "null"}.");
+                }
+
+                if (action.Mode == MappingMergeActionMode.Add)
+                {
+                    target.Settings.Add(setting);
+                }
+                else if (action.Mode == MappingMergeActionMode.Remove)
+                {
+                    target.Settings.Remove(setting);
+                }
+                else if (action.Mode == MappingMergeActionMode.Replace)
+                {
+                    var currentSetting = target.Settings.Single(s => s.Name == setting.Name);
+                    var idx = target.Settings.IndexOf(currentSetting);
+                    target.Settings.Insert(idx, setting);
+                    target.Settings.RemoveAt(idx + 1);
+                }
+            }
+            else if (action.NewValue is Mapping mapping)
+            {
+                if (action.Mode == MappingMergeActionMode.Add)
+                {
+                    current.Mappings.Add(mapping);
+                }
+                else if (action.Mode == MappingMergeActionMode.Remove)
+                {
+                    current.Mappings.Remove(mapping);
+                }
+                else if (action.Mode == MappingMergeActionMode.Replace)
+                {
+                    var currentMapping = current.Mappings.Single(m => m.ActionMap == mapping.ActionMap && m.Action == mapping.Action);
+                    var idx = current.Mappings.IndexOf(currentMapping);
+                    current.Mappings.Insert(idx, mapping);
+                    current.Mappings.RemoveAt(idx + 1);
+                }
+            }
+        }
         
         return current;
     }
@@ -98,6 +160,10 @@ public class MappingMerger
 
             this.StandardOutput($"INPUT removed and will merge: [{input.Product}]");
             this.Result.MergeActions.Add(new MappingMergeAction(null, MappingMergeActionMode.Remove, input));
+
+            // remove all related mappings (they probably won't be in the updated MappingData anyway)
+            var relatedMappings = this.Result.Updated.GetRelatedMappings(input).ToList();
+            relatedMappings.ForEach(m => this.Result.Updated.Mappings.Remove(m));
         }
 
         // at this point, only settings have changed
@@ -148,7 +214,7 @@ public class MappingMerger
             if (!pair.Current.Preserve)
             {
                 this.StandardOutput($"INPUT SETTING changed and will merge: [{input.Product}] [{pair.Current.Name}] = {DictionaryToString(pair.Updated.Properties)}");
-                this.Result.MergeActions.Add(new MappingMergeAction(pair.Current, MappingMergeActionMode.Replace, pair.Updated));
+                this.Result.MergeActions.Add(new MappingMergeAction(input, MappingMergeActionMode.Replace, pair.Updated));
             }
             else
             {
