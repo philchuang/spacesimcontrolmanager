@@ -105,6 +105,7 @@ public class MappingExporter
     private XDocument? _xd;
     private XElement? _actionMapsElement;
     private XElement? _actionProfilesDefaultElement;
+    private Dictionary<string, XElement> _inputElementMap = new Dictionary<string, XElement>();
     private Dictionary<string, XElement> _actionElementMap = new Dictionary<string, XElement>();
 
     private void SetupXDocument(XDocument xd)
@@ -127,6 +128,16 @@ public class MappingExporter
             throw new InvalidDataException($"Could not find <ActionProfiles> with profileName [default].");
         }
 
+        this._inputElementMap.Clear();
+        foreach (var inputElement in this._actionProfilesDefaultElement.GetChildren("options").Where(e => e.GetAttribute("Product") != string.Empty))
+        {
+            var inputType = inputElement.GetAttribute("type");
+            var inputInstance = inputElement.GetAttribute("instance");
+            var inputProduct = inputElement.GetAttribute("Product");
+            this._inputElementMap[$"{inputType}-{inputInstance}-{inputProduct}"] = inputElement;
+            inputElement.Elements().ToList().ForEach(se => this._inputElementMap[$"{inputType}-{inputInstance}-{inputProduct}-{se.Name.LocalName}"] = se);
+        }
+
         this._actionElementMap.Clear();
         foreach (var actionmapElement in this._actionProfilesDefaultElement.GetChildren("actionmap").Where(e => e.GetAttribute("name") != string.Empty))
         {
@@ -142,6 +153,35 @@ public class MappingExporter
 
     private async Task ExportInputDevices(IEnumerable<InputDevice> inputs)
     {
+        foreach (var input in inputs)
+        {
+            foreach (var setting in input.Settings.Where(s => s.Preserve))
+            {
+                if (!this._inputElementMap.TryGetValue($"{input.Type}-{input.Instance}-{input.Product}-{setting.Name}", out var settingElement))
+                {
+                    if (!this._inputElementMap.TryGetValue($"{input.Type}-{input.Instance}-{input.Product}", out var inputElement))
+                    {
+                        throw new SccmException($"Could not find <options> element for type [{input.Type}] instance [{input.Instance}] Product [{input.Product}].");
+                    }
+
+                    this.StandardOutput($"Creating <{setting.Name}>...");
+                    // create setting element
+                    settingElement = new XElement(setting.Name);
+                    inputElement.Add(settingElement);
+                    this._inputElementMap[$"{input.Type}-{input.Instance}-{input.Product}-{setting.Name}"] = settingElement;
+                }
+
+                // TODO handle XML property
+                foreach (var prop in setting.Properties)
+                {
+                    if (!string.Equals(settingElement.GetAttribute(prop.Key), prop.Value))
+                    {
+                        this.StandardOutput($"Updating {input.Product}-{setting.Name}-{prop.Key} to {prop.Value}...");
+                        settingElement.SetAttributeValue(prop.Key, prop.Value);                    
+                    }
+                }
+            }
+        }
     }
 
     private async Task ExportMappings(IEnumerable<Mapping> mappings)
