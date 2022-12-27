@@ -49,6 +49,12 @@ public class MappingExporter_Update_Tests
         this._originalXml = await this.LoadTestXml();
     }
 
+    [TearDown]
+    protected async Task Cleanup()
+    {
+        System.IO.Directory.Delete(new FileInfo(this.GetTestXmlPath()).DirectoryName, true);
+    }
+
     private async Task Act()
     {
         await this._updater.Update(this._data);
@@ -283,6 +289,7 @@ public class MappingExporter_Update_Tests
     [Test]
     public async Task Update_overwrites_input_setting_change_xml()
     {
+        Assert.Fail();
     }
 
     [Test]
@@ -345,6 +352,7 @@ public class MappingExporter_Update_Tests
     [Test]
     public async Task Update_adds_input_setting_xml()
     {
+        Assert.Fail();
     }
 
     [Test]
