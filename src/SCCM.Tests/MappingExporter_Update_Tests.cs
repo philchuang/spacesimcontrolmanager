@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using SCCM.Core;
 using SCCM.Tests.Mocks;
+using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using static SCCM.Tests.Extensions;
@@ -57,6 +58,12 @@ public class MappingExporter_Update_Tests
 
     private async Task Act()
     {
+        using (var fs = new FileStream(this.GetTestXmlPath(), FileMode.Create))
+        using (var xw = XmlWriter.Create(fs, new XmlWriterSettings { Async = true, Indent = true }))
+        {
+            var ct = new CancellationToken();
+            await this._originalXml.WriteToAsync(xw, ct);
+        }
         await this._updater.Update(this._data);
         this._updatedXml = await this.LoadTestXml();
         if (this._updatedXml != null)
@@ -289,7 +296,49 @@ public class MappingExporter_Update_Tests
     [Test]
     public async Task Update_overwrites_input_setting_change_xml()
     {
-        Assert.Fail();
+        var settingPreserve = false;
+
+        this.Arrange_Default_MappingData();
+        this._data.Inputs.SelectMany(i => i.Settings).ToList().ForEach(s => s.Preserve = false);
+        this._data.Mappings.ToList().ForEach(m => m.Preserve = false);
+        
+        var exportedInput = this._data.Inputs.First(i => i.Type == "joystick");
+        var exportedSetting = new InputDeviceSetting { Name = "flight_move_pitch", Preserve = settingPreserve, Properties = new Dictionary<string, string> { { "nonlinearity_curve", "<nonlinearity_curve><point in=\"0\" out=\"0\" /><point in=\"0.1\" out=\"0.063095726\" /><point in=\"0.2\" out=\"0.14495592\" /><point in=\"0.30000001\" out=\"0.23580092\" /><point in=\"0.40000001\" out=\"0.33302128\" /><point in=\"0.44116619\" out=\"0.56157923\" /><point in=\"0.60000002\" out=\"0.54172826\" /><point in=\"0.69999999\" out=\"0.65180492\" /><point in=\"0.80000001\" out=\"0.765082\" /><point in=\"0.90000004\" out=\"0.88123357\" /><point in=\"1\" out=\"1\" /></nonlinearity_curve>" } } };
+        exportedInput.Settings.Add(exportedSetting);
+        
+        var targetInputElement = this.GetInputElement(this._originalXml, exportedInput);
+        var targetSettingElement = targetInputElement.GetChildren(exportedSetting.Name).FirstOrDefault();
+        var targetSettingValue = targetSettingElement?.ToString() ?? string.Empty;
+        if (targetSettingElement == null)
+        {
+            targetSettingElement = new XElement(exportedSetting.Name);
+            var targetSettingPropertyElement = new XElement(exportedSetting.Properties.Keys.First());
+            targetSettingValue = targetSettingPropertyElement.ToString();
+            targetSettingElement.Add(targetSettingPropertyElement);
+            targetInputElement.Add(targetSettingElement);
+        }
+
+        var exportedSettingValue = exportedSetting.Properties.First();
+        var exportedSettingValueName = exportedSettingValue.Key;
+        exportedSetting.Properties[exportedSettingValueName] = exportedSettingValue.Value == targetSettingValue ? $"<{RandomString()} />" : targetSettingValue;
+
+        // return (exportedInput, exportedSetting, exportedSettingValue.Key, targetSettingValue);
+
+        // Act
+        await this.Act();
+
+        // Assert
+        this.AssertBasics();
+        // silly code to prevent warnings
+        if (this._updatedXml == null) return;
+
+        var changedInputElement = this.GetInputElement(this._updatedXml, exportedInput);
+        Assert.NotNull(changedInputElement, nameof(changedInputElement));
+        var changedSettingElement = changedInputElement.Elements().Single();
+        Assert.NotNull(changedSettingElement, nameof(changedSettingElement));
+        var changedSettingValueAttribute = changedSettingElement.Attributes().First();
+        var changedSettingValue = changedSettingValueAttribute.Value;
+        Assert.AreEqual(exportedSetting.Properties[exportedSettingValueName], changedSettingValue);
     }
 
     [Test]
