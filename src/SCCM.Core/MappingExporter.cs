@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using static SCCM.Core.XmlExtensions;
@@ -107,6 +108,7 @@ public class MappingExporter
     private XElement? _actionProfilesDefaultElement;
     private Dictionary<string, XElement> _inputElementMap = new Dictionary<string, XElement>();
     private Dictionary<string, XElement> _actionElementMap = new Dictionary<string, XElement>();
+    private static Regex XML_REGEX = new Regex(@"<(\w[\w\d_]+)[^>]*>.+</\1>");
 
     private void SetupXDocument(XDocument xd)
     {
@@ -171,12 +173,26 @@ public class MappingExporter
                     this._inputElementMap[$"{input.Type}-{input.Instance}-{input.Product}-{setting.Name}"] = settingElement;
                 }
 
-                // TODO handle XML property
                 foreach (var prop in setting.Properties)
                 {
-                    if (!string.Equals(settingElement.GetAttribute(prop.Key), prop.Value))
+                    if (XML_REGEX.IsMatch(prop.Value))
                     {
-                        this.StandardOutput($"Updating {input.Product}-{setting.Name}-{prop.Key} to {prop.Value}...");
+                        // handle XML property
+                        var settingValueElement = settingElement.GetChildren(prop.Key).FirstOrDefault();
+                        if (settingValueElement != null)
+                        {
+                            if (string.Equals(settingValueElement.ToString(), prop.Value)) continue; // already exists and matches
+                            settingValueElement.Remove(); // already exists and needs to be overwritten
+                        }
+                        
+                        this.StandardOutput($"Updating {input.Product}/<{setting.Name}>/{prop.Value}...");
+                        settingValueElement = XElement.Parse(prop.Value);
+                        settingElement.Add(settingValueElement);
+                    }
+                    else if (!string.Equals(settingElement.GetAttribute(prop.Key), prop.Value))
+                    {
+                        // handle attribute property
+                        this.StandardOutput($"Updating {input.Product}/<{setting.Name}>@{prop.Key} to {prop.Value}...");
                         settingElement.SetAttributeValue(prop.Key, prop.Value);                    
                     }
                 }
