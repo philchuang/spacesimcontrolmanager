@@ -36,7 +36,7 @@ public class MappingData
 
     public IEnumerable<Mapping> GetRelatedMappings(InputDevice input)
     {
-        var prefix = input.GetMappingPrefix();
+        var prefix = ActionMapsXmlHelper.GetInputPrefixForInputDevice(input);
         return this.Mappings.Where(m => m.Input.StartsWith(prefix));
     }
 }
