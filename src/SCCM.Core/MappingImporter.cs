@@ -99,6 +99,7 @@ public class MappingImporter
             var setting = new InputDeviceSetting
             {
                 Name = prop.Name.LocalName,
+                Parent = $"{input.Type}-{input.Instance}-{input.Product}", // I think product is probably sufficient, assuming the GUID is unique to the device
                 Preserve = true,
                 Properties = prop.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value),
             };

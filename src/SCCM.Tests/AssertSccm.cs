@@ -50,6 +50,7 @@ public static class AssertSccm
         if (actual == null) return;
 
         Assert.AreEqual(expected.Name, actual.Name, nameof(expected.Name));
+        Assert.AreEqual(expected.Parent, actual.Parent, nameof(expected.Parent));
         Assert.AreEqual(expected.Preserve, actual.Preserve, nameof(expected.Preserve));
         Assert2.DictionaryEquals(expected.Properties, actual.Properties, false, Assert.AreEqual);
     }
@@ -85,6 +86,5 @@ public static class AssertSccm
 
         Assert.AreEqual(expected.Mode, actual.Mode, nameof(expected.Mode));
         Assert.AreSame(expected.Value, actual.Value, nameof(expected.Value));
-        Assert.AreSame(expected.Parent, actual.Parent, nameof(expected.Parent));
     }
 }

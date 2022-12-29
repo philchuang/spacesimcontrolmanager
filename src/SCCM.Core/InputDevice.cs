@@ -8,14 +8,5 @@ public class InputDevice
     public bool Preserve { get; set; }
     public IList<InputDeviceSetting> Settings { get; set; } = new List<InputDeviceSetting>();
 
-    // public string GetMappingPrefix()
-    // {
-    //     var typeAbbv = this.Type switch {
-    //         "joystick" => "js",
-    //         "keyboard" => "kb",
-    //         _ => throw new ArgumentOutOfRangeException(),
-    //     };
-    //     var prefix = $"{typeAbbv}{this.Instance}_";
-    //     return prefix;
-    // }
+    public string Id { get => $"{this.Type}-{this.Instance}-{this.Product}"; }
 }

@@ -52,6 +52,10 @@ public abstract class MappingImportMerger_TestBase
                 this._current.Mappings[3].JsonCopy(),
             }
         };
+
+        this._current.Inputs.Concat(this._updated.Inputs).ToList().ForEach(i => {
+            i.Settings.ToList().ForEach(s => s.Parent = i.Id);
+        });
     }
 
     protected void Detects_Inputs_Added_Arrange()
@@ -97,13 +101,13 @@ public abstract class MappingImportMerger_TestBase
         this.Create_2_Inputs_Arrange();
 
         var updatedInput = this._updated.Inputs[0];
-        updatedInput.Settings.Add(new InputDeviceSetting { Name = RandomString(), Preserve = true, Properties = { { RandomString(), RandomString() } } });
+        updatedInput.Settings.Add(new InputDeviceSetting { Name = RandomString(), Parent = updatedInput.Id, Preserve = true, Properties = { { RandomString(), RandomString() } } });
     }
 
     protected void Detects_InputSettings_Removed_NotPreserved_Arrange()
     {
         this.Create_2_Inputs_Arrange();
-        this._current.Inputs[0].Settings.Add(new InputDeviceSetting { Name = RandomString(), Preserve = false, Properties = { { "invert", "1" } } });
+        this._current.Inputs[0].Settings.Add(new InputDeviceSetting { Name = RandomString(), Parent = this._current.Inputs[0].Id, Preserve = false, Properties = { { "invert", "1" } } });
         this._updated.Inputs[0].Settings.Clear();
     }
 
@@ -154,7 +158,7 @@ public abstract class MappingImportMerger_TestBase
         var updatedChangingSetting = updatedChangingInput.Settings[1];
         updatedChangingSetting.Properties = new Dictionary<string, string> { { RandomString(), RandomString() } };
         // add input setting - asserted
-        var addedSetting = new InputDeviceSetting { Name = RandomString(), Preserve = true, Properties = { { RandomString(), RandomString() } } };
+        var addedSetting = new InputDeviceSetting { Name = RandomString(), Parent = updatedChangingInput.Id, Preserve = true, Properties = { { RandomString(), RandomString() } } };
         updatedChangingInput.Settings.Add(addedSetting);
         // remove input setting - asserted
         var removedSetting = currentChangingInput.Settings[0];
