@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using static SCCM.Core.SC.Extensions;
 
 namespace SCCM.Core.SC;
 
@@ -65,10 +66,46 @@ public class MappingExporter : IMappingExporter
 
     private void Validate(MappingData source)
     {
-        // TODO implement
+        var inputPrefixes = source.Inputs.Select(i => i.GetInputPrefix()).ToHashSet();
+        foreach (var type in source.Inputs.Select(i => i.Type).Distinct())
+        {
+            var preservedInputs = source.Inputs.Where(i => i.Type == type && i.Preserve).OrderBy(i => i.Instance).ToList();
+            
+            // check for valid instance IDs
+            var defaultInstance = preservedInputs.Where(i => i.Instance <= 0).FirstOrDefault();
+            if (defaultInstance != null)
+            {
+                throw new SccmException($"Input {defaultInstance.Id} has an invalid Instance value.");
+            }
+            
+            // check input instance IDs are contiguous
+            if (preservedInputs.Count > 1)
+            {
+                var first = preservedInputs.First().Instance;
+                for (var i = 0; i < preservedInputs.Count; i++)
+                {
+                    if (preservedInputs[i].Instance != first + i)
+                    {
+                        throw new SccmException($"Can't preserve non-contiguous inputs [{string.Join(", ", preservedInputs.Select(i => i.Instance))}].");
+                    }
+                }
+            }
+        }
 
-        // if inputs are preserved, they need to preserved in contiguous order (e.g. 1, 1-2, and not 2, 1-3)
-        // all preserved mappings need to reference a preserved input
+        foreach (var mapping in source.Mappings.Where(m => m.Preserve))
+        {
+            // all preserved mappings need to reference a preserved input
+            var s = mapping.Input.Split('_');
+            if (s.Length < 2)
+            {
+                throw new SccmException($"Invalid mapping binding [{mapping.Input}].");
+            }
+            var prefix = s[0] + "_";
+            if (!inputPrefixes.Contains(prefix))
+            {
+                throw new SccmException($"Couldn't find related input for binding [{mapping.Input}].");
+            }
+        }
     }
 
     private async Task Export(MappingData source, bool apply)
@@ -112,7 +149,7 @@ public class MappingExporter : IMappingExporter
                 // remap bindings
                 inputsToRemap[ActionMapsXmlHelper.GetInputPrefixForOptionsElement(targetInputByProduct)] = (exportedInput, targetInputByProduct, this._xml.GetAllActionRebindsForOptions(targetInputByProduct));
                 // delete bindings that are in the way of the exported input instance
-                inputPrefixesToRemove.Add(ActionMapsXmlHelper.GetInputPrefixForInputDevice(exportedInput));
+                inputPrefixesToRemove.Add(exportedInput.GetInputPrefix());
                 continue;
             }
             
@@ -142,7 +179,7 @@ public class MappingExporter : IMappingExporter
         {
             var oldPrefix = oldPrefixAndElements.Key;
             var (exportedInput, optionsElementToUpdate, rebindElementsToUpdate) = oldPrefixAndElements.Value;
-            var newPrefix = ActionMapsXmlHelper.GetInputPrefixForInputDevice(exportedInput);
+            var newPrefix = exportedInput.GetInputPrefix();
             this.StandardOutput($"Rebinding mappings from [{oldPrefix}] to [{newPrefix}]...");
             foreach (var rebind in rebindElementsToUpdate)
             {

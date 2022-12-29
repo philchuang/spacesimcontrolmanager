@@ -151,7 +151,7 @@ public class MappingExporter_Update_Tests
         mapping.Preserve = preserve;
         var actionRebindElement = this.GetActionRebindElement(this._originalXml, mapping);
         var originalInputValue = actionRebindElement.GetAttribute("input");
-        mapping.Input = mapping.Input == originalInputValue ? RandomString() : mapping.Input;
+        mapping.Input = mapping.Input == originalInputValue ? $"{originalInputValue.Split('_')[0]}_{RandomString()}" : mapping.Input;
         return (originalInputValue, mapping);
     }
     

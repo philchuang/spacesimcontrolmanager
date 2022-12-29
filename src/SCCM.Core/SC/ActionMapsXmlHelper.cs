@@ -67,6 +67,7 @@ public class ActionMapsXmlHelper
     public static string GetOptionsTypeAbbv(string type)
     {
         return type switch {
+            "gamepad"  => "gp", // TODO confirm
             "joystick" => "js",
             "keyboard" => "kb",
             _ => throw new ArgumentOutOfRangeException(type),
@@ -76,6 +77,7 @@ public class ActionMapsXmlHelper
     public static string GetOptionsTypeFromAbbv(string typeAbbv)
     {
         return typeAbbv switch {
+            "gp" => "gamepad", // TODO confirm
             "js" => "joystick",
             "kb" => "keyboard",
             _ => throw new ArgumentOutOfRangeException(typeAbbv),
@@ -90,13 +92,6 @@ public class ActionMapsXmlHelper
         var typeAbbv = GetOptionsTypeAbbv(type);
 
         return $"{typeAbbv}{instance}_";
-    }
-
-    public static string GetInputPrefixForInputDevice(InputDevice input)
-    {
-        var typeAbbv = GetOptionsTypeAbbv(input.Type);
-        var prefix = $"{typeAbbv}{input.Instance}_";
-        return prefix;
     }
 
     private static Regex InputPrefixParseRegex = new Regex(@"^(\w+)(\d+)_.*$");
