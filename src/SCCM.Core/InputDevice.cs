@@ -11,8 +11,8 @@ public class InputDevice
     public string GetMappingPrefix()
     {
         var typeAbbv = this.Type switch {
-            "keyboard" => "kb",
             "joystick" => "js",
+            "keyboard" => "kb",
             _ => throw new ArgumentOutOfRangeException(),
         };
         var prefix = $"{typeAbbv}{this.Instance}_";
