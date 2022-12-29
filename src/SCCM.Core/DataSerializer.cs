@@ -1,7 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System.Collections;
-using System.Linq;
-using static SCCM.Core.Extensions;
 
 namespace SCCM.Core;
 
@@ -38,7 +35,7 @@ public class DataSerializer
     {
         if (!System.IO.File.Exists(this.SavePath))
         {
-            this.StandardOutput($"Could not find the Star Citizen Control Mapper mappings file at [{this.SavePath}]!");
+            this.StandardOutput($"Could not find the SCCM mapping data file at [{this.SavePath}]!");
             return null;
         }
 

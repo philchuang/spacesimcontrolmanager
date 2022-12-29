@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using NUnit.Framework;
 using SCCM.Core;
+using SCCM.Core.SC;
 
 namespace SCCM.Tests;
 

@@ -1,4 +1,4 @@
-using SCCM.Core;
+using SCCM.Core.SC;
 
 namespace SCCM.Tests.Mocks;
 

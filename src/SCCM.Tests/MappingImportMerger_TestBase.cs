@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using SCCM.Core;
+using SCCM.Core.SC;
 using static SCCM.Tests.Extensions;
 
 namespace SCCM.Tests;

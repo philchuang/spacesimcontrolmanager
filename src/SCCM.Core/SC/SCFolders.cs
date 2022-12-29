@@ -1,4 +1,4 @@
-namespace SCCM.Core;
+namespace SCCM.Core.SC;
 
 public interface ISCFolders
 {
