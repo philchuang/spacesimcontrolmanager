@@ -1,12 +1,23 @@
 namespace SCCM.Core;
 
-public class MappingImportMerger
+public interface IMappingImportMerger
+{
+    event Action<string> StandardOutput;
+    event Action<string> WarningOutput;
+    event Action<string> DebugOutput;
+
+    MappingMergeResult Result { get; }
+
+    bool Preview(MappingData current, MappingData updated);
+    
+    MappingData Merge(MappingData current, MappingData updated);
+}
+
+public class MappingImportMerger : IMappingImportMerger
 {
     public event Action<string> StandardOutput = delegate {};
     public event Action<string> WarningOutput = delegate {};
     public event Action<string> DebugOutput = delegate {};
-
-    public int ChangesCount { get => this.Result.MergeActions.Count; }
 
     public MappingMergeResult Result { get; private set; } = new MappingMergeResult(new MappingData(), new MappingData(), new ComparisonResult<InputDevice>(), new ComparisonResult<Mapping> ());
 

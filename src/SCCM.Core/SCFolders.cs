@@ -1,17 +1,17 @@
 namespace SCCM.Core;
 
-public interface IFolders
+public interface ISCFolders
 {
     public string ActionMapsDir { get; }
 
     public string SccmDir { get; }
 }
 
-public class Folders : IFolders
+public class SCFolders : ISCFolders
 {
     private readonly IPlatform _platform;
 
-    public Folders(IPlatform platform)
+    public SCFolders(IPlatform platform)
     {
         this._platform = platform;
     }

@@ -9,12 +9,12 @@ public class MappingExporter_Restore_Tests
 {
     private readonly MappingExporter _updater;
     private readonly IPlatform _platform;
-    private readonly IFolders _folders;
+    private readonly ISCFolders _folders;
 
     public MappingExporter_Restore_Tests()
     {
         this._platform = new PlatformForTest(DateTime.UtcNow, programFilesDir: System.IO.Directory.GetCurrentDirectory());
-        this._folders = new FoldersForTest(actionmapsDir: System.IO.Directory.GetCurrentDirectory(), sccmDir: System.IO.Directory.GetCurrentDirectory());
+        this._folders = new SCFoldersForTest(actionmapsDir: System.IO.Directory.GetCurrentDirectory(), sccmDir: System.IO.Directory.GetCurrentDirectory());
         this._updater = new MappingExporter(this._platform, this._folders, System.IO.Path.Combine(this._folders.ActionMapsDir, "actionmaps.xml"));
     }
 
@@ -24,7 +24,7 @@ public class MappingExporter_Restore_Tests
         var filesToCleanup = new List<string>();
 
         // create dummy actionmaps
-        var actionmapsxmlpath = this._updater.ActionMapsXmlPath;
+        var actionmapsxmlpath = this._updater.GameConfigPath;
         await System.IO.File.WriteAllTextAsync(actionmapsxmlpath, $"{nameof(RestoreLatest_Overwrites_Actionmapsxml)}-{Guid.NewGuid().ToString()}");
         filesToCleanup.Add(actionmapsxmlpath);
 

@@ -29,8 +29,8 @@ class Program
             .ConfigureServices(services =>
             {
                 services.AddSingleton<IPlatform, Platform>();
-                services.AddSingleton<IFolders, Folders>();
-                services.AddTransient<ControlManager>();
+                services.AddSingleton<ISCFolders, SCFolders>();
+                services.AddTransient<IControlManager>(s => new ControlManager(s.GetService<IPlatform>(), s.GetService<ISCFolders>()));
             });
     }
 
@@ -106,7 +106,7 @@ class Program
         var cmd = new Command("editsc", "Opens the Star Citizen actionmaps.xml in the system default editor.");
         cmd.AddAlias("opensc");
         cmd.SetHandler(() => {
-            manager.OpenScXml();
+            manager.OpenGameConfig();
         });
         return cmd;
     }

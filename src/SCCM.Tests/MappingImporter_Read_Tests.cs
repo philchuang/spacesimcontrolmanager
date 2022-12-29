@@ -14,18 +14,17 @@ public class MappingImporter_Read_Tests
 
     public MappingImporter_Read_Tests()
     {
-        _platform = new PlatformForTest(DateTime.UtcNow);
-        _importer = new MappingImporter(_platform, Samples.GetActionMapsXmlPath());
-        // TODO figure out how to get this to show up
-        _importer.StandardOutput += s => TestContext.Out.WriteLine($"[STD  ] {s}");
-        _importer.WarningOutput  += s => TestContext.Out.WriteLine($"[WARN ] {s}");
-        _importer.DebugOutput    += s => TestContext.Out.WriteLine($"[DEBUG] {s}");
+        this._platform = new PlatformForTest(DateTime.UtcNow);
+        this._importer = new MappingImporter(this._platform, Samples.GetActionMapsXmlPath());
     }
 
     [OneTimeSetUp]
     public async Task Init()
     {
         this._data = await _importer.Read();
+        this._importer.StandardOutput += s => TestContext.Out.WriteLine($"[STD  ] {s}");
+        this._importer.WarningOutput  += s => TestContext.Out.WriteLine($"[WARN ] {s}");
+        this._importer.DebugOutput    += s => TestContext.Out.WriteLine($"[DEBUG] {s}");
     }
 
     [Test]

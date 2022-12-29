@@ -7,7 +7,16 @@ using static SCCM.Core.XmlExtensions;
 
 namespace SCCM.Core;
 
-public class MappingImporter
+public interface IMappingImporter
+{
+    event Action<string> StandardOutput;
+    event Action<string> WarningOutput;
+    event Action<string> DebugOutput;
+
+    Task<MappingData> Read();
+}
+
+public class MappingImporter : IMappingImporter
 {
     public event Action<string> StandardOutput = delegate {};
     public event Action<string> WarningOutput = delegate {};
