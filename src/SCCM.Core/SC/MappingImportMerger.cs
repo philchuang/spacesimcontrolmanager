@@ -16,7 +16,7 @@ public class MappingImportMerger : IMappingImportMerger
     {
         this.CalculateDiffs(current, updated);
 
-        if (!this.Result.HasDifferences) return false;
+        if (!this.Result.CanMerge) return false;
 
         return true;
     }
@@ -183,7 +183,7 @@ public class MappingImportMerger : IMappingImportMerger
         foreach (var setting in settingsDiffs.Added)
         {
             // setting added - add with preserve = true
-            this.StandardOutput($"INPUT SETTING added and will merge: [{input.Product}] [{setting.Name}] = {DictionaryToString(setting.Properties)}");
+            this.StandardOutput($"INPUT SETTING added and will merge: [{input.Product}] [{setting.Name}] => {DictionaryToString(setting.Properties)}");
             setting.Preserve = true;
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Add, setting));
         }
@@ -198,7 +198,7 @@ public class MappingImportMerger : IMappingImportMerger
             }
             else
             {
-                this.StandardOutput($"INPUT SETTING removed and will not merge: [{input.Product}] [{setting.Name}] preserved");
+                this.StandardOutput($"INPUT SETTING removed and will not merge: [{input.Product}] [{setting.Name}], preserving {DictionaryToString(setting.Properties)}");
             }
         }
 
@@ -207,12 +207,12 @@ public class MappingImportMerger : IMappingImportMerger
             // setting changed - update if preserve == false - else keep current
             if (!pair.Current.Preserve)
             {
-                this.StandardOutput($"INPUT SETTING changed and will merge: [{input.Product}] [{pair.Current.Name}] = {DictionaryToString(pair.Updated.Properties)}");
+                this.StandardOutput($"INPUT SETTING changed and will merge: [{input.Product}] [{pair.Current.Name}] {DictionaryToString(pair.Current.Properties)} => {DictionaryToString(pair.Updated.Properties)}");
                 this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Replace, pair.Updated));
             }
             else
             {
-                this.StandardOutput($"INPUT SETTING changed and will not merge: [{input.Product}] [{pair.Current.Name}] preserved");
+                this.StandardOutput($"INPUT SETTING changed and will not merge: [{input.Product}] [{pair.Current.Name}] => {DictionaryToString(pair.Updated.Properties)}, preserving {DictionaryToString(pair.Current.Properties)}");
             }
         }
     }
@@ -224,7 +224,7 @@ public class MappingImportMerger : IMappingImportMerger
         foreach (var mapping in this.Result.MappingDiffs.Added)
         {
             // mapping added - add with preserve = true
-            this.StandardOutput($"MAPPING added and will merge: [{mapping.ActionMap}-{mapping.Action}] = {mapping.Input}");
+            this.StandardOutput($"MAPPING added and will merge: [{mapping.ActionMap}-{mapping.Action}] => {mapping.Input}");
             mapping.Preserve = true;
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Add, mapping));
         }
@@ -239,7 +239,7 @@ public class MappingImportMerger : IMappingImportMerger
             }
             else
             {
-                this.StandardOutput($"MAPPING removed and will not merge: [{mapping.ActionMap}-{mapping.Action}] preserved");
+                this.StandardOutput($"MAPPING removed and will not merge: [{mapping.ActionMap}-{mapping.Action}], preserving {mapping.Input}");
             }
         }
 
@@ -248,12 +248,12 @@ public class MappingImportMerger : IMappingImportMerger
             // setting changed - update if preserve == false - else keep current
             if (!pair.Current.Preserve)
             {
-                this.StandardOutput($"MAPPING changed and will merge: [{pair.Current.ActionMap}-{pair.Current.Action}] = {pair.Updated.Input}");
+                this.StandardOutput($"MAPPING changed and will merge: [{pair.Current.ActionMap}-{pair.Current.Action}] {pair.Current.Input} => {pair.Updated.Input}");
                 this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Replace, pair.Updated));
             }
             else
             {
-                this.StandardOutput($"MAPPING changed and will not merge: [{pair.Current.ActionMap}-{pair.Current.Action}] preserved");
+                this.StandardOutput($"MAPPING changed and will not merge: [{pair.Current.ActionMap}-{pair.Current.Action}] => {pair.Updated.Input}, preserving {pair.Current.Input}");
             }
         }
     }

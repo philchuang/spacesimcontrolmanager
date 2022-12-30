@@ -119,9 +119,10 @@ public class MappingExporter : IMappingExporter
 
         if (!apply) return;
 
-        this.StandardOutput($"Saving new actionmaps.xml...");
+        this.StandardOutput("Saving updated actionmaps.xml...");
         await this._xml.Save(this.GameConfigPath);
-        this.StandardOutput($"Saved, run \"restore\" command to revert.");
+        this.StandardOutput("Saved, run \"restore\" command to revert.");
+        this.StandardOutput("MUST RESTART STAR CITIZEN FOR CHANGES TO TAKE AFFECT.");
     }
 
     private void RestoreInputs(IEnumerable<InputDevice> inputs)

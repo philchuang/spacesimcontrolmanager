@@ -35,9 +35,9 @@ class Program
             });
     }
 
-    private static ControlManager CreateManager(IHost host)
+    private static IControlManager CreateManager(IHost host)
     {
-        var manager = host.Services.GetRequiredService<ControlManager>();
+        var manager = host.Services.GetRequiredService<IControlManager>();
         manager.StandardOutput += Console.WriteLine;
         manager.WarningOutput += Console.WriteLine;
         manager.DebugOutput += s => { if (ShowDebugOutput) Console.WriteLine(s); };
@@ -45,7 +45,7 @@ class Program
         return manager;
     }
 
-    private static Command BuildRootCommand(ControlManager manager)
+    private static Command BuildRootCommand(IControlManager manager)
     {
         var debugOption = new Option<bool>(
             aliases: new [] { "--debug", "-d" },
@@ -63,7 +63,7 @@ class Program
         return root;
     }
 
-    private static Command BuildImportCommand(ControlManager manager, Option<bool> debugOption)
+    private static Command BuildImportCommand(IControlManager manager, Option<bool> debugOption)
     {
         var cmd = new Command("import", "Imports the Star Citizen actionmaps.xml and saves it locally in a mappings JSON file.");
         cmd.Add(debugOption);
@@ -92,7 +92,7 @@ class Program
         return cmd;
     }
 
-    private static Command BuildEditCommand(ControlManager manager)
+    private static Command BuildEditCommand(IControlManager manager)
     {
         var cmd = new Command("edit", "Opens the mappings JSON file in the system default editor. Edit the \"Preserve\" property to affect the export behavior.");
         cmd.AddAlias("open");
@@ -102,7 +102,7 @@ class Program
         return cmd;
     }
 
-    private static Command BuildEditSCCommand(ControlManager manager)
+    private static Command BuildEditSCCommand(IControlManager manager)
     {
         var cmd = new Command("editsc", "Opens the Star Citizen actionmaps.xml in the system default editor.");
         cmd.AddAlias("opensc");
@@ -112,7 +112,7 @@ class Program
         return cmd;
     }
 
-    private static Command BuildExportCommand(ControlManager manager, Option<bool> debugOption)
+    private static Command BuildExportCommand(IControlManager manager, Option<bool> debugOption)
     {
         var cmd = new Command("export", "Previews updates to the Star Citizen bindings based on the locally saved mappings file.");
         cmd.Add(debugOption);
@@ -133,7 +133,7 @@ class Program
         return cmd;
     }
 
-    private static Command BuildBackupCommand(ControlManager manager, Option<bool> debugOption)
+    private static Command BuildBackupCommand(IControlManager manager, Option<bool> debugOption)
     {
         var cmd = new Command("backup", "Makes a local copy of the Star Citizen actionmaps.xml which can be restored later.");
         cmd.Add(debugOption);
@@ -145,7 +145,7 @@ class Program
         return cmd;
     }
 
-    private static Command BuildRestoreCommand(ControlManager manager, Option<bool> debugOption)
+    private static Command BuildRestoreCommand(IControlManager manager, Option<bool> debugOption)
     {
         var cmd = new Command("restore", "Restores the latest local backup of the Star Citizen actionmaps.xml.");
         cmd.SetHandler((debug) => {
