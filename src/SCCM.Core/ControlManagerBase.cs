@@ -76,7 +76,11 @@ public abstract class ControlManagerBase : IControlManager
         if (currentData == null || mode == ImportMode.Overwrite)
         {
             if (currentData == null) WriteLineDebug($"currentData is null");
-            if (mode == ImportMode.Overwrite) WriteLineDebug($"mode is overwrite");
+            if (mode == ImportMode.Overwrite) 
+            {
+                WriteLineDebug($"mode is overwrite");
+                if (currentData != null) WriteLineWarning("Overwriting existing mappings data!");
+            }
             await this.SaveMappingData(updatedData);
             return;
         }
@@ -93,7 +97,7 @@ public abstract class ControlManagerBase : IControlManager
             }
             else
             {
-                this.WriteLineStandard("No changes detected.");
+                this.WriteLineStandard("No changes to make.");
             }
             return;
         }
@@ -113,7 +117,7 @@ public abstract class ControlManagerBase : IControlManager
 
         var exporter = this.CreateExporter();
         await exporter.Preview(data);
-        WriteLineStandard($"Execute \"export apply\" to apply these changes.");
+        WriteLineStandard($"CONFIGURATION NOT UPDATED: Execute \"export apply\" to apply these changes.");
     }
 
     public async Task ExportApply()
@@ -124,7 +128,7 @@ public abstract class ControlManagerBase : IControlManager
         var exporter = this.CreateExporter();
         exporter.Backup();
         await exporter.Update(data);
-        WriteLineStandard($"Mappings applied to [{exporter.GameConfigPath}].");
+        WriteLineStandard($"CONFIGURATION UPDATED: Changes applied to [{exporter.GameConfigPath}].");
     }
 
     public void Backup()
@@ -144,14 +148,28 @@ public abstract class ControlManagerBase : IControlManager
     public void Open()
     {
         // TODO write simple test
-        this.Platform.Open(this.MappingDataSavePath);
-        WriteLineStandard($"Opening [{this.MappingDataSavePath}] in the default editor, change the Preserve property to choose which settings are overwritten.");
+        try
+        {
+            this.Platform.Open(this.MappingDataSavePath);
+            WriteLineStandard($"Opening [{this.MappingDataSavePath}] in the default editor, change the Preserve property to choose which settings are overwritten.");
+        }
+        catch (FileNotFoundException)
+        {
+            this.StandardOutput($"Could not find mapping file at [{this.MappingDataSavePath}].");
+        }
     }
 
     public void OpenGameConfig()
     {
         // TODO write simple test
-        this.Platform.Open(this.GameConfigPath);
-        WriteLineStandard($"Opening [{this.GameConfigPath}] in the default editor.");
+        try
+        {
+            this.Platform.Open(this.GameConfigPath);
+            WriteLineStandard($"Opening [{this.GameConfigPath}] in the default editor.");
+        }
+        catch (FileNotFoundException)
+        {
+            this.StandardOutput($"Could not find mapping file at [{this.GameConfigPath}].");
+        }
     }
 }

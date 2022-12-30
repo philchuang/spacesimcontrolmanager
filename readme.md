@@ -30,7 +30,10 @@ Previews updates to the Star Citizen bindings based on the locally saved mapping
 
 ```cmd
 > SCCM.exe export
-TODO sample output
+Updating seat_general-v_toggle_mining_mode to js2_button56...
+Updating seat_general-v_toggle_quantum_mode to js2_button19...
+Updating seat_general-v_toggle_scan_mode to js2_button54...
+CONFIGURATION NOT UPDATED: Execute "export apply" to apply these changes.
 ```
 
 ### Export Apply
@@ -39,7 +42,13 @@ Updates the Star Citizen bindings based on the locally saved mappings file.
 
 ```cmd
 > SCCM.exe export apply
-TODO sample output
+Updating seat_general-v_toggle_mining_mode to js2_button56...
+Updating seat_general-v_toggle_quantum_mode to js2_button19...
+Updating seat_general-v_toggle_scan_mode to js2_button54...
+Saving updated actionmaps.xml...
+Saved, run "restore" command to revert.
+CONFIGURATION UPDATED: Changes applied to [C:\Program Files\Roberts Space Industries\StarCitizen\LIVE\USER\Client\0\Profiles\default\actionmaps.xml].
+MUST RESTART STAR CITIZEN FOR CHANGES TO TAKE AFFECT.
 ```
 
 ## Advanced Usage
@@ -50,21 +59,30 @@ Instead of importing, this command displays the differences between the current 
 
 ```cmd
 > SCCM.exe import
-TODO sample output
+MAPPING changed and will merge: [seat_general-v_toggle_mining_mode] js2_button55 => js2_button54
+MAPPING changed and will not merge: [seat_general-v_toggle_quantum_mode] => js2_button56, preserving js2_button19
+MAPPING changed and will not merge: [seat_general-v_toggle_scan_mode] => js2_button55, preserving js2_button54
+1 changes NOT saved! Run in merge or overwrite modes to save changes.
 ```
 
 #### Merge mappings
 
 ```cmd
 > SCCM.exe import merge
-TODO sample output
+MAPPING changed and will merge: [seat_general-v_toggle_mining_mode] js2_button55 => js2_button54
+MAPPING changed and will not merge: [seat_general-v_toggle_quantum_mode] => js2_button56, preserving js2_button19
+MAPPING changed and will not merge: [seat_general-v_toggle_scan_mode] => js2_button55, preserving js2_button54
+Mappings backed up to [C:\Users\chubl\Documents\SCCM\scmappings.json].
 ```
 
 #### Overwrite mappings
 
 ```cmd
 > SCCM.exe import overwrite
-TODO sample output
+Read in 4 input devices.
+Read in 114 mappings.
+Overwriting existing mappings data!
+Mappings backed up to [My Documents\SCCM\scmappings.json].
 ```
 
 ### Back up the Star Citizen actionmaps.xml

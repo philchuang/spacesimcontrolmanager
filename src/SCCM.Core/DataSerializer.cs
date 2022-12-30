@@ -39,6 +39,13 @@ public class DataSerializer
             return null;
         }
 
-        return JsonConvert.DeserializeObject<MappingData>(await File.ReadAllTextAsync(this.SavePath));
+        try
+        {
+            return JsonConvert.DeserializeObject<MappingData>(await File.ReadAllTextAsync(this.SavePath));
+        }
+        catch (JsonReaderException ex)
+        {
+            throw new SccmException($"Could not read SCCM mapping data file at [{this.SavePath}]!\nError: {ex.Message}", ex);
+        }
     }
 }
