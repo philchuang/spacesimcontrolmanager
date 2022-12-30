@@ -116,36 +116,36 @@ public class MappingExporter_Update_Tests
                 } },
             },
             Mappings = {
-                new Mapping { ActionMap = "seat_general", Action = "v_toggle_mining_mode", Input = "js2_button56", Preserve = true },
-                new Mapping { ActionMap = "seat_general", Action = "v_toggle_quantum_mode", Input = "js2_button19", Preserve = true },
-                new Mapping { ActionMap = "seat_general", Action = "v_toggle_scan_mode", Input = "js2_button54", Preserve = true },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_close_all_doors", Input = "js2_button49", Preserve = true },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_flightready", Input = "js2_button52", Preserve = true },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_lock_all_doors", Input = "js2_button46", Preserve = true },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_open_all_doors", Input = "js2_button51", Preserve = true },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_toggle_all_doorlocks", Input = "js2_button47", Preserve = true },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_toggle_all_doors", Input = "js2_button50", Preserve = true },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_unlock_all_doors", Input = "js2_button48", Preserve = true },
-                new Mapping { ActionMap = "spaceship_view", Action = "v_view_cycle_fwd", Input = "js2_button1", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_afterburner", Input = "js2_button3", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_atc_request", Input = "js2_button8", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_autoland", Input = "js2_button10", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_ifcs_speed_limiter_reset_scm", Input = "js2_hat1_right", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_ifcs_toggle_cruise_control", Input = "js2_hat1_left", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_ifcs_toggle_vector_decoupling", Input = "js2_button4", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_roll", Input = "js1_x", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_space_brake", Input = "js2_button5", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_speed_range_down", Input = "js2_hat1_down", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_speed_range_up", Input = "js2_hat1_up", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_strafe_lateral", Input = "js2_x", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_strafe_longitudinal", Input = "js2_y", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_strafe_vertical", Input = "js2_rotz", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_toggle_landing_system", Input = "js2_button7", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_toggle_relative_mouse_mode", Input = "kb1_slash", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_toggle_vtol", Input = "js2_button9", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_transform_deploy", Input = "js2_button61", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_transform_retract", Input = "js2_button58", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_yaw", Input = "js1_rotz", Preserve = true },
+                new Mapping { ActionMap = "seat_general", Action = "v_toggle_mining_mode", Input = "js2_button56", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "seat_general", Action = "v_toggle_quantum_mode", Input = "js2_button19", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "seat_general", Action = "v_toggle_scan_mode", Input = "js2_button54", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_general", Action = "v_close_all_doors", Input = "js2_button49", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_general", Action = "v_flightready", Input = "js2_button52", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_general", Action = "v_lock_all_doors", Input = "js2_button46", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_general", Action = "v_open_all_doors", Input = "js2_button51", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_general", Action = "v_toggle_all_doorlocks", Input = "js2_button47", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_general", Action = "v_toggle_all_doors", Input = "js2_button50", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_general", Action = "v_unlock_all_doors", Input = "js2_button48", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_view", Action = "v_view_cycle_fwd", Input = "js2_button1", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_afterburner", Input = "js2_button3", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_atc_request", Input = "js2_button8", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_autoland", Input = "js2_button10", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_ifcs_speed_limiter_reset_scm", Input = "js2_hat1_right", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_ifcs_toggle_cruise_control", Input = "js2_hat1_left", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_ifcs_toggle_vector_decoupling", Input = "js2_button4", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_roll", Input = "js1_x", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_space_brake", Input = "js2_button5", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_speed_range_down", Input = "js2_hat1_down", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_speed_range_up", Input = "js2_hat1_up", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_strafe_lateral", Input = "js2_x", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_strafe_longitudinal", Input = "js2_y", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_strafe_vertical", Input = "js2_rotz", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_toggle_landing_system", Input = "js2_button7", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_toggle_relative_mouse_mode", Input = "kb1_slash", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_toggle_vtol", Input = "js2_button9", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_transform_deploy", Input = "js2_button61", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_transform_retract", Input = "js2_button58", InputType = "joystick", Preserve = true },
+                new Mapping { ActionMap = "spaceship_movement", Action = "v_yaw", Input = "js1_rotz", InputType = "joystick", Preserve = true },
             }
         };
     }
@@ -206,7 +206,7 @@ public class MappingExporter_Update_Tests
         // Arrange
         this.Arrange_Default_MappingData();
         this._source.Mappings.ToList().ForEach(m => m.Preserve = false);
-        var mapping = new Mapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}", Preserve = true };
+        var mapping = new Mapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}", InputType = "joystick", Preserve = true };
         this._source.Mappings.Add(mapping);
 
         // Act
@@ -230,7 +230,7 @@ public class MappingExporter_Update_Tests
         // Arrange
         this.Arrange_Default_MappingData();
         this._source.Mappings.ToList().ForEach(m => m.Preserve = false);
-        var mapping = new Mapping { ActionMap = this._source.Mappings.First().ActionMap, Action = RandomString(), Input = $"js2_{RandomString()}", Preserve = true };
+        var mapping = new Mapping { ActionMap = this._source.Mappings.First().ActionMap, Action = RandomString(), Input = $"js2_{RandomString()}", InputType = "joystick", Preserve = true };
         this._source.Mappings.Add(mapping);
 
         // Act
@@ -488,7 +488,7 @@ public class MappingExporter_Update_Tests
         actionProfilesElement.Add(tempActionMapElement);
         var targetJoystick1Mappings = 
             Enumerable.Range(0, 2)
-            .Select(_ => new Mapping { ActionMap = tempActionMapElement.GetAttribute("name"), Action = RandomString(), Input = $"js1_{RandomString()}" })
+            .Select(_ => new Mapping { ActionMap = tempActionMapElement.GetAttribute("name"), Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick" })
             .ToList();
         targetJoystick1Mappings
             .Select(m => new XElement("action", new XAttribute("name", m.Action), new XElement("rebind", new XAttribute("input", m.Input))))

@@ -133,14 +133,23 @@ public class MappingImporter : IMappingImporter
 
     private void ReadAction(XElement action, string actionmapName)
     {
-        var preserve = true;
         var actionName = action.GetAttribute("name");
         if (string.IsNullOrWhiteSpace(actionName))
         {
             this.WarningOutput($"Found action node without a name: {action}");
             return;
         }
-        var rebind = action.GetChildren("rebind").FirstOrDefault();
+
+        foreach (var rebind in action.GetChildren("rebind"))
+        {
+            ReadRebinds(rebind, actionmapName, actionName);
+        }
+    }
+
+    private void ReadRebinds(XElement rebind, string actionmapName, string actionName)
+    {
+        var preserve = true;
+
         if (rebind == null)
         {
             this.WarningOutput($"Found action node without rebind childnodes: {actionName}");
@@ -159,6 +168,7 @@ public class MappingImporter : IMappingImporter
         }
         var multitapStr = rebind.GetAttribute("multiTap");
         if (!int.TryParse(multitapStr, out var multitap)) multitap = -1;
-        this._data.Mappings.Add(new Mapping { ActionMap = actionmapName, Action = actionName, Input = input, MultiTap = multitap != -1 ? multitap : null, Preserve = preserve });
+        var (inputType, instance) = ActionMapsXmlHelper.GetOptionsTypeAndInstanceForPrefix(input);
+        this._data.Mappings.Add(new Mapping { ActionMap = actionmapName, Action = actionName, Input = input, InputType = inputType, MultiTap = multitap != -1 ? multitap : null, Preserve = preserve });
     }
 }

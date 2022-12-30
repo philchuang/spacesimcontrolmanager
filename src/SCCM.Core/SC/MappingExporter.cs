@@ -273,7 +273,8 @@ public class MappingExporter : IMappingExporter
                 actionmapElement.Add(actionElement);
             }
 
-            var rebindElement = actionElement.GetChildren("rebind").SingleOrDefault();
+            // TODO write test where this correctly selects from multiple rebinds based on the input type
+            var rebindElement = actionElement.GetChildren("rebind").SingleOrDefault(r => (r.GetAttribute("input") ?? string.Empty).StartsWith(ActionMapsXmlHelper.GetOptionsTypeAbbv(mapping.InputType)));
             if (rebindElement == null)
             {
                 this.StandardOutput($"Creating <rebind input=\"{mapping.Input}\" />...");

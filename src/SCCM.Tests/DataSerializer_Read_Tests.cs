@@ -48,10 +48,10 @@ public class DataSerializer_Read_Tests
                 } },
             },
             Mappings = new Mapping[] {
-                new Mapping { ActionMap = "seat_general", Action = "v_toggle_mining_mode", Input = "js2_button56", MultiTap = null, Preserve = true },
-                new Mapping { ActionMap = "seat_general", Action = "v_toggle_quantum_mode", Input = "js2_button19", MultiTap = null, Preserve = true },
-                new Mapping { ActionMap = "spaceship_view", Action = "v_view_pitch", Input = "js1_ ", MultiTap = null, Preserve = false },
-                new Mapping { ActionMap = "spaceship_targeting", Action = "v_target_unlock_selected", Input = "js1_button16", MultiTap = 2, Preserve = true },
+                new Mapping { ActionMap = "seat_general", Action = "v_toggle_mining_mode", Input = "js2_button56", InputType = "joystick", MultiTap = null, Preserve = true },
+                new Mapping { ActionMap = "seat_general", Action = "v_toggle_quantum_mode", Input = "js2_button19", InputType = "joystick", MultiTap = null, Preserve = true },
+                new Mapping { ActionMap = "spaceship_view", Action = "v_view_pitch", Input = "js1_ ", InputType = "joystick", MultiTap = null, Preserve = false },
+                new Mapping { ActionMap = "spaceship_targeting", Action = "v_target_unlock_selected", Input = "js1_button16", InputType = "joystick", MultiTap = 2, Preserve = true },
             },
         };
         var actual = await this._serializer.Read();
