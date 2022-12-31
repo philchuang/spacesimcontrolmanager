@@ -37,34 +37,19 @@ public abstract class ControlManagerBase : IControlManager
     protected abstract string GameConfigPath { get; }
     protected abstract string MappingDataSavePath { get; }
     protected IPlatform Platform { get; init; }
+    private readonly Lazy<IMappingDataRepository> _lazyMappingDataRepository;
+    protected IMappingDataRepository MappingDataRepository => this._lazyMappingDataRepository.Value;
 
     protected ControlManagerBase(IPlatform platform)
     {
         this.Platform = platform;
+        this._lazyMappingDataRepository = new Lazy<IMappingDataRepository>(() => this.CreateMappingDataRepository());
     }
 
+    protected abstract IMappingDataRepository CreateMappingDataRepository();
     protected abstract IMappingImporter CreateImporter();
     protected abstract IMappingImportMerger CreateMerger();
     protected abstract IMappingExporter CreateExporter();
-
-    protected async Task<MappingData?> LoadMappingData()
-    {
-        var serializer = new DataSerializer(this.MappingDataSavePath);
-        return await serializer.Read();
-    }
-
-    protected async Task SaveMappingData(MappingData data)
-    {
-        if (data == null)
-        {
-            throw new ArgumentNullException(nameof(data));
-        }
-
-        System.IO.Directory.CreateDirectory(this.AppSaveLocation);
-        var serializer = new DataSerializer(this.MappingDataSavePath);
-        await serializer.Write(data);
-        WriteLineStandard($"Mappings backed up to [{this.MappingDataSavePath}].");
-    }
 
     public async Task Import(ImportMode mode)
     {
@@ -72,7 +57,7 @@ public abstract class ControlManagerBase : IControlManager
 
         var updatedData = await importer.Read();
         
-        var currentData = await this.LoadMappingData();
+        var currentData = await this.MappingDataRepository.Load();
         if (currentData == null || mode == ImportMode.Overwrite)
         {
             if (currentData == null) WriteLineDebug($"currentData is null");
@@ -81,7 +66,7 @@ public abstract class ControlManagerBase : IControlManager
                 WriteLineDebug($"mode is overwrite");
                 if (currentData != null) WriteLineWarning("Overwriting existing mappings data!");
             }
-            await this.SaveMappingData(updatedData);
+            await this.MappingDataRepository.Save(updatedData);
             return;
         }
         this.WriteLineStandard("");
@@ -104,25 +89,27 @@ public abstract class ControlManagerBase : IControlManager
 
         if (mode == ImportMode.Merge)
         {
+            this.MappingDataRepository.Backup();
             WriteLineDebug($"Merging...");
             var mergedData = merger.Merge(currentData, updatedData);
-            await this.SaveMappingData(mergedData);
+            await this.MappingDataRepository.Save(mergedData);
         }
     }
 
     public async Task ExportPreview()
     {
-        var data = await this.LoadMappingData();
+        var data = await this.MappingDataRepository.Load();
         if (data == null) throw new Exception("Could not load saved mappings!");
 
         var exporter = this.CreateExporter();
+        WriteLineStandard($"PREVIEWING EXPORT:");
         await exporter.Preview(data);
         WriteLineStandard($"CONFIGURATION NOT UPDATED: Execute \"export apply\" to apply these changes.");
     }
 
     public async Task ExportApply()
     {
-        var data = await this.LoadMappingData();
+        var data = await this.MappingDataRepository.Load();
         if (data == null) throw new Exception("Could not load saved mappings!");
 
         var exporter = this.CreateExporter();
