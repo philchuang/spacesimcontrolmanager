@@ -216,7 +216,7 @@ public class MappingExporter : IMappingExporter
                         throw new SccmException($"Could not find <options> element for type [{input.Type}] instance [{input.Instance}] Product [{input.Product}].");
                     }
 
-                    this.StandardOutput($"Creating <{setting.Name}>...");
+                    this.DebugOutput($"Creating <{setting.Name}>...");
                     // create setting element
                     settingElement = new XElement(setting.Name);
                     inputElement.Add(settingElement);
@@ -259,14 +259,14 @@ public class MappingExporter : IMappingExporter
                 var actionmapElement = this._xml.GetActionmapForMapping(mapping);
                 if (actionmapElement == null)
                 {
-                    this.StandardOutput($"Creating <actionmap name=\"{mapping.ActionMap}\">...");
+                    this.DebugOutput($"Creating <actionmap name=\"{mapping.ActionMap}\">...");
                     // create <actionmap>
                     actionmapElement = new XElement("actionmap");
                     actionmapElement.SetAttributeValue("name", mapping.ActionMap);
                     this._xml.AddActionmapElement(actionmapElement);
                 }
 
-                this.StandardOutput($"Creating <action name=\"{mapping.Action}\">...");
+                this.DebugOutput($"Creating <action name=\"{mapping.Action}\">...");
                 // create <action>
                 actionElement = new XElement("action");
                 actionElement.SetAttributeValue("name", mapping.Action);
@@ -277,7 +277,8 @@ public class MappingExporter : IMappingExporter
             var rebindElement = actionElement.GetChildren("rebind").SingleOrDefault(r => (r.GetAttribute("input") ?? string.Empty).StartsWith(ActionMapsXmlHelper.GetOptionsTypeAbbv(mapping.InputType)));
             if (rebindElement == null)
             {
-                this.StandardOutput($"Creating <rebind input=\"{mapping.Input}\" />...");
+                this.DebugOutput($"Creating <rebind input=\"{mapping.Input}\" />...");
+                this.StandardOutput($"Adding {mapping.ActionMap}-{mapping.Action} for {mapping.Input}...");
                 rebindElement = new XElement("rebind");
                 rebindElement.SetAttributeValue("input", mapping.Input);
                 actionElement.Add(rebindElement);
