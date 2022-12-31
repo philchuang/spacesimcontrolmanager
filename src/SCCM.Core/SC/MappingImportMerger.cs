@@ -100,7 +100,7 @@ public class MappingImportMerger : IMappingImportMerger
                         (cs, us) => ComparisonHelper.DictionariesAreEqual(cs.Properties, us.Properties))),
             ComparisonHelper.Compare(
                 current.Mappings, updated.Mappings,
-                m => $"{m.ActionMap}-{m.Action}",
+                m => $"{m.ActionMap}-{m.Action}-{m.InputType}",
                 (c, u) => c.Input == u.Input && c.MultiTap == u.MultiTap)
         );
         this.AnalyzeResult();

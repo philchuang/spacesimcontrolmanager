@@ -474,52 +474,61 @@ public class MappingExporter_Update_Tests
     {
         // Arrange
         this.Arrange_Default_MappingData();
-        // data-1: only joystick inputs are marked as preserve
         this._source.Inputs.ToList().ForEach(i => i.Preserve = false);
-        var exportedJoystickInputs = this._source.Inputs.Where(i => string.Equals("joystick", i.Type, StringComparison.OrdinalIgnoreCase)).ToList();
-        exportedJoystickInputs.ForEach(i => i.Preserve = true);
+        // data-1: mark joystick inputs as preserve
+        var preservedJoystickInputs = this._source.Inputs.Where(i => string.Equals("joystick", i.Type, StringComparison.OrdinalIgnoreCase)).ToList();
+        preservedJoystickInputs.ForEach(i => i.Preserve = true);
         // data-2: only some joystick mappings are preserved
         this._source.Mappings.ToList().ForEach(m => m.Preserve = false);
         var preservedMappings = this._source.Mappings.Where(m => m.Input.StartsWith("js1_")).Take(2).Concat(this._source.Mappings.Where(m => m.Input.StartsWith("js2_")).Take(2)).ToList();
         preservedMappings.ForEach(m => m.Preserve = true);
+        // data-3: mark gamepad input as preserve, add gamepad mapping
+        var preservedGamepadInput = this._source.Inputs.Single(i => string.Equals("gamepad", i.Type));
+        preservedGamepadInput.Preserve = true;
+        var preservedGamepadMapping = new Mapping { ActionMap = "spaceship_movement", Action = "v_ifcs_toggle_cruise_control", Input = "gp1_dpad_up", InputType = "gamepad", Preserve = true };
+        this._source.Mappings.Add(preservedGamepadMapping);
+        preservedMappings.Add(preservedGamepadMapping);
         // xml-1: change joystick 1->2, 2->3
-        var xmlsb = new StringBuilder(this._originalXml.ToString(SaveOptions.DisableFormatting));
-        xmlsb.Replace("<options type=\"joystick\" instance=\"3\" />", "");
-        xmlsb.Replace("<options type=\"joystick\" instance=\"2\"", "<options type=\"joystick\" instance=\"3\"");
-        xmlsb.Replace("<options type=\"joystick\" instance=\"1\"", "<options type=\"joystick\" instance=\"2\"");
+        var originalXmlStr = new StringBuilder(this._originalXml.ToString(SaveOptions.DisableFormatting));
+        originalXmlStr.Replace("<options type=\"joystick\" instance=\"3\" />", "");
+        originalXmlStr.Replace("<options type=\"joystick\" instance=\"2\"", "<options type=\"joystick\" instance=\"3\"");
+        originalXmlStr.Replace("<options type=\"joystick\" instance=\"1\"", "<options type=\"joystick\" instance=\"2\"");
         // xml-2: change mappings js1->js2, js2->js3
-        xmlsb.Replace("<rebind input=\"js2_", "<rebind input=\"js3_");
-        xmlsb.Replace("<rebind input=\"js1_", "<rebind input=\"js2_");
+        originalXmlStr.Replace("<rebind input=\"js2_", "<rebind input=\"js3_");
+        originalXmlStr.Replace("<rebind input=\"js1_", "<rebind input=\"js2_");
         // xml-3: preserved mappings are modified
         foreach (var m in preservedMappings)
         {
             var bindInfo = m.GetInputTypeAndInstance();
             var newPrefix = $"{bindInfo.Value.Type}{bindInfo.Value.Instance+1}";
-            xmlsb.Replace($"<rebind input=\"{m.Input}", $"<rebind input=\"{newPrefix}_{RandomString()}");
+            originalXmlStr.Replace($"<rebind input=\"{m.Input}", $"<rebind input=\"{newPrefix}_{RandomString()}");
         }
-        this._originalXml = XDocument.Parse(xmlsb.ToString());
-        var targetJoystick2Mappings = this._originalXml.XPathSelectElements("//*/rebind[starts-with(@input,'js2_')]").ToList();
-        var targetJoystick3Mappings = this._originalXml.XPathSelectElements("//*/rebind[starts-with(@input,'js3_')]").ToList();
+        this._originalXml = XDocument.Parse(originalXmlStr.ToString());
+        var originalJoystick2Mappings = this._originalXml.XPathSelectElements("//*/rebind[starts-with(@input,'js2_')]").ToList();
+        var originalJoystick3Mappings = this._originalXml.XPathSelectElements("//*/rebind[starts-with(@input,'js3_')]").ToList();
         // xml-4: add new joystick 1
-        var targetJoystick2Element = GetInputElement(this._originalXml, exportedJoystickInputs[0].Type, exportedJoystickInputs[0].Instance + 1, exportedJoystickInputs[0].Product);
-        var targetJoystick1Element =
+        var originalJoystick2Element = GetInputElement(this._originalXml, preservedJoystickInputs[0].Type, preservedJoystickInputs[0].Instance + 1, preservedJoystickInputs[0].Product);
+        var originalJoystick1Element =
             new XElement("options", 
             new XAttribute("type", "joystick"),
             new XAttribute("instance", "1"),
             new XAttribute("Product", RandomString()));
-        targetJoystick2Element.AddBeforeSelf(targetJoystick1Element);
+        originalJoystick2Element.AddBeforeSelf(originalJoystick1Element);
         // xml-5: add made-up mappings for new js1
-        var actionProfilesElement = this._originalXml.XPathSelectElement($"/ActionMaps/ActionProfiles[@profileName='default']");
-        var tempActionMapElement = new XElement("actionmap", new XAttribute("name", RandomString()));
-        actionProfilesElement.Add(tempActionMapElement);
-        var targetJoystick1Mappings = 
+        var originalActionProfilesElement = this._originalXml.XPathSelectElement($"/ActionMaps/ActionProfiles[@profileName='default']");
+        var originalNewActionMapElement = new XElement("actionmap", new XAttribute("name", RandomString()));
+        originalActionProfilesElement.Add(originalNewActionMapElement);
+        var originalJoystick1Mappings = 
             Enumerable.Range(0, 2)
-            .Select(_ => new Mapping { ActionMap = tempActionMapElement.GetAttribute("name"), Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick" })
+            .Select(_ => new Mapping { ActionMap = originalNewActionMapElement.GetAttribute("name"), Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick" })
             .ToList();
-        targetJoystick1Mappings
+        originalJoystick1Mappings
             .Select(m => new XElement("action", new XAttribute("name", m.Action), new XElement("rebind", new XAttribute("input", m.Input))))
             .ToList()
-            .ForEach(m => tempActionMapElement.Add(m));
+            .ForEach(m => originalNewActionMapElement.Add(m));
+        // xml-6: remove gamepad input
+        var originalGamepadElement = originalActionProfilesElement.XPathSelectElement("options[@type='gamepad']");
+        originalGamepadElement.Remove();
 
         // Act
         await this.Act();
@@ -527,22 +536,22 @@ public class MappingExporter_Update_Tests
         // Assert
         var updatedXmlStr = this._updatedXml.ToString(SaveOptions.DisableFormatting);
         // assert-1: joystick inputs 1 and 2 are restored (2->1, 3->2)
-        foreach (var joystick in exportedJoystickInputs)
+        foreach (var joystick in preservedJoystickInputs)
         {
             var updatedElement = this.GetInputElement(this._updatedXml, joystick.Type, joystick.Instance, joystick.Product);
             Assert.NotNull(updatedElement, nameof(updatedElement));
             // TODO assert that original input settings have carried over and preserved settings restored
         }
         // assert-2: made-up mappings for js1 are removed
-        foreach (var m in targetJoystick1Mappings)
+        foreach (var m in originalJoystick1Mappings)
         {
             Assert.IsFalse(updatedXmlStr.Contains(m.Input));
         }
         // assert-3: joystick input 1 is removed
-        Assert.IsFalse(updatedXmlStr.Contains(targetJoystick1Element.GetAttribute("Product")));
+        Assert.IsFalse(updatedXmlStr.Contains(originalJoystick1Element.GetAttribute("Product")));
         // assert-4: all mappings for js2 are rewritten for exported js1, ditto js3 -> js2
-        targetJoystick2Mappings.Select(e => new { ActionMap = e.Parent.Parent.GetAttribute("name"), Action = e.Parent.GetAttribute("name"), RestoredBinding = e.GetAttribute("input").Replace("js2_", "js1_") })
-            .Concat(targetJoystick3Mappings.Select(e => new { ActionMap = e.Parent.Parent.GetAttribute("name"), Action = e.Parent.GetAttribute("name"), RestoredBinding = e.GetAttribute("input").Replace("js3_", "js2_") }))
+        originalJoystick2Mappings.Select(e => new { ActionMap = e.Parent.Parent.GetAttribute("name"), Action = e.Parent.GetAttribute("name"), RestoredBinding = e.GetAttribute("input").Replace("js2_", "js1_") })
+            .Concat(originalJoystick3Mappings.Select(e => new { ActionMap = e.Parent.Parent.GetAttribute("name"), Action = e.Parent.GetAttribute("name"), RestoredBinding = e.GetAttribute("input").Replace("js3_", "js2_") }))
             .ToList()
             .ForEach(mapping => {
                 if (preservedMappings.Any(m => m.ActionMap == mapping.ActionMap && m.Action == mapping.Action)) return; // skip preserved mappings, will test later
@@ -553,5 +562,11 @@ public class MappingExporter_Update_Tests
             .ForEach(m => {
                 Assert.NotNull(this._updatedXml.XPathSelectElement($"//*/actionmap[@name='{m.ActionMap}']/action[@name='{m.Action}']/rebind[@input='{m.Input}']"));
             });
+        // assert-6: gamepad input is restored
+        var updatedGamepadInput = this.GetInputElement(this._updatedXml, preservedGamepadInput.Type, preservedGamepadInput.Instance, preservedGamepadInput.Product);
+        Assert.NotNull(updatedGamepadInput, nameof(updatedGamepadInput));
+        var updatedGamepadInputSetting = updatedGamepadInput.GetChildren("flight_view").SingleOrDefault();
+        Assert.NotNull(updatedGamepadInputSetting, nameof(updatedGamepadInputSetting));
+        Assert.AreEqual("1", updatedGamepadInputSetting.GetAttribute("exponent"));
     }
 }
