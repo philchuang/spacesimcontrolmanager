@@ -22,16 +22,19 @@ class Program
 
     static IHostBuilder CreateDefaultBuilder()
     {
+        IConfigurationRoot? config = null;
         return Host.CreateDefaultBuilder()
             .ConfigureAppConfiguration(app =>
             {
                 app.AddJsonFile("appsettings.json");
+                config = app.Build();
             })
             .ConfigureServices(services =>
             {
+                services.AddSingleton<IConfiguration>(s => config!);
                 services.AddSingleton<IPlatform, Platform>();
                 services.AddSingleton<ISCFolders, SCFolders>();
-                services.AddTransient<IControlManager>(s => new ControlManager(s.GetService<IPlatform>(), s.GetService<ISCFolders>()));
+                services.AddTransient<IControlManager>(s => new ControlManager(s.GetService<IPlatform>()!, s.GetService<ISCFolders>()!));
             });
     }
 
@@ -41,7 +44,6 @@ class Program
         manager.StandardOutput += Console.WriteLine;
         manager.WarningOutput += Console.WriteLine;
         manager.DebugOutput += s => { if (ShowDebugOutput) Console.WriteLine(s); };
-        // TODO pass in config from host
         return manager;
     }
 
