@@ -7,6 +7,7 @@ public class ControlManager : ControlManagerBase
     protected override string GameConfigPath => System.IO.Path.Combine(this.GameConfigLocation, Constants.SC_ACTIONMAPS_XML_NAME);
     protected override string MappingDataSavePath => System.IO.Path.Combine(this.AppSaveLocation, Constants.SSCM_SCMAPPINGS_JSON_NAME);
 
+    public override string CommandAlias => "sc";
     public override string GameType => "Star Citizen";
 
     private readonly ISCFolders _folders;

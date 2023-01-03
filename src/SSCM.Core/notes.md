@@ -23,4 +23,4 @@
 
 ## TODOs
 
-### make SC a subcommand from the root for the CLI
+### add support for Elite Dangerous
