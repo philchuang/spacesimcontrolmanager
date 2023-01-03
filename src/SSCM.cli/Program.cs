@@ -2,10 +2,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.CommandLine;
-using SCCM.Core;
-using SCCM.Core.SC;
+using SSCM.Core;
+using SSCM.Core.SC;
 
-namespace SCCM.cli;
+namespace SSCM.cli;
 
 class Program
 {
