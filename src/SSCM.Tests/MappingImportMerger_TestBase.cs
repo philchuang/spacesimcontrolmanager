@@ -1,6 +1,6 @@
 using NUnit.Framework;
 using SSCM.Core;
-using SSCM.Core.SC;
+using SSCM.Core.StarCitizen;
 using static SSCM.Tests.Extensions;
 
 namespace SSCM.Tests;

@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using static SSCM.Core.SC.Extensions;
+using static SSCM.Core.StarCitizen.Extensions;
 
-namespace SSCM.Core.SC;
+namespace SSCM.Core.StarCitizen;
 
 public class MappingExporter : IMappingExporter
 {

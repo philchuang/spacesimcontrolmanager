@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using NUnit.Framework;
 using SSCM.Core;
-using SSCM.Core.SC;
+using SSCM.Core.StarCitizen;
 
 namespace SSCM.Tests;
 

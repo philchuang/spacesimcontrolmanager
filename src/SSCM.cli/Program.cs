@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.CommandLine;
 using SSCM.Core;
-using SSCM.Core.SC;
+using SSCM.Core.StarCitizen;
 
 namespace SSCM.cli;
 
