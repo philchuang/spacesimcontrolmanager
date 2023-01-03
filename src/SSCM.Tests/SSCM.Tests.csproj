@@ -12,6 +12,6 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SCCM.Core\SCCM.Core.csproj"/>
+    <ProjectReference Include="..\SSCM.Core\SSCM.Core.csproj"/>
   </ItemGroup>
 </Project>

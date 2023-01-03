@@ -1,9 +1,9 @@
 using NUnit.Framework;
-using SCCM.Core;
-using SCCM.Core.SC;
-using static SCCM.Tests.Extensions;
+using SSCM.Core;
+using SSCM.Core.SC;
+using static SSCM.Tests.Extensions;
 
-namespace SCCM.Tests;
+namespace SSCM.Tests;
 
 public abstract class MappingImportMerger_TestBase
 {

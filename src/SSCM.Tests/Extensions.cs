@@ -1,7 +1,7 @@
 using System.Text;
 using Newtonsoft.Json;
 
-namespace SCCM.Tests;
+namespace SSCM.Tests;
 
 public static class Extensions
 {

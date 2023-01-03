@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace SCCM.Core;
+namespace SSCM.Core;
 
 public interface IPlatform
 {

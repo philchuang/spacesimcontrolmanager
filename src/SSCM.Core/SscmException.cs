@@ -1,16 +1,16 @@
-namespace SCCM.Core;
+namespace SSCM.Core;
 
-public class SccmException : Exception
+public class SscmException : Exception
 {
-    public SccmException()
+    public SscmException()
     {
 
     }
-    public SccmException(string message) : base(message)
+    public SscmException(string message) : base(message)
     {
     }
 
-    public SccmException(string message, Exception inner) : base(message, inner)
+    public SscmException(string message, Exception inner) : base(message, inner)
     {
     }
 }

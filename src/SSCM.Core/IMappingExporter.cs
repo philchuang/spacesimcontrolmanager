@@ -1,4 +1,4 @@
-namespace SCCM.Core;
+namespace SSCM.Core;
 
 public interface IMappingExporter
 {

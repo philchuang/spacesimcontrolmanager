@@ -1,15 +1,15 @@
-using SCCM.Core.SC;
+using SSCM.Core.SC;
 
-namespace SCCM.Tests.Mocks;
+namespace SSCM.Tests.Mocks;
 
 public class SCFoldersForTest : ISCFolders
 {
     public string ActionMapsDir { get; private set; }
-    public string SccmDir { get; private set; }
+    public string SscmDataDir { get; private set; }
 
-    public SCFoldersForTest(string? actionmapsDir = null, string? sccmDir = null)
+    public SCFoldersForTest(string? actionmapsDir = null, string? sscmDataDir = null)
     {
         this.ActionMapsDir = actionmapsDir ?? string.Empty;
-        this.SccmDir = sccmDir ?? string.Empty;
+        this.SscmDataDir = sscmDataDir ?? string.Empty;
     }
 }

@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
 using NUnit.Framework;
-using SCCM.Core;
-using SCCM.Core.SC;
+using SSCM.Core;
+using SSCM.Core.SC;
 
-namespace SCCM.Tests;
+namespace SSCM.Tests;
 
 [TestFixture]
 public class DataSerializer_Write_Tests
@@ -13,7 +13,7 @@ public class DataSerializer_Write_Tests
 
     private static string GetTestJsonPath()
     {
-        return new System.IO.FileInfo(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), Constants.SCCM_SCMAPPINGS_JSON_NAME)).FullName;
+        return new System.IO.FileInfo(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), Constants.SSCM_SCMAPPINGS_JSON_NAME)).FullName;
     }
 
     public DataSerializer_Write_Tests()

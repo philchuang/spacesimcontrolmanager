@@ -25,4 +25,6 @@
 
 ### Rename SCCM to ...? Space Sim Controls Manager
 
+### Refactor SC classes to separate library
+
 ### make SC a subcommand from the root for the CLI

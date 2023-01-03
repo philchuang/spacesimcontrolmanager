@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace SCCM.Core.SC;
+namespace SSCM.Core.SC;
 
 public static class Extensions
 {
@@ -32,13 +32,13 @@ public static class Extensions
         try
         {
             var input = mapping.GetInputTypeAndInstance();
-            if (input == null) throw new SccmException();
+            if (input == null) throw new SscmException();
             type = input.Value.Type;
             instance = input.Value.Instance;
         }
         catch
         {
-            throw new SccmException($"Mapping input [{mapping.Input}] for [{mapping.ActionMap}-{mapping.Action}] is invalid.");
+            throw new SscmException($"Mapping input [{mapping.Input}] for [{mapping.ActionMap}-{mapping.Action}] is invalid.");
         }
 
         try
@@ -47,7 +47,7 @@ public static class Extensions
         }
         catch
         {
-            throw new SccmException($"Could not find [{type}] [{instance}].");
+            throw new SscmException($"Could not find [{type}] [{instance}].");
         }
     }
 

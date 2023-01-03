@@ -1,15 +1,15 @@
 using NUnit.Framework;
-using SCCM.Core;
-using SCCM.Core.SC;
-using SCCM.Tests.Mocks;
+using SSCM.Core;
+using SSCM.Core.SC;
+using SSCM.Tests.Mocks;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
-using static SCCM.Core.SC.Extensions;
-using static SCCM.Tests.Extensions;
+using static SSCM.Core.SC.Extensions;
+using static SSCM.Tests.Extensions;
 
-namespace SCCM.Tests;
+namespace SSCM.Tests;
 
 [TestFixture]
 public class MappingExporter_Update_Tests

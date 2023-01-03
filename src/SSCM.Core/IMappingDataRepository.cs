@@ -1,4 +1,4 @@
-using SCCM.Core;
+using SSCM.Core;
 
 public interface IMappingDataRepository
 {

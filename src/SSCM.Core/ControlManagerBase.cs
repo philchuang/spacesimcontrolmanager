@@ -1,4 +1,4 @@
-namespace SCCM.Core;
+namespace SSCM.Core;
 
 // TODO write tests for this class
 

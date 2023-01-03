@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace SCCM.Core;
+namespace SSCM.Core;
 
 public class DataSerializer
 {
@@ -35,7 +35,7 @@ public class DataSerializer
     {
         if (!System.IO.File.Exists(this.SavePath))
         {
-            this.StandardOutput($"Could not find the SCCM mapping data file at [{this.SavePath}]!");
+            this.StandardOutput($"Could not find the SSCM mapping data file at [{this.SavePath}]!");
             return null;
         }
 
@@ -45,7 +45,7 @@ public class DataSerializer
         }
         catch (JsonReaderException ex)
         {
-            throw new SccmException($"Could not read SCCM mapping data file at [{this.SavePath}]!\nError: {ex.Message}", ex);
+            throw new SscmException($"Could not read SSCM mapping data file at [{this.SavePath}]!\nError: {ex.Message}", ex);
         }
     }
 }

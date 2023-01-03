@@ -1,8 +1,8 @@
 ﻿using NUnit.Framework;
-using SCCM.Core;
-using static SCCM.Tests.Extensions;
+using SSCM.Core;
+using static SSCM.Tests.Extensions;
 
-namespace SCCM.Tests;
+namespace SSCM.Tests;
 
 [TestFixture]
 public class DataSerializer_Read_Tests
@@ -56,7 +56,7 @@ public class DataSerializer_Read_Tests
         };
         var actual = await this._serializer.Read();
 
-        AssertSccm.AreEqual(expected, actual);
+        AssertSscm.AreEqual(expected, actual);
     }
 
     [Test]
@@ -66,8 +66,8 @@ public class DataSerializer_Read_Tests
         await System.IO.File.WriteAllTextAsync(this.TestDataPath, RandomString());
 
         // Act
-        var ex = Assert.ThrowsAsync<SccmException>(() => this._serializer.Read());
-        Assert.IsTrue(ex.Message.StartsWith("Could not read SCCM mapping data file at"));
+        var ex = Assert.ThrowsAsync<SscmException>(() => this._serializer.Read());
+        Assert.IsTrue(ex.Message.StartsWith("Could not read SSCM mapping data file at"));
     }
 
     [Test]
