@@ -507,12 +507,13 @@ public class MappingExporter_Update_Tests
         var originalJoystick2Mappings = this._originalXml.XPathSelectElements("//*/rebind[starts-with(@input,'js2_')]").ToList();
         var originalJoystick3Mappings = this._originalXml.XPathSelectElements("//*/rebind[starts-with(@input,'js3_')]").ToList();
         // xml-4: add new joystick 1
-        var originalJoystick2Element = GetInputElement(this._originalXml, preservedJoystickInputs[0].Type, preservedJoystickInputs[0].Instance + 1, preservedJoystickInputs[0].Product);
         var originalJoystick1Element =
             new XElement("options", 
             new XAttribute("type", "joystick"),
             new XAttribute("instance", "1"),
             new XAttribute("Product", RandomString()));
+        var originalJoystick2Element = GetInputElement(this._originalXml, preservedJoystickInputs[0].Type, preservedJoystickInputs[0].Instance + 1, preservedJoystickInputs[0].Product);
+        var originalJoystick3Element = GetInputElement(this._originalXml, preservedJoystickInputs[1].Type, preservedJoystickInputs[1].Instance + 1, preservedJoystickInputs[1].Product);
         originalJoystick2Element.AddBeforeSelf(originalJoystick1Element);
         // xml-5: add made-up mappings for new js1
         var originalActionProfilesElement = this._originalXml.XPathSelectElement($"/ActionMaps/ActionProfiles[@profileName='default']");
@@ -529,6 +530,11 @@ public class MappingExporter_Update_Tests
         // xml-6: remove gamepad input
         var originalGamepadElement = originalActionProfilesElement.XPathSelectElement("options[@type='gamepad']");
         originalGamepadElement.Remove();
+        // xml-7: remove/modify some joystick settings
+        preservedJoystickInputs[0].Settings.SingleOrDefault(s => s.Name == "flight_move_pitch").Preserve = true;
+        originalJoystick2Element.GetChildren("flight_move_pitch").Single().Remove();
+        preservedJoystickInputs[1].Settings.SingleOrDefault(s => s.Name == "flight_move_strafe_vertical").Preserve = true;
+        originalJoystick3Element.GetChildren("flight_move_strafe_vertical").Single().SetAttributeValue("invert", "0");
 
         // Act
         await this.Act();
@@ -540,8 +546,15 @@ public class MappingExporter_Update_Tests
         {
             var updatedElement = this.GetInputElement(this._updatedXml, joystick.Type, joystick.Instance, joystick.Product);
             Assert.NotNull(updatedElement, nameof(updatedElement));
-            // TODO assert that original input settings have carried over and preserved settings restored
         }
+        // assert-1-a: assert that original input settings have carried over and preserved settings restored
+        var updatedJoystick1Element = GetInputElement(this._updatedXml, preservedJoystickInputs[0].Type, preservedJoystickInputs[0].Instance, preservedJoystickInputs[0].Product);
+        var updatedJoystick1SettingElement = updatedJoystick1Element.GetChildren("flight_move_pitch");
+        Assert.NotNull(updatedJoystick1SettingElement.SingleOrDefault(), nameof(updatedJoystick1SettingElement));
+        var updatedJoystick2Element = GetInputElement(this._updatedXml, preservedJoystickInputs[1].Type, preservedJoystickInputs[1].Instance, preservedJoystickInputs[1].Product);
+        var updatedJoystick2SettingElement = updatedJoystick2Element.GetChildren("flight_move_strafe_vertical");
+        Assert.NotNull(updatedJoystick2SettingElement.SingleOrDefault(), nameof(updatedJoystick2SettingElement));
+        Assert.AreEqual("1", updatedJoystick2SettingElement.First().GetAttribute("invert"));
         // assert-2: made-up mappings for js1 are removed
         foreach (var m in originalJoystick1Mappings)
         {
