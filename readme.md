@@ -8,7 +8,7 @@ Utility to help players retain and migrate their control mappings for space-sim 
 
 Imports the Star Citizen actionmaps.xml and saves it locally in a mappings JSON file.
 
-```cmd
+```text
 > SSCM.exe sc import
 Read in 4 input devices.
 Read in 114 mappings.
@@ -19,7 +19,7 @@ Mappings backed up to [My Documents\SSCM\SC\scmappings.json].
 
 Opens the mappings JSON file in the system default editor. Edit the `Preserve` property to affect the export behavior.
 
-```cmd
+```text
 > SSCM.exe sc edit
 Opening [My Documents\SSCM\SC\scmappings.json] in the default editor, change the Preserve property to choose which settings are overwritten.
 ```
@@ -28,7 +28,7 @@ Opening [My Documents\SSCM\SC\scmappings.json] in the default editor, change the
 
 Previews updates to the Star Citizen bindings based on the locally saved mappings file.
 
-```cmd
+```text
 > SSCM.exe sc export
 Updating seat_general-v_toggle_mining_mode to js2_button56...
 Updating seat_general-v_toggle_quantum_mode to js2_button19...
@@ -40,7 +40,7 @@ CONFIGURATION NOT UPDATED: Execute "export apply" to apply these changes.
 
 Updates the Star Citizen bindings based on the locally saved mappings file.
 
-```cmd
+```text
 > SSCM.exe sc export apply
 Updating seat_general-v_toggle_mining_mode to js2_button56...
 Updating seat_general-v_toggle_quantum_mode to js2_button19...
@@ -57,7 +57,7 @@ MUST RESTART STAR CITIZEN FOR CHANGES TO TAKE AFFECT.
 
 Instead of importing, this command displays the differences between the current and saved mappings for review.
 
-```cmd
+```text
 > SSCM.exe sc import
 MAPPING changed and will merge: [seat_general-v_toggle_mining_mode] js2_button55 => js2_button54
 MAPPING changed and will not merge: [seat_general-v_toggle_quantum_mode] => js2_button56, preserving js2_button19
@@ -67,7 +67,7 @@ MAPPING changed and will not merge: [seat_general-v_toggle_scan_mode] => js2_but
 
 #### Merge mappings
 
-```cmd
+```text
 > SSCM.exe sc import merge
 MAPPING changed and will merge: [seat_general-v_toggle_mining_mode] js2_button55 => js2_button54
 MAPPING changed and will not merge: [seat_general-v_toggle_quantum_mode] => js2_button56, preserving js2_button19
@@ -77,7 +77,7 @@ Mappings backed up to [My Documents\SSCM\SC\scmappings.json].
 
 #### Overwrite mappings
 
-```cmd
+```text
 > SSCM.exe sc import overwrite
 Read in 4 input devices.
 Read in 114 mappings.
@@ -89,7 +89,7 @@ Mappings backed up to [My Documents\SSCM\SC\scmappings.json].
 
 Makes a local copy of the Star Citizen actionmaps.xml which can be restored later.
 
-```cmd
+```text
 > SSCM.exe sc backup
 actionmaps.xml backed up to [My Documents\SSCM\SC\actionmaps.xml.20221223022032.bak].
 ```
@@ -98,7 +98,7 @@ actionmaps.xml backed up to [My Documents\SSCM\SC\actionmaps.xml.20221223022032.
 
 Restores the latest local backup of the Star Citizen actionmaps.xml.
 
-```cmd
+```text
 > SSCM.exe sc restore
 actionmaps.xml restored from [My Documents\SSCM\SC\actionmaps.xml.20221223022032.bak].
 ```
@@ -107,7 +107,7 @@ actionmaps.xml restored from [My Documents\SSCM\SC\actionmaps.xml.20221223022032
 
 Opens the Star Citizen actionmaps.xml in the system default editor.
 
-```cmd
+```text
 > SSCM.exe sc editgame
 Opening [C:\Program Files\Roberts Space Industries\StarCitizen\LIVE\USER\Client\0\Profiles\default\actionmaps.xml] in the default editor.
 ```
