@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/src/SCCM.cli/SCCM.cli.csproj",
+                "${workspaceFolder}/src/SSCM.cli/SSCM.cli.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/src/SCCM.cli/SCCM.cli.csproj"
+                "${workspaceFolder}/src/SSCM.cli/SSCM.cli.csproj"
             ],
             "problemMatcher": "$msCompile"
         },
@@ -43,7 +43,7 @@
             "type": "process",
             "args": [
                 "test",
-                "${workspaceFolder}/src/SCCM.Tests/SCCM.Tests.csproj"
+                "${workspaceFolder}/src/SSCM.Tests/SSCM.Tests.csproj"
             ],
             "problemMatcher": "$msCompile",
             "group": {
