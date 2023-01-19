@@ -1,12 +1,12 @@
 using NUnit.Framework;
 using SSCM.Core;
-using SSCM.Core.SC;
+using SSCM.Core.StarCitizen;
 using SSCM.Tests.Mocks;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
-using static SSCM.Core.SC.Extensions;
+using static SSCM.Core.StarCitizen.Extensions;
 using static SSCM.Tests.Extensions;
 
 namespace SSCM.Tests;

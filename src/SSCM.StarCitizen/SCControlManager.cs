@@ -1,4 +1,4 @@
-namespace SSCM.Core.SC;
+namespace SSCM.Core.StarCitizen;
 
 // TODO write tests for this class
 

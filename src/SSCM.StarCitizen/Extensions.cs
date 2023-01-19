@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace SSCM.Core.SC;
+namespace SSCM.Core.StarCitizen;
 
 public static class Extensions
 {
