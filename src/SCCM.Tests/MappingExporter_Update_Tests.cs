@@ -10,7 +10,7 @@ namespace SCCM.Tests;
 [TestFixture]
 public class MappingExporter_Update_Tests
 {
-    private readonly MappingExporter _updater;
+    private MappingExporter? _updater;
     private readonly IPlatform _platform;
     private readonly IFolders _folders;
     private MappingData _data = new MappingData();
@@ -21,7 +21,7 @@ public class MappingExporter_Update_Tests
 
     private string GetTestXmlPath()
     {
-        return new System.IO.FileInfo(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "actionmaps.xml")).FullName;
+        return new System.IO.FileInfo(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), TestContext.CurrentContext.Test.Name, "actionmaps.xml")).FullName;
     }
 
     private async Task<XDocument> LoadTestXml()
@@ -38,13 +38,14 @@ public class MappingExporter_Update_Tests
     {
         this._platform = new PlatformForTest(DateTime.UtcNow);
         this._folders = new FoldersForTest();
-        System.IO.File.Copy(Samples.GetActionMapsXmlPath(), this.GetTestXmlPath(), true);
-        this._updater = new MappingExporter(this._platform, this._folders, this.GetTestXmlPath());
     }
 
     [SetUp]
     protected async Task Init()
     {
+        System.IO.Directory.CreateDirectory(new FileInfo(this.GetTestXmlPath()).DirectoryName);
+        System.IO.File.Copy(Samples.GetActionMapsXmlPath(), this.GetTestXmlPath(), true);
+        this._updater = new MappingExporter(this._platform, this._folders, this.GetTestXmlPath());
         this._originalXml = await this.LoadTestXml();
     }
 
@@ -74,13 +75,13 @@ public class MappingExporter_Update_Tests
         this._data = new MappingData {
             Inputs = {
                 new InputDevice { Type = "keyboard", Instance = 1, Preserve = true, Product = "Keyboard  {6F1D2B61-D5A0-11CF-BFC7-444553540000}" },
-                new InputDevice { Type = "gamepad", Instance = 1, Preserve = true, Product = "Controller (Gamepad)", Settings = new InputDeviceSetting[] {
+                new InputDevice { Type = "gamepad", Instance = 1, Preserve = true, Product = "Controller (Gamepad)", Settings = {
                     new InputDeviceSetting { Name = "flight_view", Preserve = true, Properties = new Dictionary<string, string> { { "exponent", "1" } } }
                 } },
-                new InputDevice { Type = "joystick", Instance = 1, Preserve = true, Product = " VKB-Sim Gladiator NXT R    {0200231D-0000-0000-0000-504944564944}" , Settings = new InputDeviceSetting[] {
+                new InputDevice { Type = "joystick", Instance = 1, Preserve = true, Product = " VKB-Sim Gladiator NXT R    {0200231D-0000-0000-0000-504944564944}" , Settings = {
                     new InputDeviceSetting { Name = "flight_move_pitch", Preserve = true, Properties = new Dictionary<string, string>() },
                 } },
-                new InputDevice { Type = "joystick", Instance = 2, Preserve = true, Product = " VKBsim Gladiator EVO OT  L SEM   {3205231D-0000-0000-0000-504944564944}", Settings = new InputDeviceSetting[] {
+                new InputDevice { Type = "joystick", Instance = 2, Preserve = true, Product = " VKBsim Gladiator EVO OT  L SEM   {3205231D-0000-0000-0000-504944564944}", Settings = {
                     new InputDeviceSetting { Name = "flight_move_strafe_vertical", Preserve = true, Properties = new Dictionary<string, string> { { "invert", "1" } } },
                     new InputDeviceSetting { Name = "flight_move_strafe_longitudinal", Preserve = true, Properties = new Dictionary<string, string> { { "invert", "1" } } },
                 } },
@@ -127,6 +128,11 @@ public class MappingExporter_Update_Tests
         Assert.NotNull(this._actionProfilesDefaultElement);
     }
 
+    private XElement GetInputElement(XDocument xd, InputDevice input)
+    {
+        return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/options[@type='{input.Type}' and @instance='{input.Instance}' and @Product='{input.Product}']").SingleOrDefault();
+    }
+
     private XElement GetActionRebindElement(XDocument xd, Mapping mapping)
     {
         return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/actionmap[@name='{mapping.ActionMap}']/action[@name='{mapping.Action}']/rebind").SingleOrDefault();
@@ -150,7 +156,7 @@ public class MappingExporter_Update_Tests
         // Assert
         this.AssertBasics();
         // silly code to prevent warnings
-        if (this._updatedXml == null || this._actionMapsElement == null || this._actionProfilesDefaultElement == null) return;
+        if (this._updatedXml == null) return;
 
         var changedActionRebindElement = this.GetActionRebindElement(this._updatedXml, mapping);
         Assert.NotNull(changedActionRebindElement, nameof(changedActionRebindElement));
@@ -230,11 +236,32 @@ public class MappingExporter_Update_Tests
         Assert.AreEqual(mapping.Input, addedActionRebindElement.GetAttribute("input"));
     }
 
+    protected (InputDevice, InputDeviceSetting, string, string) Update_overwrites_input_setting_Arrange(bool settingPreserve)
+    {
+        this.Arrange_Default_MappingData();
+        this._data.Inputs.SelectMany(i => i.Settings).ToList().ForEach(s => s.Preserve = false);
+        this._data.Mappings.ToList().ForEach(m => m.Preserve = false);
+        
+        var exportedInput = this._data.Inputs[1];
+        var exportedSetting = exportedInput.Settings.First();
+        exportedSetting.Preserve = settingPreserve;
+        
+        var targetInputElement = this.GetInputElement(this._originalXml, exportedInput);
+        var targetSettingElement = targetInputElement.Elements().Single();
+        var targetSettingValueAttribute = targetSettingElement.Attributes().First();
+        var targetSettingValue = targetSettingValueAttribute.Value;
+
+        var exportedSettingValue = exportedSetting.Properties.First();
+        exportedSetting.Properties[exportedSettingValue.Key] = exportedSettingValue.Value == targetSettingValue ? RandomString() : targetSettingValue;
+
+        return (exportedInput, exportedSetting, exportedSettingValue.Key, targetSettingValue);
+    }
+
     [Test]
-    public async Task Update_overwrites_input_setting()
+    public async Task Update_overwrites_input_setting_change()
     {
         // Arrange
-        this.Arrange_Default_MappingData();
+        var (exportedInput, exportedSetting, exportedSettingValueName, targetSettingValue) = this.Update_overwrites_input_setting_Arrange(settingPreserve: true);
 
         // Act
         await this.Act();
@@ -244,13 +271,80 @@ public class MappingExporter_Update_Tests
         // silly code to prevent warnings
         if (this._updatedXml == null) return;
 
-        Assert.Fail();
+        var changedInputElement = this.GetInputElement(this._updatedXml, exportedInput);
+        Assert.NotNull(changedInputElement, nameof(changedInputElement));
+        var changedSettingElement = changedInputElement.Elements().Single();
+        Assert.NotNull(changedSettingElement, nameof(changedSettingElement));
+        var changedSettingValueAttribute = changedSettingElement.Attributes().First();
+        var changedSettingValue = changedSettingValueAttribute.Value;
+        Assert.AreEqual(exportedSetting.Properties[exportedSettingValueName], changedSettingValue);
     }
 
     [Test]
-    public async Task Update_ignores_input_setting()
+    public async Task Update_overwrites_input_setting_change_xml()
     {
-        Assert.Fail();
+    }
+
+    [Test]
+    public async Task Update_ignores_input_setting_change()
+    {
+        // Arrange
+        var (exportedInput, exportedSetting, exportedSettingValueName, targetSettingValue) = this.Update_overwrites_input_setting_Arrange(settingPreserve: false);
+
+        // Act
+        await this.Act();
+
+        // Assert
+        this.AssertBasics();
+        // silly code to prevent warnings
+        if (this._updatedXml == null) return;
+
+        var unchangedInputElement = this.GetInputElement(this._updatedXml, exportedInput);
+        Assert.NotNull(unchangedInputElement, nameof(unchangedInputElement));
+        var unchangedSettingElement = unchangedInputElement.Elements().Single();
+        Assert.NotNull(unchangedSettingElement, nameof(unchangedSettingElement));
+        var unchangedSettingValueAttribute = unchangedSettingElement.Attributes().First();
+        var unchangedSettingValue = unchangedSettingValueAttribute.Value;
+        Assert.AreEqual(targetSettingValue, unchangedSettingValue);
+    }
+
+    [Test]
+    public async Task Update_adds_input_setting()
+    {
+        // Arrange
+        this.Arrange_Default_MappingData();
+        this._data.Inputs.SelectMany(i => i.Settings).ToList().ForEach(s => s.Preserve = false);
+        this._data.Mappings.ToList().ForEach(m => m.Preserve = false);
+        
+        var exportedInput = this._data.Inputs[1];
+        var exportedSetting = new InputDeviceSetting { Name = "AbcDef", Preserve = true, Properties = { { "GhiJkl", RandomString() } } };
+        exportedInput.Settings.Add(exportedSetting);
+        
+        var targetInputElement = this.GetInputElement(this._originalXml, exportedInput);
+        var targetSettingElement = targetInputElement.GetChildren(exportedSetting.Name).SingleOrDefault();
+
+        var exportedSettingValue = exportedSetting.Properties.First();
+
+        // Act
+        await this.Act();
+
+        // Assert
+        this.AssertBasics();
+        // silly code to prevent warnings
+        if (this._updatedXml == null) return;
+
+        var changedInputElement = this.GetInputElement(this._updatedXml, exportedInput);
+        Assert.NotNull(changedInputElement, nameof(changedInputElement));
+        var addedSettingElement = changedInputElement.GetChildren(exportedSetting.Name).SingleOrDefault();
+        Assert.NotNull(addedSettingElement, nameof(addedSettingElement));
+        var addedSettingValueAttribute = addedSettingElement.Attributes().First();
+        var addedSettingValue = addedSettingValueAttribute.Value;
+        Assert.AreEqual(exportedSetting.Properties[exportedSettingValue.Key], addedSettingValue);
+    }
+
+    [Test]
+    public async Task Update_adds_input_setting_xml()
+    {
     }
 
     [Test]
