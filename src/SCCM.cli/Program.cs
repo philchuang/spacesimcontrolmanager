@@ -6,6 +6,8 @@ namespace SCCM.cli;
 
 class Program
 {
+    private static bool ShowDebugOutput = false;
+
     private static Command BuildRootCommand(SCCM.Core.Mapper mapper)
     {
         var root = new RootCommand("Star Citizen Control Mapper Tool");
@@ -32,9 +34,17 @@ class Program
         return cmd;
     }
 
-    static async Task<int> Main(string[] args)
+    private static Mapper CreateMapper()
     {
         var mapper = new Mapper();
+        mapper.StandardOutput += Console.WriteLine;
+        mapper.DebugOutput += s => System.Diagnostics.Debug.WriteLineIf(ShowDebugOutput, s);
+        return mapper;
+    }
+
+    static async Task<int> Main(string[] args)
+    {
+        var mapper = CreateMapper();
         var root = BuildRootCommand(mapper);
         return await root.InvokeAsync(args);
     }

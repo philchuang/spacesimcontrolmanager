@@ -2,6 +2,9 @@ namespace SCCM.Core;
 
 public class Mapper
 {
+    public event Action<string> StandardOutput = delegate {};
+    public event Action<string> DebugOutput = delegate {};
+
     public string ReadLocation { get; set; } = string.Empty;
     public string SaveLocation { get; set; } = string.Empty;
 
@@ -46,6 +49,8 @@ public class Mapper
         var actionmapsxml = GetActionMapsXmlPath();
 
         // TODO read-in XML file
+        var reader = new Reader(actionmapsxml);
+        var mappings = await reader.Read();
         // TODO save joystick instance data
         // TODO save actionmap-action-rebind data in Mapping class
     }
