@@ -67,7 +67,7 @@ public class ActionMapsXmlHelper
     public static string GetOptionsTypeAbbv(string type)
     {
         return type switch {
-            "gamepad"  => "gp", // TODO confirm
+            "gamepad"  => "gp",
             "joystick" => "js",
             "keyboard" => "kb",
             _ => throw new ArgumentOutOfRangeException(type),
@@ -77,7 +77,7 @@ public class ActionMapsXmlHelper
     public static string GetOptionsTypeFromAbbv(string typeAbbv)
     {
         return typeAbbv switch {
-            "gp" => "gamepad", // TODO confirm
+            "gp" => "gamepad",
             "js" => "joystick",
             "kb" => "keyboard",
             _ => throw new ArgumentOutOfRangeException(typeAbbv),
