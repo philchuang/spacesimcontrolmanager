@@ -57,7 +57,7 @@ public class Mapper
         return await serializer.Read();
     }
 
-    public async Task ImportAndSave(ImportMode mode)
+    public async Task Import(ImportMode mode)
     {
         var importer = this.CreateImporter();
 
@@ -66,24 +66,35 @@ public class Mapper
         var currentData = await this.LoadMappingData();
         if (currentData == null || mode == ImportMode.Overwrite)
         {
+            if (currentData == null) this.DebugOutput($"currentData is null");
+            if (mode == ImportMode.Overwrite) this.DebugOutput($"mode is overwrite");
             await this.Save(updatedData);
             return;
         }
 
         if (mode == ImportMode.Default)
         {
-            this.PreviewMerge(currentData, updatedData);
+            this.DebugOutput($"Previewing merge...");
+            if (this.PreviewMerge(currentData, updatedData))
+            {
+                this.StandardOutput("Changes NOT saved! Run in merge or overwrite modes to save changes.");
+            }
+            else
+            {
+                this.StandardOutput("No changes detected.");
+            }
             return;
         }
 
         if (mode == ImportMode.Merge)
         {
+            this.DebugOutput($"Merging...");
             var mergedData = this.Merge(currentData, updatedData);
             await this.Save(mergedData);
         }
     }
 
-    private void PreviewMerge(MappingData current, MappingData updated)
+    private bool PreviewMerge(MappingData current, MappingData updated)
     {
         // capture differences
         var inputDiffs = ComparisonHelper.Compare(
@@ -98,8 +109,31 @@ public class Mapper
             current.Mappings, updated.Mappings,
             m => $"{m.ActionMap}-{m.Action}",
             (p, c) => p.Input != c.Input || p.MultiTap != c.MultiTap);
-        
-        // TODO report differences via StandardOutput
+
+        if (inputDiffs.Any()) this.PrintDiffs(inputDiffs, "inputs");
+        if (mappingDiffs.Any()) this.PrintDiffs(mappingDiffs, "mappings");
+        return inputDiffs.Any() && mappingDiffs.Any();
+    }
+
+    private void PrintDiffs<T>(ComparisonResult<T> comp, string type)
+    {
+        if (comp.AddedKeys.Any())
+        {
+            this.StandardOutput($"The following {type} were added: [{string.Join(", ", comp.AddedKeys)}]");
+        }
+        if (comp.RemovedKeys.Any())
+        {
+            this.StandardOutput($"The following {type} were removed: [{string.Join(", ", comp.RemovedKeys)}]");
+        }
+        if (comp.ChangedPairs.Any())
+        {
+            this.StandardOutput($"The following {type} were modified:");
+            foreach (var changed in comp.ChangedPairs)
+            {
+                this.StandardOutput($"CURRENT [{changed.Key}] = {changed.Current}");
+                this.StandardOutput($"UPDATED [{changed.Key}] = {changed.Updated}");
+            }
+        }
     }
 
     private MappingData Merge(MappingData current, MappingData updated)

@@ -19,13 +19,13 @@ public class MappingExporter_Restore_Tests
     }
 
     [Test]
-    public async Task Restore_Overwrites_Actionmapsxml()
+    public async Task RestoreLatest_Overwrites_Actionmapsxml()
     {
         var filesToCleanup = new List<string>();
 
         // create dummy actionmaps
         var actionmapsxmlpath = this._updater.ActionMapsXmlPath;
-        await System.IO.File.WriteAllTextAsync(actionmapsxmlpath, $"{nameof(Restore_Overwrites_Actionmapsxml)}-{Guid.NewGuid().ToString()}");
+        await System.IO.File.WriteAllTextAsync(actionmapsxmlpath, $"{nameof(RestoreLatest_Overwrites_Actionmapsxml)}-{Guid.NewGuid().ToString()}");
         filesToCleanup.Add(actionmapsxmlpath);
 
         // clean out old test data
@@ -40,7 +40,7 @@ public class MappingExporter_Restore_Tests
         for (var i = 1; i <= 12; i++)
         {
             var backupTime = new DateTime(2022, i, 1, i, i*2, i*3);
-            lastContents = $"{nameof(Restore_Overwrites_Actionmapsxml)}-{Guid.NewGuid().ToString()}";
+            lastContents = $"{nameof(RestoreLatest_Overwrites_Actionmapsxml)}-{Guid.NewGuid().ToString()}";
             lastBackupPath = System.IO.Path.Combine(this._folders.SccmDir, $"actionmaps.xml.{backupTime.ToString("yyyyMMddHHmmss")}.bak");
             await System.IO.File.WriteAllTextAsync(lastBackupPath, lastContents);
             filesToCleanup.Add(lastBackupPath);

@@ -16,6 +16,7 @@ public class MappingImporter_Read_Tests
     {
         _platform = new PlatformForTest(DateTime.UtcNow);
         _importer = new MappingImporter(_platform, Samples.GetActionMapsXmlPath());
+        // TODO figure out how to get this to show up
         _importer.StandardOutput += s => TestContext.Out.WriteLine($"[STD  ] {s}");
         _importer.WarningOutput  += s => TestContext.Out.WriteLine($"[WARN ] {s}");
         _importer.DebugOutput    += s => TestContext.Out.WriteLine($"[DEBUG] {s}");
@@ -32,6 +33,9 @@ public class MappingImporter_Read_Tests
     {
         Assert.NotNull(this._data);
 
+        // silly code to get rid of warnings
+        if (this._data == null) return;
+
         Assert.AreEqual(this._platform.UtcNow, this._data.ReadTime);
         Assert.AreEqual(4, this._data.Inputs.Count);
         Assert.AreEqual(114, this._data.Mappings.Count);
@@ -43,6 +47,9 @@ public class MappingImporter_Read_Tests
     public void Read_LoadsInputs()
     {
         Assert.NotNull(this._data);
+
+        // silly code to get rid of warnings
+        if (this._data == null) return;
 
         var expected = new InputDevice[] {
             new InputDevice { Type = "keyboard", Instance = 1, Product = "Keyboard  {6F1D2B61-D5A0-11CF-BFC7-444553540000}" },
@@ -63,6 +70,11 @@ public class MappingImporter_Read_Tests
     [Test]
     public void Read_LoadsMappings()
     {
+        Assert.NotNull(this._data);
+
+        // silly code to get rid of warnings
+        if (this._data == null) return;
+
         // only do a partial comparison
         var mappings = new Mapping[] {
             new Mapping { ActionMap = "seat_general", Action = "v_toggle_mining_mode", Input = "js2_button56", MultiTap = null, Preserve = true },
@@ -72,7 +84,7 @@ public class MappingImporter_Read_Tests
         };
 
         var expected = mappings.ToDictionary(m => $"{m.ActionMap}-{m.Action}");
-        var actual = _data.Mappings.ToDictionary(m => $"{m.ActionMap}-{m.Action}");
+        var actual = this._data.Mappings.ToDictionary(m => $"{m.ActionMap}-{m.Action}");
 
         Assert2.DictionaryEquals(expected, actual, true, AssertSccm.AreEqual);
     }
