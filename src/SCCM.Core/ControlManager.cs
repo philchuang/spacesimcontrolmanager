@@ -1,6 +1,6 @@
 namespace SCCM.Core;
 
-public class Mapper
+public class ControlManager
 {
     public event Action<string> StandardOutput = delegate {};
     public event Action<string> WarningOutput = delegate {};
@@ -15,7 +15,7 @@ public class Mapper
     private readonly IPlatform _platform;
     private readonly IFolders _folders;
 
-    public Mapper(IPlatform platform, IFolders folders)
+    public ControlManager(IPlatform platform, IFolders folders)
     {
         this._platform = platform;
         this._folders = folders;
@@ -25,11 +25,6 @@ public class Mapper
     private void Initialize()
     {
         this.ReadLocation = this._folders.ActionMapsDir;
-        if (!System.IO.Directory.Exists(this.ReadLocation))
-        {
-            throw new DirectoryNotFoundException($"Could not find the Star Citizen directory at [{this.ReadLocation}]!");
-        }
-
         this.SaveLocation = this._folders.SccmDir;
     }
 
@@ -119,7 +114,17 @@ public class Mapper
         this.StandardOutput($"Mappings backed up to [{this.SccmMappingsJsonPath}].");
     }
 
-    public async Task Export()
+    public async Task ExportPreview()
+    {
+        var data = await this.LoadMappingData();
+        if (data == null) throw new Exception("Could not load saved mappings!");
+
+        var exporter = this.CreateExporter();
+        await exporter.Preview(data);
+        this.StandardOutput($"Execute \"export apply\" to apply these changes.");
+    }
+
+    public async Task ExportApply()
     {
         var data = await this.LoadMappingData();
         if (data == null) throw new Exception("Could not load saved mappings!");
@@ -127,7 +132,7 @@ public class Mapper
         var exporter = this.CreateExporter();
         exporter.Backup();
         await exporter.Update(data);
-        this.StandardOutput($"Mappings restored to [{exporter.ActionMapsXmlPath}].");
+        this.StandardOutput($"Mappings applied to [{exporter.ActionMapsXmlPath}].");
     }
 
     public void Backup()

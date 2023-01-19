@@ -1,4 +1,4 @@
-# Star Citizen Control Mapper
+# Star Citizen Control Manager
 
 Utility to help players retain and migrate their control mappings between SC version releases.
 
@@ -24,12 +24,21 @@ Opens the mappings JSON file in the system default editor. Edit the `Preserve` p
 Opening [My Documents\SCCM\scmappings.json] in the default editor, change the Preserve property to choose which settings are overwritten.
 ```
 
-### Export
+### Export Preview
+
+Previews updates to the Star Citizen bindings based on the locally saved mappings file.
+
+```cmd
+> SCCM.exe export
+TODO sample output
+```
+
+### Export Apply
 
 Updates the Star Citizen bindings based on the locally saved mappings file.
 
 ```cmd
-> SCCM.exe export
+> SCCM.exe export apply
 TODO sample output
 ```
 
