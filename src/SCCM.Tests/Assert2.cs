@@ -2,7 +2,7 @@ using NUnit.Framework;
 
 namespace SCCM.Tests;
 
-public static class AssertEquals
+public static class Assert2
 {
     public static void ListLength<T>(int length, IList<T> list)
     {
