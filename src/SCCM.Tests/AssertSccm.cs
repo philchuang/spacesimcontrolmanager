@@ -37,6 +37,7 @@ public static class AssertSccm
         Assert.NotNull(actual);
 
         Assert.AreEqual(expected.Name, actual.Name, nameof(expected.Name));
+        Assert.AreEqual(expected.Preserve, actual.Preserve, nameof(expected.Preserve));
         Assert2.DictionaryEquals(expected.Properties, actual.Properties, false, Assert.AreEqual);
     }
 

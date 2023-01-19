@@ -5,9 +5,15 @@ namespace SCCM.Tests.Mocks;
 public class PlatformForTest : IPlatform
 {
     public DateTime UtcNow { get; private set; }
+    public string ProgramFilesDir { get; private set; }
+    public string UserDocumentsDir { get; private set; }
+    public string SccmDir { get; private set; }
 
-    public PlatformForTest(DateTime utcnow)
+    public PlatformForTest(DateTime? utcnow = null, string? programFilesDir = null, string? userDocumentsDir = null, string? sccmDir = null)
     {
-        this.UtcNow = utcnow;
+        this.UtcNow = utcnow ?? DateTime.UtcNow;
+        this.ProgramFilesDir = programFilesDir ?? string.Empty;
+        this.UserDocumentsDir = userDocumentsDir ?? string.Empty;
+        this.SccmDir = sccmDir ?? string.Empty;
     }
 }

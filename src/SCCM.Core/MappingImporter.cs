@@ -33,6 +33,7 @@ public class MappingImporter
 
         this._data = new MappingData { ReadTime = this._platform.UtcNow };
 
+        this.StandardOutput($"Reading [{this.ActionMapsXmlPath}]...");
         using (var fs = new FileStream(this.ActionMapsXmlPath, FileMode.Open))
         {
             var ct = new CancellationToken();
@@ -114,6 +115,7 @@ public class MappingImporter
                 new InputDeviceSetting
                 {
                     Name = prop.Name.LocalName,
+                    Preserve = true,
                     Properties = prop.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value),
                 }
             );

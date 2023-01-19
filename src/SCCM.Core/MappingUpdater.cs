@@ -20,7 +20,7 @@ public class MappingUpdater
         this.ActionMapsXmlPath = actionmapsxmlpath;
     }
 
-    public async Task Backup()
+    public string Backup()
     {
         if (!System.IO.File.Exists(this.ActionMapsXmlPath))
         {
@@ -28,8 +28,9 @@ public class MappingUpdater
         }
 
         // make backup of actionmaps.xml
-        var actionmapsxmlBackup = $"{this.ActionMapsXmlPath}.{this._platform.UtcNow.ToLocalTime().ToString("yyyyMMddHHmmss")}.bak";
+        var actionmapsxmlBackup = System.IO.Path.Combine(this._platform.SccmDir, $"actionmaps.xml.{this._platform.UtcNow.ToLocalTime().ToString("yyyyMMddHHmmss")}.bak");
         System.IO.File.Copy(this.ActionMapsXmlPath, actionmapsxmlBackup);
+        return actionmapsxmlBackup;
     }
 
     public async Task Update(MappingData data)

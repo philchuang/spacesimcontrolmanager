@@ -16,14 +16,16 @@ class Program
         );
 
         var root = new RootCommand("Star Citizen Control Mapper Tool");
+        root.AddCommand(BuildReadCommand(mapper, debugOption));
+        root.AddCommand(BuildUpdateCommand(mapper, debugOption));
         root.AddCommand(BuildBackupCommand(mapper, debugOption));
         root.AddCommand(BuildRestoreCommand(mapper, debugOption));
         return root;
     }
 
-    private static Command BuildBackupCommand(SCCM.Core.Mapper mapper, Option<bool> debugOption)
+    private static Command BuildReadCommand(SCCM.Core.Mapper mapper, Option<bool> debugOption)
     {
-        var cmd = new Command("backup", "Reads in the current Star Citizen control mappings and saves it locally.");
+        var cmd = new Command("read", "Reads the current Star Citizen control mappings and saves it locally.");
         cmd.Add(debugOption);
         cmd.SetHandler(async (debug) => {
             if (debug) ShowDebugOutput = true;
@@ -33,12 +35,38 @@ class Program
         return cmd;
     }
 
+    private static Command BuildUpdateCommand(SCCM.Core.Mapper mapper, Option<bool> debugOption)
+    {
+        var cmd = new Command("update", "Updates the Star Citizen control mappings from the local copy.");
+        cmd.Add(debugOption);
+        cmd.SetHandler(async (debug) => {
+            if (debug) ShowDebugOutput = true;
+            await mapper.LoadAndUpdate();
+        },
+        debugOption);
+        return cmd;
+    }
+
+    private static Command BuildBackupCommand(SCCM.Core.Mapper mapper, Option<bool> debugOption)
+    {
+        var cmd = new Command("backup", "Backs up the current Star Citizen control mappings.");
+        cmd.Add(debugOption);
+        cmd.SetHandler(async (debug) => {
+            if (debug) ShowDebugOutput = true;
+            await mapper.Backup();
+        },
+        debugOption);
+        return cmd;
+    }
+
     private static Command BuildRestoreCommand(SCCM.Core.Mapper mapper, Option<bool> debugOption)
     {
-        var cmd = new Command("restore", "Updates the Star Citizen control mappings from the local copy.");
+        var cmd = new Command("restore", "Restores the Star Citizen control mappings from the last backup.");
         cmd.SetHandler(async (debug) => {
-            await mapper.LoadAndRestore();
-        });
+            if (debug) ShowDebugOutput = true;
+            await mapper.Restore();
+        },
+        debugOption);
         return cmd;
     }
 
