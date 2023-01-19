@@ -30,6 +30,8 @@ public class Mapper
         }
 
         this.SaveLocation = this._folders.SccmDir;
+
+        // TODO load current mappings.json
     }
 
     private MappingUpdater CreateUpdater()
@@ -65,7 +67,35 @@ public class Mapper
         reader.StandardOutput += this.StandardOutput;
         reader.WarningOutput += this.WarningOutput;
         reader.DebugOutput += this.DebugOutput;
-        this._data = await reader.Read();
+
+        var updated = await reader.Read();
+        if (this._data != null)
+        {
+            PreviewMerge(this._data, updated);
+            // TODO merge
+        }
+        else
+        {
+            this._data = updated;
+        }
+    }
+
+    private void PreviewMerge(MappingData previous, MappingData updated)
+    {
+        // capture differences
+        var inputDiffs = ComparisonHelper.Compare(
+            previous.Inputs, updated.Inputs,
+            i => $"{i.Type}-{i.Product}",
+            (p, c) => p.Instance != c.Instance ||
+                ComparisonHelper.DictionariesAreDifferent(
+                    p.Settings.ToDictionary(s => s.Name), 
+                    c.Settings.ToDictionary(s => s.Name))
+            );
+        var mappingDiffs = ComparisonHelper.Compare(
+            previous.Mappings, updated.Mappings,
+            m => $"{m.ActionMap}-{m.Action}",
+            (p, c) => p.Input != c.Input || p.MultiTap != c.MultiTap);
+        // TODO report differences
     }
 
     public async Task Save()

@@ -45,8 +45,8 @@ public class MappingUpdater_Update_Tests
                 new InputDevice { Type = "joystick", Instance = 2, Product = " VKB-Sim Gladiator NXT R    {0200231D-0000-0000-0000-504944564944}" },
             }
         };
-        await this._updater.Update(data);
 
+        await this._updater.Update(data);
 
         XDocument? xd = null;
         using (var fs = new FileStream(this.GetTestXmlPath(), FileMode.Open))
