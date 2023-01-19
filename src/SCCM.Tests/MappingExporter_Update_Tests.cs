@@ -96,7 +96,7 @@ public class MappingExporter_Update_Tests
 
     private XElement? GetActionRebindElement(XDocument xd, Mapping mapping)
     {
-        return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/actionmap[@name='{mapping.ActionMap}']/action[@name='{mapping.Action}']/rebind").SingleOrDefault();
+        return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/actionmap[@name='{mapping.ActionMap}']/action[@name='{mapping.Action}']/rebind[starts-with(@input, '{ActionMapsXmlHelper.GetOptionsTypeAbbv(mapping.InputType)}')]").SingleOrDefault();
     }
 
     private void Arrange_Default_MappingData()
@@ -150,7 +150,7 @@ public class MappingExporter_Update_Tests
         };
     }
 
-    private (string, Mapping) Arrange_Update_overwrites_mapping_change(bool preserve)
+    private (string, Mapping, XElement) Arrange_Update_overwrites_mapping_change(bool preserve)
     {
         this.Arrange_Default_MappingData();
         this._source.Mappings.ToList().ForEach(m => m.Preserve = false);
@@ -159,14 +159,14 @@ public class MappingExporter_Update_Tests
         var actionRebindElement = this.GetActionRebindElement(this._originalXml, mapping);
         var originalInputValue = actionRebindElement.GetAttribute("input");
         mapping.Input = mapping.Input == originalInputValue ? $"{originalInputValue.Split('_')[0]}_{RandomString()}" : mapping.Input;
-        return (originalInputValue, mapping);
+        return (originalInputValue, mapping, actionRebindElement.Parent);
     }
     
     [Test]
     public async Task Update_overwrites_mapping_change()
     {
         // Arrange
-        var (originalInputValue, mapping) = this.Arrange_Update_overwrites_mapping_change(true);
+        var (originalInputValue, mapping, actionElement) = this.Arrange_Update_overwrites_mapping_change(true);
 
         // Act
         await this.Act();
@@ -180,12 +180,38 @@ public class MappingExporter_Update_Tests
         Assert.NotNull(changedActionRebindElement, nameof(changedActionRebindElement));
         Assert.AreEqual(mapping.Input, changedActionRebindElement.GetAttribute("input"));
     }
+    
+    [Test]
+    public async Task Update_handles_multiple_binds_for_action()
+    {
+        // Arrange
+        var (originalInputValue, mapping, actionElement) = this.Arrange_Update_overwrites_mapping_change(true);
+        var addedMapping = new Mapping { ActionMap = mapping.ActionMap, Action = mapping.Action, Input = "gp1_dpad_up", InputType = "gamepad", Preserve = true };
+        this._source.Mappings.Add(addedMapping);
+
+        // Act
+        await this.Act();
+
+        // Assert
+        this.AssertBasics();
+        // silly code to prevent warnings
+        if (this._updatedXml == null) return;
+
+        var changedActionRebindElement = this.GetActionRebindElement(this._updatedXml, mapping);
+        Assert.NotNull(changedActionRebindElement, nameof(changedActionRebindElement));
+        Assert.AreEqual(mapping.Input, changedActionRebindElement.GetAttribute("input"));
+
+        // the added binding must be a sibling of the updated binding
+        var addedActionRebindElement = changedActionRebindElement.Parent.Elements().SingleOrDefault(rebind => rebind.GetAttribute("input").StartsWith(ActionMapsXmlHelper.GetOptionsTypeAbbv(addedMapping.InputType)));
+        Assert.NotNull(addedActionRebindElement, nameof(addedActionRebindElement));
+        Assert.AreEqual(addedMapping.Input, addedActionRebindElement.GetAttribute("input"));
+    }
 
     [Test]
     public async Task Update_ignores_mapping_change()
     {
         // Arrange
-        var (originalInputValue, mapping) = this.Arrange_Update_overwrites_mapping_change(false);
+        var (originalInputValue, mapping, actionElement) = this.Arrange_Update_overwrites_mapping_change(false);
 
         // Act
         await this.Act();
