@@ -42,7 +42,7 @@ public class MappingData
     {
         var typeAbbv = input.Type switch {
             "keyboard" => "kb",
-            "joystick" => "joystick",
+            "joystick" => "js",
             _ => throw new ArgumentOutOfRangeException(),
         };
         var prefix = $"{typeAbbv}{input.Instance}_";

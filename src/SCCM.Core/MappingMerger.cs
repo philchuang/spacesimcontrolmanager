@@ -58,6 +58,7 @@ public class MappingMerger
         this.Result.CanMerge = true;
         this.AnalyzeInputDiffs();
         this.AnalyzeMappingDiffs();
+        this.Result.CanMerge = this.Result.CanMerge && this.Result.MergeActions.Any();
     }
 
     private void StopMerge()
@@ -147,7 +148,7 @@ public class MappingMerger
             if (!pair.Current.Preserve)
             {
                 this.StandardOutput($"INPUT SETTING changed and will merge: [{input.Product}] [{pair.Current.Name}] = {DictionaryToString(pair.Updated.Properties)}");
-                this.Result.MergeActions.Add(new MappingMergeAction(pair.Current, MappingMergeActionMode.Remove, pair.Updated));
+                this.Result.MergeActions.Add(new MappingMergeAction(pair.Current, MappingMergeActionMode.Replace, pair.Updated));
             }
             else
             {
@@ -188,7 +189,7 @@ public class MappingMerger
             if (!pair.Current.Preserve)
             {
                 this.StandardOutput($"MAPPING changed and will merge: [{pair.Current.ActionMap}-{pair.Current.Action}] = {pair.Updated.Input}");
-                this.Result.MergeActions.Add(new MappingMergeAction(pair.Current, MappingMergeActionMode.Remove, pair.Updated));
+                this.Result.MergeActions.Add(new MappingMergeAction(pair.Current, MappingMergeActionMode.Replace, pair.Updated));
             }
             else
             {
