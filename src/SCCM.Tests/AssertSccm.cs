@@ -71,4 +71,19 @@ public static class AssertSccm
         Assert.AreEqual(expected.Preserve, actual.Preserve, nameof(expected.Preserve));
     }
 
+    public static void AreEqual(MappingMergeAction? expected, MappingMergeAction? actual)
+    {
+        if (expected == null && actual == null) return;
+
+        Assert.NotNull(expected);
+        Assert.NotNull(actual);
+
+        // silly unreachable code to get rid of warnings
+        if (expected == null) return;
+        if (actual == null) return;
+
+        Assert.AreEqual(expected.Mode, actual.Mode, nameof(expected.Mode));
+        Assert.AreSame(expected.NewValue, actual.NewValue, nameof(expected.NewValue));
+        Assert.AreSame(expected.Target, actual.Target, nameof(expected.Target));
+    }
 }
