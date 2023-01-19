@@ -17,6 +17,10 @@ public static class Assert2
         Assert.NotNull(expected);
         Assert.NotNull(actual);
 
+        // silly unreachable code to get rid of warnings
+        if (expected == null) return;
+        if (actual == null) return;
+
         equate = equate ?? ((e, a) => Assert.AreEqual(e, a));
 
         var iterE = expected.GetEnumerator();        
@@ -47,6 +51,10 @@ public static class Assert2
         Assert.NotNull(expected);
         Assert.NotNull(actual);
 
+        // silly unreachable code to get rid of warnings
+        if (expected == null) return;
+        if (actual == null) return;
+
         equate = equate ?? ((e, a) => Assert.AreEqual(e, a));
 
         HashSet<K> actualKeys = new HashSet<K> (actual.Keys);
@@ -57,6 +65,10 @@ public static class Assert2
             try
             {
                 Assert.True(actual.TryGetValue(kvp.Key, out var aValue));
+
+                // silly unreachable code to get rid of warnings
+                if (aValue == null) continue;
+
                 equate(kvp.Value, aValue);
                 actualKeys.Remove(kvp.Key);
             }

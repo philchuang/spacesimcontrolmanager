@@ -12,7 +12,7 @@ public static class AssertSccm
         Assert.NotNull(expected);
         Assert.NotNull(actual);
 
-        // silly code to get rid of warnings
+        // silly unreachable code to get rid of warnings
         if (expected == null) return;
         if (actual == null) return;
 
@@ -28,7 +28,7 @@ public static class AssertSccm
         Assert.NotNull(expected);
         Assert.NotNull(actual);
 
-        // silly code to get rid of warnings
+        // silly unreachable code to get rid of warnings
         if (expected == null) return;
         if (actual == null) return;
 
@@ -44,7 +44,7 @@ public static class AssertSccm
         Assert.NotNull(expected);
         Assert.NotNull(actual);
 
-        // silly code to get rid of warnings
+        // silly unreachable code to get rid of warnings
         if (expected == null) return;
         if (actual == null) return;
 
@@ -60,7 +60,7 @@ public static class AssertSccm
         Assert.NotNull(expected);
         Assert.NotNull(actual);
 
-        // silly code to get rid of warnings
+        // silly unreachable code to get rid of warnings
         if (expected == null) return;
         if (actual == null) return;
 

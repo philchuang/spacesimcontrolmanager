@@ -33,7 +33,7 @@ public class MappingImporter_Read_Tests
     {
         Assert.NotNull(this._data);
 
-        // silly code to get rid of warnings
+        // silly unreachable code to get rid of warnings
         if (this._data == null) return;
 
         Assert.AreEqual(this._platform.UtcNow, this._data.ReadTime);
@@ -48,7 +48,7 @@ public class MappingImporter_Read_Tests
     {
         Assert.NotNull(this._data);
 
-        // silly code to get rid of warnings
+        // silly unreachable code to get rid of warnings
         if (this._data == null) return;
 
         var expected = new InputDevice[] {
@@ -72,7 +72,7 @@ public class MappingImporter_Read_Tests
     {
         Assert.NotNull(this._data);
 
-        // silly code to get rid of warnings
+        // silly unreachable code to get rid of warnings
         if (this._data == null) return;
 
         // only do a partial comparison
