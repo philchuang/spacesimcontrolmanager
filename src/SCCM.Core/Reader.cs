@@ -60,7 +60,7 @@ public class Reader
             throw new InvalidDataException($"Expecting <ActionMaps>, found <{xd.Root.Name.LocalName}>!");
         }
 
-        var actionMaps = GetChildren(xd, "ActionMaps").First();
+        var actionMaps = xd.Root;
         ReadActionMaps(actionMaps);
     }
 
@@ -89,8 +89,20 @@ public class Reader
 
     private void ReadOptions(XElement option)
     {
+        if (string.IsNullOrWhiteSpace(GetAttribute(option, "Product"))) return;
+
         var input = new InputDevice { Type = GetAttribute(option, "type"), Instance = IntTryParseOrDefault(GetAttribute(option, "instance"), -1), Product = GetAttribute(option, "Product") };
         // TODO if joystick check for other child nodes
+        foreach (var prop in option.Descendants())
+        {
+            input.Settings.Add(
+                new InputDeviceSetting
+                {
+                    Name = prop.Name.LocalName,
+                    Properties = prop.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value),
+                }
+            );
+        }
         this._inputs.Add(input);
     }
 
