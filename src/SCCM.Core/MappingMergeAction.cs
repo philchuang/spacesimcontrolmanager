@@ -2,13 +2,13 @@ namespace SCCM.Core;
 
 public class MappingMergeAction
 {
-    public object Target { get; private set; } 
+    public object? Target { get; private set; } 
 
     public MappingMergeActionMode Mode { get; private set; }
 
     public object NewValue { get; private set; }
     
-    public MappingMergeAction(object target, MappingMergeActionMode mode, object newvalue)
+    public MappingMergeAction(object? target, MappingMergeActionMode mode, object newvalue)
     {
         if (mode == MappingMergeActionMode.None) throw new ArgumentOutOfRangeException(mode.ToString());
         this.Target = target;

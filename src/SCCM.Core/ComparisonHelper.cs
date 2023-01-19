@@ -13,9 +13,9 @@ public static class ComparisonHelper
 
         var result = new ComparisonResult<T>();
 
-        result.RemovedKeys.AddRange(currentMap.Keys.Except(updatedMap.Keys).OrderBy(s => s));
-        result.AddedKeys.AddRange(updatedMap.Keys.Except(currentMap.Keys).OrderBy(s => s));
-        result.ChangedPairs.AddRange(updatedMap
+        result.Removed.AddRange(currentMap.Keys.Except(updatedMap.Keys).OrderBy(s => s).Select(s => currentMap[s]));
+        result.Added.AddRange(updatedMap.Keys.Except(currentMap.Keys).OrderBy(s => s).Select(s => updatedMap[s]));
+        result.Changed.AddRange(updatedMap
             .Where(ukvp => currentMap.ContainsKey(ukvp.Key))
             .Select(ukvp => new ComparisonPair<T> { Key = ukvp.Key, Current = currentMap[ukvp.Key], Updated = ukvp.Value })
             .Where(pair => comparer(pair.Current, pair.Updated)));
@@ -49,12 +49,12 @@ public class ComparisonPair<T>
 
 public class ComparisonResult<T>
 {
-    public List<string> AddedKeys { get; set; } = new List<string>();
-    public List<string> RemovedKeys { get; set; } = new List<string>();
-    public List<ComparisonPair<T>> ChangedPairs { get; set; } = new List<ComparisonPair<T>>();
+    public List<T> Added { get; set; } = new List<T>();
+    public List<T> Removed { get; set; } = new List<T>();
+    public List<ComparisonPair<T>> Changed { get; set; } = new List<ComparisonPair<T>>();
 
     public bool Any()
     {
-        return this.AddedKeys.Any() || this.RemovedKeys.Any() || this.ChangedPairs.Any();
+        return this.Added.Any() || this.Removed.Any() || this.Changed.Any();
     }
 }

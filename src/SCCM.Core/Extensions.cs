@@ -10,7 +10,7 @@ public static class Extensions
 
     public static bool HasChangedInputInstanceId(this ComparisonResult<InputDevice> self)
     {
-        return self.ChangedPairs.Any(HasChangedInputInstanceId);
+        return self.Changed.Any(HasChangedInputInstanceId);
     }
 
     public static bool HasChangedInputInstanceId(this ComparisonPair<InputDevice> self)

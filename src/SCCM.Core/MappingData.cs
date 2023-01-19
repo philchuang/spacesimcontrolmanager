@@ -8,7 +8,7 @@ public class MappingData
     public IList<InputDevice> Inputs { get; set; } = new List<InputDevice>();
     public IList<Mapping> Mappings { get; set; } = new List<Mapping>();
 
-    public InputDevice GetInputForMapping(Mapping mapping)
+    public InputDevice GetRelatedInput(Mapping mapping)
     {
         string type = string.Empty;
         int instance = 0;
@@ -36,5 +36,16 @@ public class MappingData
         {
             throw new SccmException($"Could not find [{type}] [{instance}].");
         }
+    }
+
+    public IEnumerable<Mapping> GetRelatedMappings(InputDevice input)
+    {
+        var typeAbbv = input.Type switch {
+            "keyboard" => "kb",
+            "joystick" => "joystick",
+            _ => throw new ArgumentOutOfRangeException(),
+        };
+        var prefix = $"{typeAbbv}{input.Instance}_";
+        return this.Mappings.Where(m => m.Input.StartsWith(prefix));
     }
 }
