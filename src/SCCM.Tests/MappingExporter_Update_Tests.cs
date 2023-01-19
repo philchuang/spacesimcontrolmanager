@@ -82,7 +82,7 @@ public class MappingExporter_Update_Tests
         if (!string.IsNullOrWhiteSpace(input.Product))
             return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/options[@type='{input.Type}' and @instance='{input.Instance}' and @Product='{input.Product}']").SingleOrDefault();
 
-        return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/options[@type='{input.Type}' and @instance='{input.Instance}'").SingleOrDefault();
+        return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/options[@type='{input.Type}' and @instance='{input.Instance}']").SingleOrDefault();
     }
 
     private XElement GetActionRebindElement(XDocument xd, Mapping mapping)
