@@ -23,6 +23,15 @@ public class ControlManager : ControlManagerBase
         this.AppSaveLocation = this._folders.SccmDir;
     }
 
+    protected override IMappingDataRepository CreateMappingDataRepository()
+    {
+        var repo = new MappingDataRepository(this.Platform, this.MappingDataSavePath, "scmappings.{0}.json.bak");
+        repo.StandardOutput += WriteLineStandard;
+        repo.WarningOutput += WriteLineWarning;
+        repo.DebugOutput += WriteLineDebug;
+        return repo;
+    }
+
     protected override MappingImporter CreateImporter()
     {
         var importer = new MappingImporter(this.Platform, this.GameConfigPath);
