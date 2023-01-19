@@ -129,23 +129,23 @@ public class Mapper
         this.StandardOutput($"Mappings restored to [{exporter.ActionMapsXmlPath}].");
     }
 
-    public async Task Backup()
+    public void Backup()
     {
         var exporter = this.CreateExporter();
         var backup = exporter.Backup();
         this.StandardOutput($"actionmaps.xml backed up to [{backup}].");
     }
 
-    public async Task Restore()
+    public void Restore()
     {
         var exporter = this.CreateExporter();
         var backup = exporter.RestoreLatest();
         this.StandardOutput($"actionmaps.xml restored from [{backup}].");
     }
 
-    public async Task Open()
+    public void Open()
     {
-        // TODO write test
+        // TODO write simple test
         this._platform.Open(this.SccmMappingsJsonPath);
         this.StandardOutput($"Opening [{this.SccmMappingsJsonPath}] in the default editor, change the Preserve property to choose which settings are overwritten.");
     }
