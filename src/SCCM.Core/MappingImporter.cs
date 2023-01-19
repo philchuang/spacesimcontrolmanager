@@ -6,7 +6,7 @@ using static SCCM.Core.Extensions;
 
 namespace SCCM.Core;
 
-public class DataReader
+public class MappingImporter
 {
     public event Action<string> StandardOutput = delegate {};
     public event Action<string> WarningOutput = delegate {};
@@ -16,7 +16,7 @@ public class DataReader
 
     private MappingData _data = new MappingData();
 
-    public DataReader(string path)
+    public MappingImporter(string path)
     {
         this.ActionMapsXmlPath = path;
     }

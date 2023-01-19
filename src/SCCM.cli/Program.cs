@@ -16,28 +16,28 @@ class Program
         );
 
         var root = new RootCommand("Star Citizen Control Mapper Tool");
-        root.AddCommand(BuildReadCommand(mapper, debugOption));
-        root.AddCommand(BuildWriteCommand(mapper, debugOption));
+        root.AddCommand(BuildBackupCommand(mapper, debugOption));
+        root.AddCommand(BuildRestoreCommand(mapper, debugOption));
         return root;
     }
 
-    private static Command BuildReadCommand(SCCM.Core.Mapper mapper, Option<bool> debugOption)
+    private static Command BuildBackupCommand(SCCM.Core.Mapper mapper, Option<bool> debugOption)
     {
-        var cmd = new Command("copy", "Reads in the current Star Citizen control mappings and saves it locally.");
+        var cmd = new Command("backup", "Reads in the current Star Citizen control mappings and saves it locally.");
         cmd.Add(debugOption);
         cmd.SetHandler(async (debug) => {
             if (debug) ShowDebugOutput = true;
-            await mapper.ReadAndSave();
+            await mapper.ImportAndSave();
         },
         debugOption);
         return cmd;
     }
 
-    private static Command BuildWriteCommand(SCCM.Core.Mapper mapper, Option<bool> debugOption)
+    private static Command BuildRestoreCommand(SCCM.Core.Mapper mapper, Option<bool> debugOption)
     {
-        var cmd = new Command("paste", "Updates the Star Citizen control mappings from the local copy.");
+        var cmd = new Command("restore", "Updates the Star Citizen control mappings from the local copy.");
         cmd.SetHandler(async (debug) => {
-            await mapper.Restore();
+            await mapper.LoadAndRestore();
         });
         return cmd;
     }
