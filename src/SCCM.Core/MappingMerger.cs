@@ -31,7 +31,7 @@ public class MappingMerger
 
         foreach (var action in this.Result.MergeActions)
         {
-            if (action.NewValue is InputDevice input)
+            if (action.Value is InputDevice input)
             {
                 if (action.Mode == MappingMergeActionMode.Add)
                 {
@@ -46,11 +46,12 @@ public class MappingMerger
                     throw new InvalidOperationException($"Invalid combination of MappingMergeActionMode.Replace and InputDevice.");
                 }
             }
-            else if (action.NewValue is InputDeviceSetting setting)
+            else if (action.Value is InputDeviceSetting setting)
             {
-                if (!(action.Target is InputDevice target))
+                // TODO consider if Parent property can be either used universally or removed
+                if (!(action.Parent is InputDevice target))
                 {
-                    throw new InvalidCastException($"Expected type of {typeof(InputDevice).Name}, got {action.Target?.GetType().Name ?? "null"}.");
+                    throw new InvalidCastException($"Expected type of {typeof(InputDevice).Name}, got {action.Parent?.GetType().Name ?? "null"}.");
                 }
 
                 if (action.Mode == MappingMergeActionMode.Add)
@@ -69,7 +70,7 @@ public class MappingMerger
                     target.Settings.RemoveAt(idx + 1);
                 }
             }
-            else if (action.NewValue is Mapping mapping)
+            else if (action.Value is Mapping mapping)
             {
                 if (action.Mode == MappingMergeActionMode.Add)
                 {
