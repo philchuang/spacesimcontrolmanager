@@ -1,0 +1,92 @@
+{
+    "Inputs":
+    [
+        {
+            "Instance": 1,
+            "Product": "Keyboard  {6F1D2B61-D5A0-11CF-BFC7-444553540000}",
+            "Settings":
+            [],
+            "Type": "keyboard"
+        },
+        {
+            "Instance": 1,
+            "Product": "Controller (Gamepad)",
+            "Settings":
+            [
+                {
+                    "Name": "flight_view",
+                    "Properties":
+                    {
+                        "exponent": "1"
+                    }
+                }
+            ],
+            "Type": "gamepad"
+        },
+        {
+            "Instance": 1,
+            "Product": " VKB-Sim Gladiator NXT R    {0200231D-0000-0000-0000-504944564944}",
+            "Settings":
+            [],
+            "Type": "joystick"
+        },
+        {
+            "Instance": 2,
+            "Product": " VKBsim Gladiator EVO OT  L SEM   {3205231D-0000-0000-0000-504944564944}",
+            "Settings":
+            [
+                {
+                    "Name": "flight_move_strafe_vertical",
+                    "Properties":
+                    {
+                        "invert": "1"
+                    }
+                },
+                {
+                    "Name": "flight_move_strafe_longitudinal",
+                    "Properties":
+                    {
+                        "invert": "1"
+                    }
+                }
+            ],
+            "Type": "joystick"
+        }
+    ],
+    "Mappings":
+    [
+        {
+            "Action": "v_toggle_mining_mode",
+            "ActionMap": "seat_general",
+            "Input": "js2_button56",
+            "InputType": "joystick",
+            "MultiTap": null,
+            "Preserve": true
+        },
+        {
+            "Action": "v_toggle_quantum_mode",
+            "ActionMap": "seat_general",
+            "Input": "js2_button19",
+            "InputType": "joystick",
+            "MultiTap": null,
+            "Preserve": true
+        },
+        {
+            "Action": "v_view_pitch",
+            "ActionMap": "spaceship_view",
+            "Input": "js1_ ",
+            "InputType": "joystick",
+            "MultiTap": null,
+            "Preserve": false
+        },
+        {
+            "Action": "v_target_unlock_selected",
+            "ActionMap": "spaceship_targeting",
+            "Input": "js1_button16",
+            "InputType": "joystick",
+            "MultiTap": 2,
+            "Preserve": true
+        }
+    ],
+    "ReadTime": "2022-12-22T05:42:36.1532351Z"
+}
