@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCCM.Core", "SCCM.Core\SCCM.Core.csproj", "{C1F2FDF9-6F1F-4E43-8378-A6980CB0509C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCCM.cli", "SCCM.cli\SCCM.cli.csproj", "{932A93F6-720F-4ECC-B5BF-AFEEDA861AD5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C1F2FDF9-6F1F-4E43-8378-A6980CB0509C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1F2FDF9-6F1F-4E43-8378-A6980CB0509C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1F2FDF9-6F1F-4E43-8378-A6980CB0509C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1F2FDF9-6F1F-4E43-8378-A6980CB0509C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{932A93F6-720F-4ECC-B5BF-AFEEDA861AD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{932A93F6-720F-4ECC-B5BF-AFEEDA861AD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{932A93F6-720F-4ECC-B5BF-AFEEDA861AD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{932A93F6-720F-4ECC-B5BF-AFEEDA861AD5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
