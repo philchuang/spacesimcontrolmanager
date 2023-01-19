@@ -87,14 +87,25 @@ public class MappingExporter
             this.SetupXDocument(xd);
         }
 
-        await this.ExportInputDevices(data.Inputs, apply);
-        await this.ExportMappings(data.Mappings, apply);
+        await this.ExportInputDevices(data.Inputs);
+        await this.ExportMappings(data.Mappings);
+
+        if (!apply) return;
+
+        this.StandardOutput($"Saving new actionmaps.xml...");
+        using (var fs = new FileStream(this.ActionMapsXmlPath, FileMode.Create))
+        using (var xw = XmlWriter.Create(fs, new XmlWriterSettings { Async = true, Indent = true }))
+        {
+            var ct = new CancellationToken();
+            await this._xd.WriteToAsync(xw, ct);
+        }
+        this.StandardOutput($"Saved.");
     }
 
     private XDocument? _xd;
     private XElement? _actionMapsElement;
     private XElement? _actionProfilesDefaultElement;
-    private Dictionary<string, XElement> _actionElementMap;
+    private Dictionary<string, XElement> _actionElementMap = new Dictionary<string, XElement>();
 
     private void SetupXDocument(XDocument xd)
     {
@@ -116,26 +127,63 @@ public class MappingExporter
             throw new InvalidDataException($"Could not find <ActionProfiles> with profileName [default].");
         }
 
-        // TODO not quite
-        this._actionElementMap = this._actionProfilesDefaultElement.GetChildren("actionmaps").Where(e => e.GetAttribute("name") != string.Empty).ToDictionary(e => e.GetAttribute("name"));
+        this._actionElementMap.Clear();
+        foreach (var actionmapElement in this._actionProfilesDefaultElement.GetChildren("actionmap").Where(e => e.GetAttribute("name") != string.Empty))
+        {
+            var actionmapName = actionmapElement.GetAttribute("name");
+            this._actionElementMap[$"{actionmapName}-"] = actionmapElement;
+            foreach (var actionElement in actionmapElement.GetChildren("action").Where(e => e.GetAttribute("name") != string.Empty))
+            {
+                var actionName = actionElement.GetAttribute("name");
+                this._actionElementMap[$"{actionmapName}-{actionName}"] = actionElement;
+            }
+        }
     }
 
-    private async Task ExportInputDevices(IEnumerable<InputDevice> inputs, bool apply)
+    private async Task ExportInputDevices(IEnumerable<InputDevice> inputs)
     {
     }
 
-    private XElement GetActionElement(string actionmapName, string actionName)
+    private async Task ExportMappings(IEnumerable<Mapping> mappings)
     {
-        // silly code to prevent warning
-        if (this._actionProfilesDefaultElement == null) throw new Exception();
+        foreach (var mapping in mappings.Where(m => m.Preserve))
+        {
+            if (!this._actionElementMap.TryGetValue($"{mapping.ActionMap}-{mapping.Action}", out var actionElement))
+            {
+                if (!this._actionElementMap.TryGetValue($"{mapping.ActionMap}-", out var actionmapElement))
+                {
+                    this.StandardOutput($"Creating <actionmap name=\"{mapping.ActionMap}\">...");
+                    // create <actionmap>
+                    actionmapElement = new XElement("actionmap");
+                    actionmapElement.SetAttributeValue("name", mapping.ActionMap);
+                    this._actionProfilesDefaultElement.Add(actionmapElement);
+                    this._actionElementMap[$"{mapping.ActionMap}-"] = actionmapElement;
+                }
 
-        return this._actionProfilesDefaultElement
-            .GetChildren("actionmap").SingleOrDefault(actionmap => actionmap.GetAttribute("name") == actionmapName)
-            .GetChildren("action").SingleOrDefault(action => action.GetAttribute("name") == actionName);
-    }
+                this.StandardOutput($"Creating <action name=\"{mapping.Action}\">...");
+                // create <action>
+                actionElement = new XElement("action");
+                actionElement.SetAttributeValue("name", mapping.Action);
+                actionmapElement.Add(actionElement);
+                this._actionElementMap[$"{mapping.ActionMap}-{mapping.Action}"] = actionmapElement;
+            }
 
-    private async Task ExportMappings(IEnumerable<Mapping> mappings, bool apply)
-    {
-        // TODO implement
+            var rebindElement = actionElement.GetChildren("rebind").SingleOrDefault();
+            if (rebindElement == null)
+            {
+                this.StandardOutput($"Creating <rebind input=\"{mapping.Input}\" />...");
+                rebindElement = new XElement("rebind");
+                rebindElement.SetAttributeValue("input", mapping.Input);
+                actionElement.Add(rebindElement);
+            }
+            else
+            {
+                if (!string.Equals(rebindElement.GetAttribute("input"), mapping.Input))
+                {
+                    this.StandardOutput($"Updating {mapping.ActionMap}-{mapping.Action} to {mapping.Input}...");
+                    rebindElement.SetAttributeValue("input", mapping.Input);
+                }
+            }
+        }
     }
 }
