@@ -9,6 +9,8 @@ public class Mapper
     public string ReadLocation { get; set; } = string.Empty;
     public string SaveLocation { get; set; } = string.Empty;
 
+    private MappingData _data = new MappingData();
+
     public Mapper()
     {
         Initialize();
@@ -31,7 +33,7 @@ public class Mapper
             this.ReadLocation = scpath2;
         }
 
-        this.SaveLocation = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "SCCM.json");
+        this.SaveLocation = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments), "SCCM", "mappings.json");
     }
 
     private string GetActionMapsXmlPath()
@@ -56,16 +58,18 @@ public class Mapper
         var actionmapsxml = GetActionMapsXmlPath();
 
         // read-in XML file
-        var reader = new Reader(actionmapsxml);
+        var reader = new DataReader(actionmapsxml);
         reader.StandardOutput += this.StandardOutput;
         reader.WarningOutput += this.WarningOutput;
         reader.DebugOutput += this.DebugOutput;
-        await reader.Read();
+        this._data = await reader.Read();
     }
 
     public async Task Save()
     {
-        // TODO implement
+        System.IO.Directory.CreateDirectory(this.SaveLocation);
+        var writer = new DataWriter(this.SaveLocation);
+        await writer.Write(this._data);
     }
 
     public async Task Restore()

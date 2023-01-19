@@ -4,9 +4,10 @@ using SCCM.Core;
 namespace SCCM.Tests;
 
 [TestFixture]
-public class Reader_Read_Tests
+public class DataReader_Read_Tests
 {
-    private readonly Reader _reader;
+    private readonly DataReader _reader;
+    private MappingData? _data;
 
     private static string GetSamplesDir()
     {
@@ -19,9 +20,9 @@ public class Reader_Read_Tests
         return new System.IO.FileInfo(System.IO.Path.Combine(GetSamplesDir(), "actionmaps.3.17.4.xml")).FullName;
     }
 
-    public Reader_Read_Tests()
+    public DataReader_Read_Tests()
     {
-        _reader = new Reader(GetSampleXmlPath());
+        _reader = new DataReader(GetSampleXmlPath());
         // TODO figure out how to make this show
         _reader.StandardOutput += s => System.Diagnostics.Debug.WriteLine($"[STD  ] {s}");
         _reader.WarningOutput  += s => System.Diagnostics.Debug.WriteLine($"[WARN ] {s}");
@@ -31,13 +32,14 @@ public class Reader_Read_Tests
     [OneTimeSetUp]
     public async Task Init()
     {
-
-        await _reader.Read();
+        this._data = await _reader.Read();
     }
 
     [Test]
     public void Read_LoadsInputs()
     {
+        Assert.NotNull(this._data);
+
         var expected = new InputDevice[] {
             new InputDevice { Type = "keyboard", Instance = 1, Product = "Keyboard  {6F1D2B61-D5A0-11CF-BFC7-444553540000}" },
             new InputDevice { Type = "gamepad", Instance = 1, Product = "Controller (Gamepad)", Settings = new InputDeviceSetting[] {
@@ -51,7 +53,7 @@ public class Reader_Read_Tests
         };
         Assert2.EnumerableEquals(
             expected,
-            (IList<InputDevice>) _reader.Inputs,
+            _data.Inputs,
             (e, a) => {
                 Assert.AreEqual(e.Type, a.Type);
                 Assert.AreEqual(e.Instance, a.Instance);
@@ -74,7 +76,7 @@ public class Reader_Read_Tests
         };
 
         var expected = mappings.ToDictionary(m => $"{m.ActionMap}-{m.Action}");
-        var actual = _reader.Mappings.ToDictionary(m => $"{m.ActionMap}-{m.Action}");
+        var actual = _data.Mappings.ToDictionary(m => $"{m.ActionMap}-{m.Action}");
 
         Assert2.DictionaryEquals(
             expected,
