@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.CommandLine;
 using SCCM.Core;
+using SCCM.Core.SC;
 
 namespace SCCM.cli;
 

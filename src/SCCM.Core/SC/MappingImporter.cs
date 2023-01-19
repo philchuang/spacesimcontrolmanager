@@ -1,20 +1,7 @@
-﻿using System.Collections;
-using System.Linq;
-using System.Xml;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 using static SCCM.Core.Extensions;
-using static SCCM.Core.XmlExtensions;
 
-namespace SCCM.Core;
-
-public interface IMappingImporter
-{
-    event Action<string> StandardOutput;
-    event Action<string> WarningOutput;
-    event Action<string> DebugOutput;
-
-    Task<MappingData> Read();
-}
+namespace SCCM.Core.SC;
 
 public class MappingImporter : IMappingImporter
 {

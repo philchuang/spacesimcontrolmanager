@@ -1,25 +1,7 @@
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Xml;
 using System.Xml.Linq;
-using System.Xml.XPath;
-using static SCCM.Core.XmlExtensions;
 
-namespace SCCM.Core;
-
-public interface IMappingExporter
-{
-    event Action<string> StandardOutput;
-    event Action<string> WarningOutput;
-    event Action<string> DebugOutput;
-
-    string GameConfigPath { get; }
-
-    string Backup();
-    string RestoreLatest();
-    Task Preview(MappingData source);
-    Task Update(MappingData source);
-}
+namespace SCCM.Core.SC;
 
 public class MappingExporter : IMappingExporter
 {
