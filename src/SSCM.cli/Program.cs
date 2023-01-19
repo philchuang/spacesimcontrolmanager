@@ -26,7 +26,7 @@ class Program
         return Host.CreateDefaultBuilder()
             .ConfigureAppConfiguration(app =>
             {
-                app.AddJsonFile("appsettings.json");
+                app.AddJsonFile("appsettings.json", true);
                 config = app.Build();
             })
             .ConfigureServices(services =>
@@ -34,6 +34,7 @@ class Program
                 services.AddSingleton<IConfiguration>(s => config!);
                 services.AddSingleton<IPlatform, Platform>();
                 services.AddSingleton<ISCFolders, SCFolders>();
+                // TODO add capability to choose which space sim, e.g. SC, ED
                 services.AddTransient<IControlManager>(s => new ControlManager(s.GetService<IPlatform>()!, s.GetService<ISCFolders>()!));
             });
     }
@@ -54,15 +55,20 @@ class Program
             description: "Display debug output"
         );
 
-        var root = new RootCommand("Star Citizen Control Manager");
+        var root = new RootCommand("Space Sim Control Manager");
         root.AddGlobalOption(debugOption);
+        AddStarCitizenCommands(manager, root, debugOption);
+        return root;
+    }
+
+    private static void AddStarCitizenCommands(IControlManager manager, RootCommand root, Option<bool> debugOption)
+    {
         root.AddCommand(BuildImportCommand(manager, debugOption));
         root.AddCommand(BuildEditCommand(manager));
         root.AddCommand(BuildEditSCCommand(manager));
         root.AddCommand(BuildExportCommand(manager, debugOption));
         root.AddCommand(BuildBackupCommand(manager, debugOption));
         root.AddCommand(BuildRestoreCommand(manager, debugOption));
-        return root;
     }
 
     private static Command BuildImportCommand(IControlManager manager, Option<bool> debugOption)

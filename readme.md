@@ -12,7 +12,7 @@ Imports the Star Citizen actionmaps.xml and saves it locally in a mappings JSON 
 > SSCM.exe import
 Read in 4 input devices.
 Read in 114 mappings.
-Mappings backed up to [My Documents\SSCM\scmappings.json].
+Mappings backed up to [My Documents\SSCM\SC\scmappings.json].
 ```
 
 ### Edit
@@ -21,7 +21,7 @@ Opens the mappings JSON file in the system default editor. Edit the `Preserve` p
 
 ```cmd
 > SSCM.exe edit
-Opening [My Documents\SSCM\scmappings.json] in the default editor, change the Preserve property to choose which settings are overwritten.
+Opening [My Documents\SSCM\SC\scmappings.json] in the default editor, change the Preserve property to choose which settings are overwritten.
 ```
 
 ### Export Preview
@@ -72,7 +72,7 @@ MAPPING changed and will not merge: [seat_general-v_toggle_scan_mode] => js2_but
 MAPPING changed and will merge: [seat_general-v_toggle_mining_mode] js2_button55 => js2_button54
 MAPPING changed and will not merge: [seat_general-v_toggle_quantum_mode] => js2_button56, preserving js2_button19
 MAPPING changed and will not merge: [seat_general-v_toggle_scan_mode] => js2_button55, preserving js2_button54
-Mappings backed up to [My Documents\SSCM\scmappings.json].
+Mappings backed up to [My Documents\SSCM\SC\scmappings.json].
 ```
 
 #### Overwrite mappings
@@ -82,7 +82,7 @@ Mappings backed up to [My Documents\SSCM\scmappings.json].
 Read in 4 input devices.
 Read in 114 mappings.
 Overwriting existing mappings data!
-Mappings backed up to [My Documents\SSCM\scmappings.json].
+Mappings backed up to [My Documents\SSCM\SC\scmappings.json].
 ```
 
 ### Back up the Star Citizen actionmaps.xml
@@ -91,7 +91,7 @@ Makes a local copy of the Star Citizen actionmaps.xml which can be restored late
 
 ```cmd
 > SSCM.exe backup
-actionmaps.xml backed up to [My Documents\SSCM\actionmaps.xml.20221223022032.bak].
+actionmaps.xml backed up to [My Documents\SSCM\SC\actionmaps.xml.20221223022032.bak].
 ```
 
 ### Restore the backed-up Star Citizen actionmaps.xml
@@ -100,7 +100,7 @@ Restores the latest local backup of the Star Citizen actionmaps.xml.
 
 ```cmd
 > SSCM.exe restore
-actionmaps.xml restored from [My Documents\SSCM\actionmaps.xml.20221223022032.bak].
+actionmaps.xml restored from [My Documents\SSCM\SC\actionmaps.xml.20221223022032.bak].
 ```
 
 ### Edit the Star Citizen actionmaps.xml
