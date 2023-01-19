@@ -32,6 +32,8 @@ public class MappingUpdater_Update_Tests
     {
         /* CHANGES
          * - switched joystick order
+         * - TODO changed bindings that are preserved (should update)
+         * - TODO changed bindings that are not preserved (should not update)
          */
         var data = new MappingData
         {
