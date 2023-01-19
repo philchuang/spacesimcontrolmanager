@@ -14,10 +14,10 @@ namespace SCCM.Tests;
 [TestFixture]
 public class MappingExporter_Update_Tests
 {
-    private MappingExporter? _updater;
+    private MappingExporter? _exporter;
     private readonly IPlatform _platform;
     private readonly ISCFolders _folders;
-    private MappingData _data = new MappingData();
+    private MappingData _source = new MappingData();
     private XDocument? _originalXml = null;
     private XDocument? _updatedXml = null;
 
@@ -30,42 +30,47 @@ public class MappingExporter_Update_Tests
     [SetUp]
     protected async Task Init()
     {
-        this._updater = new MappingExporter(this._platform, this._folders, this.GetTestXmlPath());
-        this._updater.StandardOutput += s => TestContext.Out.WriteLine($"[STD  ]\t{s}");
-        this._updater.DebugOutput += s => TestContext.Out.WriteLine($"[DEBUG]\t{s}");
-        this._updater.WarningOutput += s => TestContext.Out.WriteLine($"[WARN ]\t{s}");
+        this._exporter = new MappingExporter(this._platform, this._folders, this.GetTargetXmlPath());
+        this._exporter.StandardOutput += s => TestContext.Out.WriteLine($"[STD  ]\t{s}");
+        this._exporter.DebugOutput    += s => TestContext.Out.WriteLine($"[DEBUG]\t{s}");
+        this._exporter.WarningOutput  += s => TestContext.Out.WriteLine($"[WARN ]\t{s}");
 
         this._originalXml = await this.LoadXml(Samples.GetActionMapsXmlPath());
-    }
-
-    private async Task Act()
-    {
-        System.IO.Directory.CreateDirectory(new FileInfo(this.GetTestXmlPath()).DirectoryName);
-        using (var fs = new FileStream(this.GetTestXmlPath(), FileMode.Create))
-        using (var xw = XmlWriter.Create(fs, new XmlWriterSettings { Async = true, Indent = true }))
-        {
-            var ct = new CancellationToken();
-            await this._originalXml.WriteToAsync(xw, ct);
-        }
-        await this._updater.Update(this._data);
-        this._updatedXml = await this.LoadXml(this.GetTestXmlPath());
-    }
-
-    private void AssertBasics()
-    {
-        Assert.NotNull(this._updatedXml);
-        Assert.NotNull(this._updatedXml.Root);
-        Assert.AreEqual("ActionMaps", this._updatedXml.Root.Name.LocalName);
-        Assert.NotNull(this._updatedXml.XPathSelectElement("/ActionMaps/ActionProfiles[@profileName='default']"));
     }
 
     [TearDown]
     protected void Cleanup()
     {
-        System.IO.Directory.Delete(new FileInfo(this.GetTestXmlPath()).DirectoryName, true);
+        System.IO.Directory.Delete(new FileInfo(this.GetTargetXmlPath()).DirectoryName, true);
     }
 
-    private string GetTestXmlPath()
+    private async Task Act()
+    {
+        // write _originalXml
+        System.IO.Directory.CreateDirectory(new FileInfo(this.GetTargetXmlPath()).DirectoryName);
+        using (var fs = new FileStream(this.GetTargetXmlPath(), FileMode.Create))
+        using (var xw = XmlWriter.Create(fs, new XmlWriterSettings { Async = true, Indent = true }))
+        {
+            var ct = new CancellationToken();
+            await this._originalXml.WriteToAsync(xw, ct);
+        }
+
+        // execute export
+        await this._exporter.Update(this._source);
+
+        // read _updatedXml
+        this._updatedXml = await this.LoadXml(this.GetTargetXmlPath());
+    }
+
+    private void AssertBasics()
+    {
+        Assert.NotNull(this._updatedXml, nameof(this._updatedXml));
+        Assert.NotNull(this._updatedXml.Root, nameof(this._updatedXml.Root));
+        Assert.AreEqual("ActionMaps", this._updatedXml.Root.Name.LocalName);
+        Assert.NotNull(this._updatedXml.XPathSelectElement("/ActionMaps/ActionProfiles[@profileName='default']"));
+    }
+
+    private string GetTargetXmlPath()
     {
         return new System.IO.FileInfo(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), TestContext.CurrentContext.Test.Name, "actionmaps.xml")).FullName;
     }
@@ -79,22 +84,24 @@ public class MappingExporter_Update_Tests
         }
     }
 
-    private XElement GetInputElement(XDocument xd, InputDevice input)
+    private XElement? GetInputElement(XDocument xd, string type, int instance)
     {
-        if (!string.IsNullOrWhiteSpace(input.Product))
-            return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/options[@type='{input.Type}' and @instance='{input.Instance}' and @Product='{input.Product}']").SingleOrDefault();
-
-        return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/options[@type='{input.Type}' and @instance='{input.Instance}']").SingleOrDefault();
+        return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/options[@type='{type}' and @instance='{instance}']").SingleOrDefault();
     }
 
-    private XElement GetActionRebindElement(XDocument xd, Mapping mapping)
+    private XElement? GetInputElement(XDocument xd, string type, int instance, string product)
+    {
+        return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/options[@type='{type}' and @instance='{instance}' and @Product='{product}']").SingleOrDefault();
+    }
+
+    private XElement? GetActionRebindElement(XDocument xd, Mapping mapping)
     {
         return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/actionmap[@name='{mapping.ActionMap}']/action[@name='{mapping.Action}']/rebind").SingleOrDefault();
     }
 
     private void Arrange_Default_MappingData()
     {
-        this._data = new MappingData {
+        this._source = new MappingData {
             Inputs = {
                 new InputDevice { Type = "keyboard", Instance = 1, Preserve = true, Product = "Keyboard  {6F1D2B61-D5A0-11CF-BFC7-444553540000}" },
                 new InputDevice { Type = "gamepad", Instance = 1, Preserve = true, Product = "Controller (Gamepad)", Settings = {
@@ -146,8 +153,8 @@ public class MappingExporter_Update_Tests
     private (string, Mapping) Arrange_Update_overwrites_mapping_change(bool preserve)
     {
         this.Arrange_Default_MappingData();
-        this._data.Mappings.ToList().ForEach(m => m.Preserve = false);
-        var mapping = this._data.Mappings.Single(m => m.ActionMap == "spaceship_movement" && m.Action == "v_ifcs_toggle_cruise_control");
+        this._source.Mappings.ToList().ForEach(m => m.Preserve = false);
+        var mapping = this._source.Mappings.Single(m => m.ActionMap == "spaceship_movement" && m.Action == "v_ifcs_toggle_cruise_control");
         mapping.Preserve = preserve;
         var actionRebindElement = this.GetActionRebindElement(this._originalXml, mapping);
         var originalInputValue = actionRebindElement.GetAttribute("input");
@@ -198,9 +205,9 @@ public class MappingExporter_Update_Tests
     {
         // Arrange
         this.Arrange_Default_MappingData();
-        this._data.Mappings.ToList().ForEach(m => m.Preserve = false);
+        this._source.Mappings.ToList().ForEach(m => m.Preserve = false);
         var mapping = new Mapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}", Preserve = true };
-        this._data.Mappings.Add(mapping);
+        this._source.Mappings.Add(mapping);
 
         // Act
         await this.Act();
@@ -222,9 +229,9 @@ public class MappingExporter_Update_Tests
     {
         // Arrange
         this.Arrange_Default_MappingData();
-        this._data.Mappings.ToList().ForEach(m => m.Preserve = false);
-        var mapping = new Mapping { ActionMap = this._data.Mappings.First().ActionMap, Action = RandomString(), Input = $"js2_{RandomString()}", Preserve = true };
-        this._data.Mappings.Add(mapping);
+        this._source.Mappings.ToList().ForEach(m => m.Preserve = false);
+        var mapping = new Mapping { ActionMap = this._source.Mappings.First().ActionMap, Action = RandomString(), Input = $"js2_{RandomString()}", Preserve = true };
+        this._source.Mappings.Add(mapping);
 
         // Act
         await this.Act();
@@ -244,14 +251,14 @@ public class MappingExporter_Update_Tests
     protected (InputDevice, InputDeviceSetting, string, string) Arrange_Update_overwrites_input_setting(bool settingPreserve)
     {
         this.Arrange_Default_MappingData();
-        this._data.Inputs.SelectMany(i => i.Settings).ToList().ForEach(s => s.Preserve = false);
-        this._data.Mappings.ToList().ForEach(m => m.Preserve = false);
+        this._source.Inputs.SelectMany(i => i.Settings).ToList().ForEach(s => s.Preserve = false);
+        this._source.Mappings.ToList().ForEach(m => m.Preserve = false);
         
-        var exportedInput = this._data.Inputs[1];
+        var exportedInput = this._source.Inputs[1];
         var exportedSetting = exportedInput.Settings.First();
         exportedSetting.Preserve = settingPreserve;
         
-        var targetInputElement = this.GetInputElement(this._originalXml, exportedInput);
+        var targetInputElement = this.GetInputElement(this._originalXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
         var targetSettingElement = targetInputElement.Elements().Single();
         var targetSettingValueAttribute = targetSettingElement.Attributes().First();
         var targetSettingValue = targetSettingValueAttribute.Value;
@@ -276,7 +283,7 @@ public class MappingExporter_Update_Tests
         // silly code to prevent warnings
         if (this._updatedXml == null) return;
 
-        var changedInputElement = this.GetInputElement(this._updatedXml, exportedInput);
+        var changedInputElement = this.GetInputElement(this._updatedXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
         Assert.NotNull(changedInputElement, nameof(changedInputElement));
         var changedSettingElement = changedInputElement.Elements().Single();
         Assert.NotNull(changedSettingElement, nameof(changedSettingElement));
@@ -289,11 +296,11 @@ public class MappingExporter_Update_Tests
     {
         this.Arrange_Default_MappingData();
         // turn off all preserves
-        this._data.Inputs.SelectMany(i => i.Settings).ToList().ForEach(s => s.Preserve = false);
-        this._data.Mappings.ToList().ForEach(m => m.Preserve = false);
+        this._source.Inputs.SelectMany(i => i.Settings).ToList().ForEach(s => s.Preserve = false);
+        this._source.Mappings.ToList().ForEach(m => m.Preserve = false);
         
         // find first joystick
-        var exportedInput = this._data.Inputs.First(i => i.Type == "joystick");
+        var exportedInput = this._source.Inputs.First(i => i.Type == "joystick");
         // add XML setting
         var exportedSetting = new InputDeviceSetting { Name = "flight_move_pitch", Preserve = true, Properties = new Dictionary<string, string> { { "nonlinearity_curve", "<nonlinearity_curve><point in=\"0\" out=\"0\" /><point in=\"0.1\" out=\"0.063095726\" /><point in=\"0.2\" out=\"0.14495592\" /><point in=\"0.30000001\" out=\"0.23580092\" /><point in=\"0.40000001\" out=\"0.33302128\" /><point in=\"0.44116619\" out=\"0.56157923\" /><point in=\"0.60000002\" out=\"0.54172826\" /><point in=\"0.69999999\" out=\"0.65180492\" /><point in=\"0.80000001\" out=\"0.765082\" /><point in=\"0.90000004\" out=\"0.88123357\" /><point in=\"1\" out=\"1\" /></nonlinearity_curve>" } } };
         exportedInput.Settings.Add(exportedSetting);
@@ -308,7 +315,7 @@ public class MappingExporter_Update_Tests
         var (exportedInput, exportedSetting) = this.Arrange_XmlInputSetting_MappingData();
         var (exportedSettingValueName, exportedSettingValue) = exportedSetting.Properties.Select(kvp => (kvp.Key, kvp.Value)).First();        
         // find related pre-update input node
-        var targetInputElement = this.GetInputElement(this._originalXml, exportedInput);
+        var targetInputElement = this.GetInputElement(this._originalXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
         // find setting node
         var targetSettingElement = targetInputElement.GetChildren(exportedSetting.Name).SingleOrDefault();
         if (targetSettingElement == null)
@@ -336,7 +343,7 @@ public class MappingExporter_Update_Tests
         // silly code to prevent warnings
         if (this._updatedXml == null) return;
 
-        var changedInputElement = this.GetInputElement(this._updatedXml, exportedInput);
+        var changedInputElement = this.GetInputElement(this._updatedXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
         Assert.NotNull(changedInputElement, nameof(changedInputElement));
         var changedSettingElement = changedInputElement.GetChildren(exportedSetting.Name).SingleOrDefault();
         Assert.NotNull(changedSettingElement, nameof(changedSettingElement));
@@ -360,7 +367,7 @@ public class MappingExporter_Update_Tests
         // silly code to prevent warnings
         if (this._updatedXml == null) return;
 
-        var unchangedInputElement = this.GetInputElement(this._updatedXml, exportedInput);
+        var unchangedInputElement = this.GetInputElement(this._updatedXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
         Assert.NotNull(unchangedInputElement, nameof(unchangedInputElement));
         var unchangedSettingElement = unchangedInputElement.Elements().Single();
         Assert.NotNull(unchangedSettingElement, nameof(unchangedSettingElement));
@@ -374,14 +381,14 @@ public class MappingExporter_Update_Tests
     {
         // Arrange
         this.Arrange_Default_MappingData();
-        this._data.Inputs.SelectMany(i => i.Settings).ToList().ForEach(s => s.Preserve = false);
-        this._data.Mappings.ToList().ForEach(m => m.Preserve = false);
+        this._source.Inputs.SelectMany(i => i.Settings).ToList().ForEach(s => s.Preserve = false);
+        this._source.Mappings.ToList().ForEach(m => m.Preserve = false);
         
-        var exportedInput = this._data.Inputs[1];
+        var exportedInput = this._source.Inputs[1];
         var exportedSetting = new InputDeviceSetting { Name = "AbcDef", Preserve = true, Properties = { { "GhiJkl", RandomString() } } };
         exportedInput.Settings.Add(exportedSetting);
         
-        var targetInputElement = this.GetInputElement(this._originalXml, exportedInput);
+        var targetInputElement = this.GetInputElement(this._originalXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
         var targetSettingElement = targetInputElement.GetChildren(exportedSetting.Name).SingleOrDefault();
 
         var exportedSettingValue = exportedSetting.Properties.First();
@@ -394,7 +401,7 @@ public class MappingExporter_Update_Tests
         // silly code to prevent warnings
         if (this._updatedXml == null) return;
 
-        var changedInputElement = this.GetInputElement(this._updatedXml, exportedInput);
+        var changedInputElement = this.GetInputElement(this._updatedXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
         Assert.NotNull(changedInputElement, nameof(changedInputElement));
         var addedSettingElement = changedInputElement.GetChildren(exportedSetting.Name).SingleOrDefault();
         Assert.NotNull(addedSettingElement, nameof(addedSettingElement));
@@ -410,7 +417,7 @@ public class MappingExporter_Update_Tests
         var (exportedInput, exportedSetting) = this.Arrange_XmlInputSetting_MappingData();
         var (exportedSettingValueName, exportedSettingValue) = exportedSetting.Properties.Select(kvp => (kvp.Key, kvp.Value)).First();        
         // find related pre-update input node
-        var targetInputElement = this.GetInputElement(this._originalXml, exportedInput);
+        var targetInputElement = this.GetInputElement(this._originalXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
         // find setting node
         var targetSettingElement = targetInputElement.GetChildren(exportedSetting.Name).SingleOrDefault();
         if (targetSettingElement != null)
@@ -426,7 +433,7 @@ public class MappingExporter_Update_Tests
         // silly code to prevent warnings
         if (this._updatedXml == null) return;
 
-        var changedInputElement = this.GetInputElement(this._updatedXml, exportedInput);
+        var changedInputElement = this.GetInputElement(this._updatedXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
         Assert.NotNull(changedInputElement, nameof(changedInputElement));
         var changedSettingElement = changedInputElement.GetChildren(exportedSetting.Name).SingleOrDefault();
         Assert.NotNull(changedSettingElement, nameof(changedSettingElement));
@@ -440,30 +447,14 @@ public class MappingExporter_Update_Tests
     public async Task Update_restores_inputs()
     {
         // Arrange
-        // scenario: target xml has joystick inputs that no longer match the preserved inputs
-        // input:
-        //   data-1: only joystick inputs are marked as preserve
-        //   data-2: only some joystick mappings are preserved
-        //   xml-1: change joystick 1->2, 2->3
-        //   xml-2: change mappings js1->js2, js2->js3
-        //   xml-3: preserved mappings are modified
-        //   xml-4: add new joystick 1
-        //   xml-5: add made-up mappings for new js1
-        // expectation:
-        //   assert-1: joystick inputs 1 and 2 are restored (2->1, 3->2)
-        //   assert-2: made-up mappings for js1 are removed
-        //   assert-3: joystick input 1 is removed
-        //   assert-4: all mappings for js2 are rewritten for exported js1, ditto js3 -> js2
-        //   assert-5: preserved mappings are restored
-
         this.Arrange_Default_MappingData();
         // data-1: only joystick inputs are marked as preserve
-        this._data.Inputs.ToList().ForEach(i => i.Preserve = false);
-        var exportedJoystickInputs = this._data.Inputs.Where(i => string.Equals("joystick", i.Type, StringComparison.OrdinalIgnoreCase)).ToList();
+        this._source.Inputs.ToList().ForEach(i => i.Preserve = false);
+        var exportedJoystickInputs = this._source.Inputs.Where(i => string.Equals("joystick", i.Type, StringComparison.OrdinalIgnoreCase)).ToList();
         exportedJoystickInputs.ForEach(i => i.Preserve = true);
         // data-2: only some joystick mappings are preserved
-        this._data.Mappings.ToList().ForEach(m => m.Preserve = false);
-        var preservedMappings = this._data.Mappings.Where(m => m.Input.StartsWith("js1_")).Take(2).Concat(this._data.Mappings.Where(m => m.Input.StartsWith("js2_")).Take(2)).ToList();
+        this._source.Mappings.ToList().ForEach(m => m.Preserve = false);
+        var preservedMappings = this._source.Mappings.Where(m => m.Input.StartsWith("js1_")).Take(2).Concat(this._source.Mappings.Where(m => m.Input.StartsWith("js2_")).Take(2)).ToList();
         preservedMappings.ForEach(m => m.Preserve = true);
         // xml-1: change joystick 1->2, 2->3
         var xmlsb = new StringBuilder(this._originalXml.ToString(SaveOptions.DisableFormatting));
@@ -484,7 +475,7 @@ public class MappingExporter_Update_Tests
         var targetJoystick2Mappings = this._originalXml.XPathSelectElements("//*/rebind[starts-with(@input,'js2_')]").ToList();
         var targetJoystick3Mappings = this._originalXml.XPathSelectElements("//*/rebind[starts-with(@input,'js3_')]").ToList();
         // xml-4: add new joystick 1
-        var targetJoystick2Element = GetInputElement(this._originalXml, new InputDevice { Type = exportedJoystickInputs[0].Type, Instance = exportedJoystickInputs[0].Instance + 1, Product = exportedJoystickInputs[0].Product });
+        var targetJoystick2Element = GetInputElement(this._originalXml, exportedJoystickInputs[0].Type, exportedJoystickInputs[0].Instance + 1, exportedJoystickInputs[0].Product);
         var targetJoystick1Element =
             new XElement("options", 
             new XAttribute("type", "joystick"),
@@ -512,7 +503,7 @@ public class MappingExporter_Update_Tests
         // assert-1: joystick inputs 1 and 2 are restored (2->1, 3->2)
         foreach (var joystick in exportedJoystickInputs)
         {
-            var updatedElement = this.GetInputElement(this._updatedXml, joystick);
+            var updatedElement = this.GetInputElement(this._updatedXml, joystick.Type, joystick.Instance, joystick.Product);
             Assert.NotNull(updatedElement, nameof(updatedElement));
             // TODO assert that original input settings have carried over and preserved settings restored
         }
