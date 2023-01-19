@@ -25,8 +25,13 @@ public class DataSerializer
         using (var fs = File.Open(this.SavePath, FileMode.Create))
         using (var sw = new StreamWriter(fs))
         {
-            await sw.WriteAsync(JsonConvert.SerializeObject(data, this.Formatting));
+            await sw.WriteAsync(this.ToJson(data));
         }
+    }
+
+    public string ToJson(object data)
+    {
+        return JsonConvert.SerializeObject(data, this.Formatting);
     }
 
     public async Task<MappingData?> Read()
