@@ -22,6 +22,10 @@ public class Reader_Read_Tests
     public Reader_Read_Tests()
     {
         _reader = new Reader(GetSampleXmlPath());
+        // TODO figure out how to make this show
+        _reader.StandardOutput += s => System.Diagnostics.Debug.WriteLine($"[STD  ] {s}");
+        _reader.WarningOutput  += s => System.Diagnostics.Debug.WriteLine($"[WARN ] {s}");
+        _reader.DebugOutput    += s => System.Diagnostics.Debug.WriteLine($"[DEBUG] {s}");
     }
 
     [OneTimeSetUp]
@@ -45,14 +49,14 @@ public class Reader_Read_Tests
                 new InputDeviceSetting { Name = "flight_move_strafe_longitudinal", Properties = new Dictionary<string, string> { { "invert", "1" } } },
             } },
         };
-        Assert2.ListEquals(
+        Assert2.EnumerableEquals(
             expected,
             (IList<InputDevice>) _reader.Inputs,
             (e, a) => {
                 Assert.AreEqual(e.Type, a.Type);
                 Assert.AreEqual(e.Instance, a.Instance);
                 Assert.AreEqual(e.Product, a.Product);
-                Assert2.ListEquals(e.Settings, a.Settings, (e2, a2) => {
+                Assert2.EnumerableEquals(e.Settings, a.Settings, (e2, a2) => {
                     Assert2.DictionaryEquals(e2.Properties, a2.Properties);
                 });
             }
@@ -62,15 +66,26 @@ public class Reader_Read_Tests
     [Test]
     public void Read_LoadsMappings()
     {
-        var expected = new Mapping[] {
-            new Mapping { ActionMap = "seat_general", Action = "v_toggle_mining_mode", Input = "js2_button56" },
+        // only do a partial comparison
+        var mappings = new Mapping[] {
+            new Mapping { ActionMap = "seat_general", Action = "v_toggle_mining_mode", Input = "js2_button56", MultiTap = null, Preserve = true },
+            new Mapping { ActionMap = "seat_general", Action = "v_toggle_quantum_mode", Input = "js2_button19", MultiTap = null, Preserve = true },
+            new Mapping { ActionMap = "spaceship_targeting", Action = "v_target_unlock_selected", Input = "js1_button16", MultiTap = 2, Preserve = true },
         };
 
-        Assert2.ListEquals(
+        var expected = mappings.ToDictionary(m => $"{m.ActionMap}-{m.Action}");
+        var actual = _reader.Mappings.ToDictionary(m => $"{m.ActionMap}-{m.Action}");
+
+        Assert2.DictionaryEquals(
             expected,
-            (IList<Mapping>) _reader.Mappings,
+            actual,
+            true,
             (e, a) => {
-                // TODO
+                Assert.AreEqual(e.ActionMap, a.ActionMap);
+                Assert.AreEqual(e.Action, a.Action);
+                Assert.AreEqual(e.Input, a.Input);
+                Assert.AreEqual(e.MultiTap, a.MultiTap);
+                Assert.AreEqual(e.Preserve, a.Preserve);
             }
         );
     }

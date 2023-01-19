@@ -10,46 +10,65 @@ public static class Assert2
         Assert.AreEqual(length, list.Count);
     }
 
-    public static void ListEquals<T>(IList<T> expected, IList<T> actual, Action<T, T>? equate = null)
+    public static void EnumerableEquals<T>(IEnumerable<T> expected, IEnumerable<T> actual, Action<T, T>? equate = null)
     {
         if (expected == null && actual == null) return;
 
         Assert.NotNull(expected);
         Assert.NotNull(actual);
 
-        Assert.AreEqual(expected.Count, actual.Count);
-        for (var i = 0; i < expected.Count; i++)
+        equate = equate ?? ((e, a) => Assert.AreEqual(e, a));
+
+        var iterE = expected.GetEnumerator();        
+        var iterA = actual.GetEnumerator();        
+
+        var i = 0;
+        try
         {
-            if (equate != null)
+            while (iterE.MoveNext())
             {
-                equate(expected[i], actual[i]);
-                continue;
+                Assert.True(iterA.MoveNext());
+                equate(iterE.Current, iterA.Current);
+                i++;
             }
 
-            Assert.AreEqual(expected[i], actual[i]);
+            Assert.False(iterA.MoveNext());
         }
-        
+        catch (AssertionException ae)
+        {
+            throw new AssertionException($"Assertion failed at index {i}:\n{ae.Message}!", ae);
+        }
     }
 
-    public static void DictionaryEquals<T,V>(IDictionary<T, V> expected, IDictionary<T, V> actual, Action<V, V>? equate = null)
+    public static void DictionaryEquals<K,V>(IDictionary<K, V> expected, IDictionary<K, V> actual, bool expectedOnly = false, Action<V, V>? equate = null)
     {
         if (expected == null && actual == null) return;
 
         Assert.NotNull(expected);
         Assert.NotNull(actual);
 
-        Assert.AreEqual(expected.Count, actual.Count);
+        equate = equate ?? ((e, a) => Assert.AreEqual(e, a));
+
+        HashSet<K> actualKeys = new HashSet<K> (actual.Keys);
+        K lastKey;
         foreach (var kvp in expected)
         {
-            Assert.True(actual.TryGetValue(kvp.Key, out var aValue));
-            if (equate != null)
+            lastKey = kvp.Key;
+            try
             {
+                Assert.True(actual.TryGetValue(kvp.Key, out var aValue));
                 equate(kvp.Value, aValue);
-                continue;
+                actualKeys.Remove(kvp.Key);
             }
-
-            Assert.AreEqual(kvp.Value, aValue);
+            catch (AssertionException ae)
+            {
+                throw new AssertionException($"Assertion failed on key {lastKey}:\n{ae.Message}!", ae);
+            }
         }
-        
+
+        if (!expectedOnly)
+        {
+            Assert.AreEqual(0, actualKeys.Count);
+        }
     }
 }

@@ -3,6 +3,7 @@ namespace SCCM.Core;
 public class Mapper
 {
     public event Action<string> StandardOutput = delegate {};
+    public event Action<string> WarningOutput = delegate {};
     public event Action<string> DebugOutput = delegate {};
 
     public string ReadLocation { get; set; } = string.Empty;
@@ -43,19 +44,31 @@ public class Mapper
         return actionmapsxml;
     }
 
+    public async Task ReadAndSave()
+    {
+        await this.Read();
+        await this.Save();
+    }
+
     public async Task Read()
     {
         // check for SC mapping file
         var actionmapsxml = GetActionMapsXmlPath();
 
-        // TODO read-in XML file
+        // read-in XML file
         var reader = new Reader(actionmapsxml);
+        reader.StandardOutput += this.StandardOutput;
+        reader.WarningOutput += this.WarningOutput;
+        reader.DebugOutput += this.DebugOutput;
         await reader.Read();
-        // TODO save joystick instance data
-        // TODO save actionmap-action-rebind data in Mapping class
     }
 
-    public async Task Write()
+    public async Task Save()
+    {
+        // TODO implement
+    }
+
+    public async Task Restore()
     {
         // TODO check for SC mapping file
         var actionmapsxml = GetActionMapsXmlPath();
