@@ -44,7 +44,7 @@ class Program
 
     private static Mapper CreateMapper()
     {
-        var mapper = new Mapper();
+        var mapper = new Mapper(new Platform());
         mapper.StandardOutput += Console.WriteLine;
         mapper.WarningOutput += Console.WriteLine;
         mapper.DebugOutput += s => { if (ShowDebugOutput) Console.WriteLine(s); };
