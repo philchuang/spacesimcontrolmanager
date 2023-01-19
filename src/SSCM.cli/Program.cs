@@ -58,22 +58,28 @@ class Program
         var root = new RootCommand("Space Sim Control Manager");
         root.AddGlobalOption(debugOption);
         AddStarCitizenCommands(manager, root, debugOption);
+        AddEliteDangerousCommands(manager, root, debugOption);
         return root;
     }
 
+    /* IMPLEMENTATION NOTES
+     * - have managers be loaded automatically based on DLL search instead of explicitly?
+     */
     private static void AddStarCitizenCommands(IControlManager manager, RootCommand root, Option<bool> debugOption)
     {
-        root.AddCommand(BuildImportCommand(manager, debugOption));
-        root.AddCommand(BuildEditCommand(manager));
-        root.AddCommand(BuildEditSCCommand(manager));
-        root.AddCommand(BuildExportCommand(manager, debugOption));
-        root.AddCommand(BuildBackupCommand(manager, debugOption));
-        root.AddCommand(BuildRestoreCommand(manager, debugOption));
+        var sc = new Command(manager.CommandAlias, $"Manage {manager.GameType} mappings");
+        sc.AddCommand(BuildImportCommand(manager, debugOption));
+        sc.AddCommand(BuildEditCommand(manager));
+        sc.AddCommand(BuildEditGameCommand(manager));
+        sc.AddCommand(BuildExportCommand(manager, debugOption));
+        sc.AddCommand(BuildBackupCommand(manager, debugOption));
+        sc.AddCommand(BuildRestoreCommand(manager, debugOption));
+        root.AddCommand(sc);
     }
 
     private static Command BuildImportCommand(IControlManager manager, Option<bool> debugOption)
     {
-        var cmd = new Command("import", "Imports the Star Citizen actionmaps.xml and saves it locally in a mappings JSON file.");
+        var cmd = new Command("import", $"Imports the {manager.GameType} mappings and saves it locally.");
         cmd.Add(debugOption);
         cmd.SetHandler(async (debug) => {
                 if (debug) ShowDebugOutput = true;
@@ -81,7 +87,7 @@ class Program
             },
             debugOption);
 
-        var merge = new Command("merge", "Merges the latest mappings into the saved mappings.");
+        var merge = new Command("merge", $"Merges the latest {manager.GameType} mappings into the saved mappings.");
         merge.SetHandler(async (debug) => {
                 if (debug) ShowDebugOutput = true;
                 await manager.Import(mode: ImportMode.Merge);
@@ -89,7 +95,7 @@ class Program
             debugOption);
         cmd.AddCommand(merge);
 
-        var overwrite = new Command("overwrite", "Overwrites the saved mappings with the latest mappings.");
+        var overwrite = new Command("overwrite", $"Overwrites the saved {manager.GameType} mappings with the latest mappings.");
         overwrite.SetHandler(async (debug) => {
                 if (debug) ShowDebugOutput = true;
                 await manager.Import(mode: ImportMode.Overwrite);
@@ -110,10 +116,10 @@ class Program
         return cmd;
     }
 
-    private static Command BuildEditSCCommand(IControlManager manager)
+    private static Command BuildEditGameCommand(IControlManager manager)
     {
-        var cmd = new Command("editsc", "Opens the Star Citizen actionmaps.xml in the system default editor.");
-        cmd.AddAlias("opensc");
+        var cmd = new Command("editgame", $"Opens the {manager.GameType} mappings file in the system default editor.");
+        cmd.AddAlias("opengame");
         cmd.SetHandler(() => {
             manager.OpenGameConfig();
         });
@@ -122,7 +128,7 @@ class Program
 
     private static Command BuildExportCommand(IControlManager manager, Option<bool> debugOption)
     {
-        var cmd = new Command("export", "Previews updates to the Star Citizen bindings based on the locally saved mappings file.");
+        var cmd = new Command("export", $"Previews updates to the {manager.GameType} mappings based on the locally saved mappings file.");
         cmd.Add(debugOption);
         cmd.SetHandler(async (debug) => {
                 if (debug) ShowDebugOutput = true;
@@ -130,7 +136,7 @@ class Program
             },
             debugOption);
 
-        var apply = new Command("apply", "Updates the Star Citizen bindings based on the locally saved mappings file.");
+        var apply = new Command("apply", $"Updates {manager.GameType} mappings based on the locally saved mappings file.");
         apply.SetHandler(async (debug) => {
                 if (debug) ShowDebugOutput = true;
                 await manager.ExportApply();
@@ -143,7 +149,7 @@ class Program
 
     private static Command BuildBackupCommand(IControlManager manager, Option<bool> debugOption)
     {
-        var cmd = new Command("backup", "Makes a local copy of the Star Citizen actionmaps.xml which can be restored later.");
+        var cmd = new Command("backup", $"Makes a local copy of the {manager.GameType} mappings file which can be restored later.");
         cmd.Add(debugOption);
         cmd.SetHandler((debug) => {
             if (debug) ShowDebugOutput = true;
@@ -155,12 +161,24 @@ class Program
 
     private static Command BuildRestoreCommand(IControlManager manager, Option<bool> debugOption)
     {
-        var cmd = new Command("restore", "Restores the latest local backup of the Star Citizen actionmaps.xml.");
+        var cmd = new Command("restore", $"Restores the latest local backup of the {manager.GameType} mappings file.");
         cmd.SetHandler((debug) => {
             if (debug) ShowDebugOutput = true;
             manager.Restore();
         },
         debugOption);
         return cmd;
+    }
+
+    private static void AddEliteDangerousCommands(IControlManager manager, RootCommand root, Option<bool> debugOption)
+    {
+        // var ed = new Command("ed", "Manage Elite: Dangerous mappings");
+        // ed.AddCommand(BuildImportCommand(manager, debugOption));
+        // ed.AddCommand(BuildEditCommand(manager));
+        // ed.AddCommand(BuildEditSCCommand(manager));
+        // ed.AddCommand(BuildExportCommand(manager, debugOption));
+        // ed.AddCommand(BuildBackupCommand(manager, debugOption));
+        // ed.AddCommand(BuildRestoreCommand(manager, debugOption));
+        // root.AddCommand(ed);
     }
 }

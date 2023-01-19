@@ -8,6 +8,7 @@ public interface IControlManager
     event Action<string> WarningOutput;
     event Action<string> DebugOutput;
 
+    string CommandAlias { get; }
     string GameType { get; }
     string GameConfigLocation { get; set; }
     string AppSaveLocation { get; set; }
@@ -30,6 +31,7 @@ public abstract class ControlManagerBase : IControlManager
     public event Action<string> DebugOutput = delegate {};
     protected void WriteLineDebug(string s) => this.DebugOutput(s);
 
+    public abstract string CommandAlias { get; }
     public abstract string GameType { get; }
     public string GameConfigLocation { get; set; } = string.Empty;
     public string AppSaveLocation { get; set; } = string.Empty;
