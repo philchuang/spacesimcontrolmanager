@@ -1,6 +1,6 @@
-# Star Citizen Control Manager
+# Space Sim Control Manager
 
-Utility to help players retain and migrate their control mappings between SC version releases.
+Utility to help players retain and migrate their control mappings for space-sim games, especially for new SC version releases. Elite Dangerous support is also planned.
 
 ## Standard Usage
 
@@ -9,10 +9,10 @@ Utility to help players retain and migrate their control mappings between SC ver
 Imports the Star Citizen actionmaps.xml and saves it locally in a mappings JSON file.
 
 ```cmd
-> SCCM.exe import
+> SSCM.exe import
 Read in 4 input devices.
 Read in 114 mappings.
-Mappings backed up to [My Documents\SCCM\scmappings.json].
+Mappings backed up to [My Documents\SSCM\scmappings.json].
 ```
 
 ### Edit
@@ -20,8 +20,8 @@ Mappings backed up to [My Documents\SCCM\scmappings.json].
 Opens the mappings JSON file in the system default editor. Edit the `Preserve` property to affect the export behavior.
 
 ```cmd
-> SCCM.exe edit
-Opening [My Documents\SCCM\scmappings.json] in the default editor, change the Preserve property to choose which settings are overwritten.
+> SSCM.exe edit
+Opening [My Documents\SSCM\scmappings.json] in the default editor, change the Preserve property to choose which settings are overwritten.
 ```
 
 ### Export Preview
@@ -29,7 +29,7 @@ Opening [My Documents\SCCM\scmappings.json] in the default editor, change the Pr
 Previews updates to the Star Citizen bindings based on the locally saved mappings file.
 
 ```cmd
-> SCCM.exe export
+> SSCM.exe export
 Updating seat_general-v_toggle_mining_mode to js2_button56...
 Updating seat_general-v_toggle_quantum_mode to js2_button19...
 Updating seat_general-v_toggle_scan_mode to js2_button54...
@@ -41,7 +41,7 @@ CONFIGURATION NOT UPDATED: Execute "export apply" to apply these changes.
 Updates the Star Citizen bindings based on the locally saved mappings file.
 
 ```cmd
-> SCCM.exe export apply
+> SSCM.exe export apply
 Updating seat_general-v_toggle_mining_mode to js2_button56...
 Updating seat_general-v_toggle_quantum_mode to js2_button19...
 Updating seat_general-v_toggle_scan_mode to js2_button54...
@@ -58,7 +58,7 @@ MUST RESTART STAR CITIZEN FOR CHANGES TO TAKE AFFECT.
 Instead of importing, this command displays the differences between the current and saved mappings for review.
 
 ```cmd
-> SCCM.exe import
+> SSCM.exe import
 MAPPING changed and will merge: [seat_general-v_toggle_mining_mode] js2_button55 => js2_button54
 MAPPING changed and will not merge: [seat_general-v_toggle_quantum_mode] => js2_button56, preserving js2_button19
 MAPPING changed and will not merge: [seat_general-v_toggle_scan_mode] => js2_button55, preserving js2_button54
@@ -68,21 +68,21 @@ MAPPING changed and will not merge: [seat_general-v_toggle_scan_mode] => js2_but
 #### Merge mappings
 
 ```cmd
-> SCCM.exe import merge
+> SSCM.exe import merge
 MAPPING changed and will merge: [seat_general-v_toggle_mining_mode] js2_button55 => js2_button54
 MAPPING changed and will not merge: [seat_general-v_toggle_quantum_mode] => js2_button56, preserving js2_button19
 MAPPING changed and will not merge: [seat_general-v_toggle_scan_mode] => js2_button55, preserving js2_button54
-Mappings backed up to [C:\Users\chubl\Documents\SCCM\scmappings.json].
+Mappings backed up to [My Documents\SSCM\scmappings.json].
 ```
 
 #### Overwrite mappings
 
 ```cmd
-> SCCM.exe import overwrite
+> SSCM.exe import overwrite
 Read in 4 input devices.
 Read in 114 mappings.
 Overwriting existing mappings data!
-Mappings backed up to [My Documents\SCCM\scmappings.json].
+Mappings backed up to [My Documents\SSCM\scmappings.json].
 ```
 
 ### Back up the Star Citizen actionmaps.xml
@@ -90,8 +90,8 @@ Mappings backed up to [My Documents\SCCM\scmappings.json].
 Makes a local copy of the Star Citizen actionmaps.xml which can be restored later.
 
 ```cmd
-> SCCM.exe backup
-actionmaps.xml backed up to [My Documents\SCCM\actionmaps.xml.20221223022032.bak].
+> SSCM.exe backup
+actionmaps.xml backed up to [My Documents\SSCM\actionmaps.xml.20221223022032.bak].
 ```
 
 ### Restore the backed-up Star Citizen actionmaps.xml
@@ -99,8 +99,8 @@ actionmaps.xml backed up to [My Documents\SCCM\actionmaps.xml.20221223022032.bak
 Restores the latest local backup of the Star Citizen actionmaps.xml.
 
 ```cmd
-> SCCM.exe restore
-actionmaps.xml restored from [My Documents\SCCM\actionmaps.xml.20221223022032.bak].
+> SSCM.exe restore
+actionmaps.xml restored from [My Documents\SSCM\actionmaps.xml.20221223022032.bak].
 ```
 
 ### Edit the Star Citizen actionmaps.xml
@@ -108,6 +108,6 @@ actionmaps.xml restored from [My Documents\SCCM\actionmaps.xml.20221223022032.ba
 Opens the Star Citizen actionmaps.xml in the system default editor.
 
 ```cmd
-> SCCM.exe editsc
+> SSCM.exe editsc
 Opening [C:\Program Files\Roberts Space Industries\StarCitizen\LIVE\USER\Client\0\Profiles\default\actionmaps.xml] in the default editor.
 ```

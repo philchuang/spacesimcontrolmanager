@@ -1,6 +1,6 @@
-using SCCM.Core;
+using SSCM.Core;
 
-namespace SCCM.Tests.Mocks;
+namespace SSCM.Tests.Mocks;
 
 public class PlatformForTest : IPlatform
 {

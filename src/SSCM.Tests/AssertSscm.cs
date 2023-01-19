@@ -1,9 +1,9 @@
 using NUnit.Framework;
-using SCCM.Core;
+using SSCM.Core;
 
-namespace SCCM.Tests;
+namespace SSCM.Tests;
 
-public static class AssertSccm
+public static class AssertSscm
 {
     public static void AreEqual(MappingData? expected, MappingData? actual)
     {

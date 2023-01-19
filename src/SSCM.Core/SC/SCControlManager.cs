@@ -1,11 +1,11 @@
-namespace SCCM.Core.SC;
+namespace SSCM.Core.SC;
 
 // TODO write tests for this class
 
 public class ControlManager : ControlManagerBase
 {
     protected override string GameConfigPath => System.IO.Path.Combine(this.GameConfigLocation, Constants.SC_ACTIONMAPS_XML_NAME);
-    protected override string MappingDataSavePath => System.IO.Path.Combine(this.AppSaveLocation, Constants.SCCM_SCMAPPINGS_JSON_NAME);
+    protected override string MappingDataSavePath => System.IO.Path.Combine(this.AppSaveLocation, Constants.SSCM_SCMAPPINGS_JSON_NAME);
 
     public override string GameType => "Star Citizen";
 
@@ -20,7 +20,7 @@ public class ControlManager : ControlManagerBase
     private void Initialize()
     {
         this.GameConfigLocation = this._folders.ActionMapsDir;
-        this.AppSaveLocation = this._folders.SccmDir;
+        this.AppSaveLocation = this._folders.SscmDataDir;
     }
 
     protected override IMappingDataRepository CreateMappingDataRepository()

@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using static SCCM.Core.SC.Extensions;
+using static SSCM.Core.SC.Extensions;
 
-namespace SCCM.Core.SC;
+namespace SSCM.Core.SC;
 
 public class MappingExporter : IMappingExporter
 {
@@ -33,7 +33,7 @@ public class MappingExporter : IMappingExporter
         }
 
         // make backup of actionmaps.xml
-        var actionmapsxmlBackup = System.IO.Path.Combine(this._folders.SccmDir, $"actionmaps.xml.{this._platform.UtcNow.ToLocalTime().ToString("yyyyMMddHHmmss")}.bak");
+        var actionmapsxmlBackup = System.IO.Path.Combine(this._folders.SscmDataDir, $"actionmaps.xml.{this._platform.UtcNow.ToLocalTime().ToString("yyyyMMddHHmmss")}.bak");
         System.IO.File.Copy(this.GameConfigPath, actionmapsxmlBackup);
         return actionmapsxmlBackup;
     }
@@ -41,11 +41,11 @@ public class MappingExporter : IMappingExporter
     public string RestoreLatest()
     {
         // find all files matching pattern, sort ordinally
-        var backups = System.IO.Directory.GetFiles(this._folders.SccmDir, "actionmaps.xml.*.bak");
+        var backups = System.IO.Directory.GetFiles(this._folders.SscmDataDir, "actionmaps.xml.*.bak");
         var latest = backups.OrderBy(s => s).LastOrDefault();
         if (latest == null)
         {
-            throw new FileNotFoundException($"Could not find any backup files in [{this._folders.SccmDir}]!");
+            throw new FileNotFoundException($"Could not find any backup files in [{this._folders.SscmDataDir}]!");
         }
 
         // copy latest file to actionmaps.xml
@@ -75,7 +75,7 @@ public class MappingExporter : IMappingExporter
             var defaultInstance = preservedInputs.Where(i => i.Instance <= 0).FirstOrDefault();
             if (defaultInstance != null)
             {
-                throw new SccmException($"Input {defaultInstance.Id} has an invalid Instance value.");
+                throw new SscmException($"Input {defaultInstance.Id} has an invalid Instance value.");
             }
             
             // check input instance IDs are contiguous
@@ -86,7 +86,7 @@ public class MappingExporter : IMappingExporter
                 {
                     if (preservedInputs[i].Instance != first + i)
                     {
-                        throw new SccmException($"Can't preserve non-contiguous inputs [{string.Join(", ", preservedInputs.Select(i => i.Instance))}].");
+                        throw new SscmException($"Can't preserve non-contiguous inputs [{string.Join(", ", preservedInputs.Select(i => i.Instance))}].");
                     }
                 }
             }
@@ -98,12 +98,12 @@ public class MappingExporter : IMappingExporter
             var s = mapping.Input.Split('_');
             if (s.Length < 2)
             {
-                throw new SccmException($"Invalid mapping binding [{mapping.Input}].");
+                throw new SscmException($"Invalid mapping binding [{mapping.Input}].");
             }
             var prefix = s[0] + "_";
             if (!inputPrefixes.Contains(prefix))
             {
-                throw new SccmException($"Couldn't find related input for binding [{mapping.Input}].");
+                throw new SscmException($"Couldn't find related input for binding [{mapping.Input}].");
             }
         }
     }
@@ -214,7 +214,7 @@ public class MappingExporter : IMappingExporter
                     var inputElement = this._xml.GetOptionsElementForInputDevice(input);
                     if (inputElement == null)
                     {
-                        throw new SccmException($"Could not find <options> element for type [{input.Type}] instance [{input.Instance}] Product [{input.Product}].");
+                        throw new SscmException($"Could not find <options> element for type [{input.Type}] instance [{input.Instance}] Product [{input.Product}].");
                     }
 
                     this.DebugOutput($"Creating <{setting.Name}>...");

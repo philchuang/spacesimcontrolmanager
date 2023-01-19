@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace SCCM.Core;
+namespace SSCM.Core;
 
 public class MappingMergeResult
 {

@@ -1,7 +1,7 @@
 using NUnit.Framework;
-using SCCM.Core;
+using SSCM.Core;
 
-namespace SCCM.Tests;
+namespace SSCM.Tests;
 
 [TestFixture]
 public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
@@ -20,7 +20,7 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 
     private void Assert()
     {
-        AssertSccm.AreEqual(this._expected, this._result);
+        AssertSscm.AreEqual(this._expected, this._result);
     }
 
     [Test]

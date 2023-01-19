@@ -1,7 +1,7 @@
 ﻿using System.Xml.Linq;
-using static SCCM.Core.Extensions;
+using static SSCM.Core.Extensions;
 
-namespace SCCM.Core.SC;
+namespace SSCM.Core.SC;
 
 public class MappingImporter : IMappingImporter
 {

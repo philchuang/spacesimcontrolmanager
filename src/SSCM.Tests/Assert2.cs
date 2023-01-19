@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace SCCM.Tests;
+namespace SSCM.Tests;
 
 public static class Assert2
 {

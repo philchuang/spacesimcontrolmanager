@@ -3,7 +3,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 
-namespace SCCM.Core.SC;
+namespace SSCM.Core.SC;
 
 public class ActionMapsXmlHelper
 {

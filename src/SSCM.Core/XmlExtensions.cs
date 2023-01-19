@@ -1,6 +1,6 @@
 using System.Xml.Linq;
 
-namespace SCCM.Core;
+namespace SSCM.Core;
 
 public static class XmlExtensions
 {

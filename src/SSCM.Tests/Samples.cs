@@ -1,11 +1,11 @@
-namespace SCCM.Tests;
+namespace SSCM.Tests;
 
 public static class Samples
 {
     public static string GetDir()
     {
         var working = System.IO.Directory.GetCurrentDirectory();
-        return new System.IO.DirectoryInfo(System.IO.Path.Combine(working, "../../../../../samples")).FullName;
+        return new System.IO.DirectoryInfo(System.IO.Path.Combine(working, "../../../../../samples/SC")).FullName;
     }
 
     public static string GetActionMapsXmlPath()

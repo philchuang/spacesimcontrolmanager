@@ -1,4 +1,4 @@
-namespace SCCM.Core.SC;
+namespace SSCM.Core.SC;
 
 public class MappingImportMerger : IMappingImportMerger
 {

@@ -1,9 +1,9 @@
 using NUnit.Framework;
-using SCCM.Core;
-using SCCM.Core.SC;
-using SCCM.Tests.Mocks;
+using SSCM.Core;
+using SSCM.Core.SC;
+using SSCM.Tests.Mocks;
 
-namespace SCCM.Tests;
+namespace SSCM.Tests;
 
 [TestFixture]
 public class MappingExporter_Backup_Tests
@@ -15,14 +15,14 @@ public class MappingExporter_Backup_Tests
     public MappingExporter_Backup_Tests()
     {
         this._platform = new PlatformForTest(DateTime.UtcNow);
-        this._folders = new SCFoldersForTest(sccmDir: System.IO.Directory.GetCurrentDirectory());
+        this._folders = new SCFoldersForTest(sscmDataDir: System.IO.Directory.GetCurrentDirectory());
         this._updater = new MappingExporter(this._platform, this._folders, Samples.GetActionMapsXmlPath());
     }
 
     [Test]
     public void Backup_Creates_Copy()
     {
-        var expected = System.IO.Path.Combine(this._folders.SccmDir, $"actionmaps.xml.{this._platform.UtcNow.ToLocalTime().ToString("yyyyMMddHHmmss")}.bak");
+        var expected = System.IO.Path.Combine(this._folders.SscmDataDir, $"actionmaps.xml.{this._platform.UtcNow.ToLocalTime().ToString("yyyyMMddHHmmss")}.bak");
         var actual = this._updater.Backup();
 
         Assert.AreEqual(expected, actual);
