@@ -7,11 +7,13 @@ public class Reader
 {
     public string ActionMapsXmlPath { get; private set; }
 
+    public IReadOnlyList<InputDevice> Inputs { get; private set; } = new InputDevice[] {};
+
     public IReadOnlyList<Mapping> Mappings { get; private set; } = new Mapping[] {};
 
-    public Reader(string xml)
+    public Reader(string path)
     {
-        this.ActionMapsXmlPath = xml;
+        this.ActionMapsXmlPath = path;
     }
 
     public async Task Read()
