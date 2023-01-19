@@ -52,7 +52,7 @@ public class MappingImporter
         var xe = node as XElement;
         if (xe == null) return new XElement[] {};
 
-        return xe.DescendantNodes().Where(n => n is XElement xe && xe.Name.LocalName.Equals(childName)).Select(n => (XElement) n);
+        return xe.Elements().Where(n => n is XElement xe && xe.Name.LocalName.Equals(childName)).Select(n => (XElement) n);
     }
 
     private string? GetAttribute(XElement node, string attrName)
@@ -109,16 +109,25 @@ public class MappingImporter
         this.DebugOutput($"Processing options [{product}]...");
 
         var input = new InputDevice { Type = GetAttribute(option, "type"), Instance = IntTryParseOrDefault(GetAttribute(option, "instance"), -1), Product = product };
-        foreach (var prop in option.Descendants())
+        foreach (var prop in option.Elements())
         {
-            input.Settings.Add(
-                new InputDeviceSetting
+            var setting = new InputDeviceSetting
+            {
+                Name = prop.Name.LocalName,
+                Preserve = true,
+                Properties = prop.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value),
+            };
+            if (prop.Elements().Any())
+            {
+                this.DebugOutput($"Input {product} has complex property {setting.Name}!");
+                foreach (var e in prop.Elements())
                 {
-                    Name = prop.Name.LocalName,
-                    Preserve = true,
-                    Properties = prop.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value),
+                    var propName = e.Name.LocalName;
+                    var propValue = e.ToString(SaveOptions.DisableFormatting);
+                    setting.Properties[propName] = propValue;
                 }
-            );
+            }
+            input.Settings.Add(setting);
         }
         this._data.Inputs.Add(input);
     }

@@ -72,7 +72,9 @@ class Program
 
     private static Mapper CreateMapper()
     {
-        var mapper = new Mapper(new Platform());
+        var platform = new Platform();
+        var folders = new Folders(platform);
+        var mapper = new Mapper(platform, folders);
         mapper.StandardOutput += Console.WriteLine;
         mapper.WarningOutput += Console.WriteLine;
         mapper.DebugOutput += s => { if (ShowDebugOutput) Console.WriteLine(s); };

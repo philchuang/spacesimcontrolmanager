@@ -10,24 +10,35 @@ public class Mapper
     public string SaveLocation { get; set; } = string.Empty;
 
     private readonly IPlatform _platform;
+    private readonly IFolders _folders;
 
     private MappingData? _data = null;
 
-    public Mapper(IPlatform platform)
+    public Mapper(IPlatform platform, IFolders folders)
     {
         this._platform = platform;
+        this._folders = folders;
         Initialize();
     }
 
     private void Initialize()
     {
-        this.ReadLocation = System.IO.Path.Combine(this._platform.ProgramFilesDir, @"Roberts Space Industries\StarCitizen\LIVE\USER\Client\0\Profiles\default");
+        this.ReadLocation = this._folders.ActionMapsDir;
         if (!System.IO.Directory.Exists(this.ReadLocation))
         {
             throw new DirectoryNotFoundException($"Could not find the Star Citizen directory at [{this.ReadLocation}]!");
         }
 
-        this.SaveLocation = this._platform.SccmDir;
+        this.SaveLocation = this._folders.SccmDir;
+    }
+
+    private MappingUpdater CreateUpdater()
+    {
+        var updater = new MappingUpdater(this._platform, this._folders, GetStarCitizenActionmapsXmlPath());
+        updater.StandardOutput += this.StandardOutput;
+        updater.WarningOutput += this.WarningOutput;
+        updater.DebugOutput += this.DebugOutput;
+        return updater;
     }
 
     private string GetStarCitizenActionmapsXmlPath()
@@ -89,31 +100,24 @@ public class Mapper
             throw new ArgumentNullException(nameof(_data));
         }
 
-        var actionmapsxml = GetStarCitizenActionmapsXmlPath();
-        var updater = new MappingUpdater(this._platform, actionmapsxml);
-        updater.StandardOutput += this.StandardOutput;
-        updater.WarningOutput += this.WarningOutput;
-        updater.DebugOutput += this.DebugOutput;
+        var updater = CreateUpdater();
         updater.Backup();
         await updater.Update(this._data);
-        this.StandardOutput($"Mappings restored to [{actionmapsxml}].");
+        this.StandardOutput($"Mappings restored to [{updater.ActionMapsXmlPath}].");
     }
 
     public async Task Backup()
     {
-        // TODO write test
-        var actionmapsxml = GetStarCitizenActionmapsXmlPath();
-        var updater = new MappingUpdater(this._platform, actionmapsxml);
-        updater.StandardOutput += this.StandardOutput;
-        updater.WarningOutput += this.WarningOutput;
-        updater.DebugOutput += this.DebugOutput;
+        var updater = CreateUpdater();
         var backup = updater.Backup();
-        this.StandardOutput($"Actionmaps.xml backed up to [{backup}].");
+        this.StandardOutput($"actionmaps.xml backed up to [{backup}].");
     }
 
     public async Task Restore()
     {
         // TODO write test
-        // TODO implement
+        var updater = CreateUpdater();
+        var backup = updater.RestoreLatest();
+        this.StandardOutput($"actionmaps.xml restored from [{backup}].");
     }
 }
