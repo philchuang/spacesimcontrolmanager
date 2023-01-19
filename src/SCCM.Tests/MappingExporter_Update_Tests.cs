@@ -47,6 +47,9 @@ public class MappingExporter_Update_Tests
         System.IO.Directory.CreateDirectory(new FileInfo(this.GetTestXmlPath()).DirectoryName);
         System.IO.File.Copy(Samples.GetActionMapsXmlPath(), this.GetTestXmlPath(), true);
         this._updater = new MappingExporter(this._platform, this._folders, this.GetTestXmlPath());
+        this._updater.StandardOutput += s => TestContext.Out.WriteLine($"[STD  ]\t{s}");
+        this._updater.DebugOutput += s => TestContext.Out.WriteLine($"[DEBUG]\t{s}");
+        this._updater.WarningOutput += s => TestContext.Out.WriteLine($"[WARN ]\t{s}");
         this._originalXml = await this.LoadTestXml();
     }
 
@@ -296,33 +299,39 @@ public class MappingExporter_Update_Tests
     [Test]
     public async Task Update_overwrites_input_setting_change_xml()
     {
-        var settingPreserve = false;
-
+        // Arrange
         this.Arrange_Default_MappingData();
+        // turn off all preserves
         this._data.Inputs.SelectMany(i => i.Settings).ToList().ForEach(s => s.Preserve = false);
         this._data.Mappings.ToList().ForEach(m => m.Preserve = false);
         
+        // find first joystick
         var exportedInput = this._data.Inputs.First(i => i.Type == "joystick");
-        var exportedSetting = new InputDeviceSetting { Name = "flight_move_pitch", Preserve = settingPreserve, Properties = new Dictionary<string, string> { { "nonlinearity_curve", "<nonlinearity_curve><point in=\"0\" out=\"0\" /><point in=\"0.1\" out=\"0.063095726\" /><point in=\"0.2\" out=\"0.14495592\" /><point in=\"0.30000001\" out=\"0.23580092\" /><point in=\"0.40000001\" out=\"0.33302128\" /><point in=\"0.44116619\" out=\"0.56157923\" /><point in=\"0.60000002\" out=\"0.54172826\" /><point in=\"0.69999999\" out=\"0.65180492\" /><point in=\"0.80000001\" out=\"0.765082\" /><point in=\"0.90000004\" out=\"0.88123357\" /><point in=\"1\" out=\"1\" /></nonlinearity_curve>" } } };
+        // add XML setting
+        var exportedSetting = new InputDeviceSetting { Name = "flight_move_pitch", Preserve = true, Properties = new Dictionary<string, string> { { "nonlinearity_curve", "<nonlinearity_curve><point in=\"0\" out=\"0\" /><point in=\"0.1\" out=\"0.063095726\" /><point in=\"0.2\" out=\"0.14495592\" /><point in=\"0.30000001\" out=\"0.23580092\" /><point in=\"0.40000001\" out=\"0.33302128\" /><point in=\"0.44116619\" out=\"0.56157923\" /><point in=\"0.60000002\" out=\"0.54172826\" /><point in=\"0.69999999\" out=\"0.65180492\" /><point in=\"0.80000001\" out=\"0.765082\" /><point in=\"0.90000004\" out=\"0.88123357\" /><point in=\"1\" out=\"1\" /></nonlinearity_curve>" } } };
         exportedInput.Settings.Add(exportedSetting);
+        var (exportedSettingValueName, exportedSettingValue) = exportedSetting.Properties.Select(kvp => (kvp.Key, kvp.Value)).First();
         
+        // find related pre-update input node
         var targetInputElement = this.GetInputElement(this._originalXml, exportedInput);
-        var targetSettingElement = targetInputElement.GetChildren(exportedSetting.Name).FirstOrDefault();
-        var targetSettingValue = targetSettingElement?.ToString() ?? string.Empty;
+        // find setting node
+        var targetSettingElement = targetInputElement.GetChildren(exportedSetting.Name).SingleOrDefault();
         if (targetSettingElement == null)
         {
+            // create setting node
             targetSettingElement = new XElement(exportedSetting.Name);
-            var targetSettingPropertyElement = new XElement(exportedSetting.Properties.Keys.First());
-            targetSettingValue = targetSettingPropertyElement.ToString();
-            targetSettingElement.Add(targetSettingPropertyElement);
             targetInputElement.Add(targetSettingElement);
         }
-
-        var exportedSettingValue = exportedSetting.Properties.First();
-        var exportedSettingValueName = exportedSettingValue.Key;
-        exportedSetting.Properties[exportedSettingValueName] = exportedSettingValue.Value == targetSettingValue ? $"<{RandomString()} />" : targetSettingValue;
-
-        // return (exportedInput, exportedSetting, exportedSettingValue.Key, targetSettingValue);
+        // find setting value node
+        var targetSettingValueElement = targetSettingElement.GetChildren(exportedSettingValueName).SingleOrDefault();
+        if (targetSettingValueElement == null)
+        {
+            // create setting value node
+            targetSettingValueElement = new XElement(exportedSettingValueName);
+            targetSettingElement.Add(targetSettingValueElement);
+        }
+        // ensure setting value node doesn't match exported setting value
+        targetSettingValueElement.RemoveAll();
 
         // Act
         await this.Act();
@@ -334,11 +343,12 @@ public class MappingExporter_Update_Tests
 
         var changedInputElement = this.GetInputElement(this._updatedXml, exportedInput);
         Assert.NotNull(changedInputElement, nameof(changedInputElement));
-        var changedSettingElement = changedInputElement.Elements().Single();
+        var changedSettingElement = changedInputElement.GetChildren(exportedSetting.Name).SingleOrDefault();
         Assert.NotNull(changedSettingElement, nameof(changedSettingElement));
-        var changedSettingValueAttribute = changedSettingElement.Attributes().First();
-        var changedSettingValue = changedSettingValueAttribute.Value;
-        Assert.AreEqual(exportedSetting.Properties[exportedSettingValueName], changedSettingValue);
+        var changedSettingValueElement = changedSettingElement.GetChildren(exportedSettingValueName).SingleOrDefault();
+        Assert.NotNull(changedSettingValueElement, nameof(changedSettingValueElement));
+        var changedSettingValue = changedSettingValueElement.ToString(SaveOptions.DisableFormatting);
+        Assert.AreEqual(exportedSettingValue, changedSettingValue);
     }
 
     [Test]
@@ -401,7 +411,44 @@ public class MappingExporter_Update_Tests
     [Test]
     public async Task Update_adds_input_setting_xml()
     {
-        Assert.Fail();
+        // Arrange
+        this.Arrange_Default_MappingData();
+        // turn off all preserves
+        this._data.Inputs.SelectMany(i => i.Settings).ToList().ForEach(s => s.Preserve = false);
+        this._data.Mappings.ToList().ForEach(m => m.Preserve = false);
+        
+        // find first joystick
+        var exportedInput = this._data.Inputs.First(i => i.Type == "joystick");
+        // add XML setting
+        var exportedSetting = new InputDeviceSetting { Name = "flight_move_pitch", Preserve = true, Properties = new Dictionary<string, string> { { "nonlinearity_curve", "<nonlinearity_curve><point in=\"0\" out=\"0\" /><point in=\"0.1\" out=\"0.063095726\" /><point in=\"0.2\" out=\"0.14495592\" /><point in=\"0.30000001\" out=\"0.23580092\" /><point in=\"0.40000001\" out=\"0.33302128\" /><point in=\"0.44116619\" out=\"0.56157923\" /><point in=\"0.60000002\" out=\"0.54172826\" /><point in=\"0.69999999\" out=\"0.65180492\" /><point in=\"0.80000001\" out=\"0.765082\" /><point in=\"0.90000004\" out=\"0.88123357\" /><point in=\"1\" out=\"1\" /></nonlinearity_curve>" } } };
+        exportedInput.Settings.Add(exportedSetting);
+        var (exportedSettingValueName, exportedSettingValue) = exportedSetting.Properties.Select(kvp => (kvp.Key, kvp.Value)).First();
+        
+        // find related pre-update input node
+        var targetInputElement = this.GetInputElement(this._originalXml, exportedInput);
+        // find setting node
+        var targetSettingElement = targetInputElement.GetChildren(exportedSetting.Name).SingleOrDefault();
+        if (targetSettingElement != null)
+        {
+            targetSettingElement.Remove();
+        }
+
+        // Act
+        await this.Act();
+
+        // Assert
+        this.AssertBasics();
+        // silly code to prevent warnings
+        if (this._updatedXml == null) return;
+
+        var changedInputElement = this.GetInputElement(this._updatedXml, exportedInput);
+        Assert.NotNull(changedInputElement, nameof(changedInputElement));
+        var changedSettingElement = changedInputElement.GetChildren(exportedSetting.Name).SingleOrDefault();
+        Assert.NotNull(changedSettingElement, nameof(changedSettingElement));
+        var changedSettingValueElement = changedSettingElement.GetChildren(exportedSettingValueName).SingleOrDefault();
+        Assert.NotNull(changedSettingValueElement, nameof(changedSettingValueElement));
+        var changedSettingValue = changedSettingValueElement.ToString(SaveOptions.DisableFormatting);
+        Assert.AreEqual(exportedSettingValue, changedSettingValue);
     }
 
     [Test]
