@@ -69,6 +69,7 @@ public static class AssertSccm
         Assert.AreEqual(expected.Action, actual.Action, nameof(expected.Action));
         Assert.AreEqual(expected.ActionMap, actual.ActionMap, nameof(expected.ActionMap));
         Assert.AreEqual(expected.Input, actual.Input, nameof(expected.Input));
+        Assert.AreEqual(expected.InputType, actual.InputType, nameof(expected.InputType));
         Assert.AreEqual(expected.MultiTap, actual.MultiTap, nameof(expected.MultiTap));
         Assert.AreEqual(expected.Preserve, actual.Preserve, nameof(expected.Preserve));
     }

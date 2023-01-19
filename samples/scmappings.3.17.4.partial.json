@@ -59,6 +59,7 @@
             "Action": "v_toggle_mining_mode",
             "ActionMap": "seat_general",
             "Input": "js2_button56",
+            "InputType": "joystick",
             "MultiTap": null,
             "Preserve": true
         },
@@ -66,6 +67,7 @@
             "Action": "v_toggle_quantum_mode",
             "ActionMap": "seat_general",
             "Input": "js2_button19",
+            "InputType": "joystick",
             "MultiTap": null,
             "Preserve": true
         },
@@ -73,6 +75,7 @@
             "Action": "v_view_pitch",
             "ActionMap": "spaceship_view",
             "Input": "js1_ ",
+            "InputType": "joystick",
             "MultiTap": null,
             "Preserve": false
         },
@@ -80,6 +83,7 @@
             "Action": "v_target_unlock_selected",
             "ActionMap": "spaceship_targeting",
             "Input": "js1_button16",
+            "InputType": "joystick",
             "MultiTap": 2,
             "Preserve": true
         }

@@ -38,8 +38,8 @@ public class MappingImporter_Read_Tests
 
         Assert.AreEqual(this._platform.UtcNow, this._data.ReadTime);
         Assert.AreEqual(4, this._data.Inputs.Count);
-        Assert.AreEqual(114, this._data.Mappings.Count);
-        Assert.AreEqual(97, this._data.Mappings.Count(m => m.Preserve));
+        Assert.AreEqual(115, this._data.Mappings.Count);
+        Assert.AreEqual(98, this._data.Mappings.Count(m => m.Preserve));
         Assert.AreEqual(17, this._data.Mappings.Count(m => !m.Preserve));
     }
 
@@ -77,14 +77,14 @@ public class MappingImporter_Read_Tests
 
         // only do a partial comparison
         var mappings = new Mapping[] {
-            new Mapping { ActionMap = "seat_general", Action = "v_toggle_mining_mode", Input = "js2_button56", MultiTap = null, Preserve = true },
-            new Mapping { ActionMap = "seat_general", Action = "v_toggle_quantum_mode", Input = "js2_button19", MultiTap = null, Preserve = true },
-            new Mapping { ActionMap = "spaceship_targeting", Action = "v_target_unlock_selected", Input = "js1_button16", MultiTap = 2, Preserve = true },
-            new Mapping { ActionMap = "spaceship_view", Action = "v_view_pitch", Input = "js1_ ", MultiTap = null, Preserve = false },
+            new Mapping { ActionMap = "seat_general", Action = "v_toggle_mining_mode", Input = "js2_button56", MultiTap = null, InputType = "joystick", Preserve = true },
+            new Mapping { ActionMap = "seat_general", Action = "v_toggle_quantum_mode", Input = "js2_button19", MultiTap = null, InputType = "joystick", Preserve = true },
+            new Mapping { ActionMap = "spaceship_targeting", Action = "v_target_unlock_selected", Input = "js1_button16", MultiTap = 2, InputType = "joystick", Preserve = true },
+            new Mapping { ActionMap = "spaceship_view", Action = "v_view_pitch", Input = "js1_ ", MultiTap = null, InputType = "joystick", Preserve = false },
         };
 
-        var expected = mappings.ToDictionary(m => $"{m.ActionMap}-{m.Action}");
-        var actual = this._data.Mappings.ToDictionary(m => $"{m.ActionMap}-{m.Action}");
+        var expected = mappings.ToDictionary(m => $"{m.ActionMap}-{m.Action}-{m.InputType}");
+        var actual = this._data.Mappings.ToDictionary(m => $"{m.ActionMap}-{m.Action}-{m.InputType}");
 
         Assert2.DictionaryEquals(expected, actual, true, AssertSccm.AreEqual);
     }

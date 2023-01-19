@@ -34,10 +34,10 @@ public abstract class MappingImportMerger_TestBase
                 },
             },
             Mappings = {
-                new Mapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js1_{RandomString()}" },
-                new Mapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js1_{RandomString()}" },
-                new Mapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}" },
-                new Mapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}" },
+                new Mapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick" },
+                new Mapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick" },
+                new Mapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}", InputType = "joystick" },
+                new Mapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}", InputType = "joystick" },
             }
         };
         this._updated = new MappingData
@@ -93,7 +93,7 @@ public abstract class MappingImportMerger_TestBase
     {
         this.Create_2_Inputs_Arrange();
 
-        this._current.Mappings.Add(new Mapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}", Preserve = false });
+        this._current.Mappings.Add(new Mapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}", InputType = "joystick", Preserve = false });
         this._updated.Inputs.RemoveAt(1);
     }
 
@@ -125,7 +125,7 @@ public abstract class MappingImportMerger_TestBase
     protected void Detects_Mapping_Added_Arrange()
     {
         this.Detects_All_Unchanged_Arrange();
-        var addedMapping = new Mapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js1_{RandomString()}", Preserve = true };
+        var addedMapping = new Mapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick", Preserve = true };
         this._updated.Mappings.Add(addedMapping);
     }
 
@@ -200,7 +200,7 @@ public abstract class MappingImportMerger_TestBase
         this._updated.Mappings.RemoveAt(1);
         this._updated.Mappings.RemoveAt(0);
         // add mapping - asserted
-        var addedMapping = new Mapping { ActionMap = RandomString(), Action = RandomString(), Preserve = true, Input = $"js1_{RandomString()}" };
+        var addedMapping = new Mapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick", Preserve = true };
         this._updated.Mappings.Add(addedMapping);
 
         return (addedInput, removedInput, currentChangingInput, updatedChangingInput, 

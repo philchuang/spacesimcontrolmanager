@@ -94,7 +94,7 @@ public class ActionMapsXmlHelper
         return $"{typeAbbv}{instance}_";
     }
 
-    private static Regex InputPrefixParseRegex = new Regex(@"^(\w+)(\d+)_.*$");
+    private static Regex InputPrefixParseRegex = new Regex(@"^([A-z]+?)(\d+)_(.*)$");
 
     public static (string, string) GetOptionsTypeAndInstanceForPrefix(string prefix)
     {
