@@ -11,4 +11,6 @@ public static class Extensions
         var clone = JsonConvert.DeserializeObject<T>(json);
         return clone;
     }
+
+    public static string RandomString() => Guid.NewGuid().ToString();
 }

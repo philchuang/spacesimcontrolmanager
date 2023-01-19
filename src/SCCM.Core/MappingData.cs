@@ -10,18 +10,14 @@ public class MappingData
 
     public InputDevice GetRelatedInput(Mapping mapping)
     {
-        string type = string.Empty;
-        int instance = 0;
+        string type;
+        int instance;
         try
         {
-            var match = Regex.Match(mapping.Input, @"^([A-z]+)(\d+)_(.+)$");
-            if (!match.Success) throw new FormatException();
-            type = match.Groups[1].Value switch {
-                "kb" => "keyboard",
-                "js" => "joystick",
-                _ => throw new ArgumentOutOfRangeException(),
-            };
-            instance = int.Parse(match.Groups[2].Value);
+            var input = mapping.GetInputTypeAndInstance();
+            if (input == null) throw new SccmException();
+            type = input.Value.Type;
+            instance = input.Value.Instance;
         }
         catch
         {
@@ -40,12 +36,7 @@ public class MappingData
 
     public IEnumerable<Mapping> GetRelatedMappings(InputDevice input)
     {
-        var typeAbbv = input.Type switch {
-            "keyboard" => "kb",
-            "joystick" => "js",
-            _ => throw new ArgumentOutOfRangeException(),
-        };
-        var prefix = $"{typeAbbv}{input.Instance}_";
+        var prefix = input.GetMappingPrefix();
         return this.Mappings.Where(m => m.Input.StartsWith(prefix));
     }
 }

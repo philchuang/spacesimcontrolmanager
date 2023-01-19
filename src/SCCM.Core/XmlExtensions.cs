@@ -11,9 +11,9 @@ public static class XmlExtensions
         return self.Elements().Where(n => n.Name.LocalName.Equals(childName));
     }
 
-    public static string? GetAttribute(this XElement self, string attrName)
+    public static string GetAttribute(this XElement self, string attrName)
     {
-        return self?.Attributes().FirstOrDefault(a => a.Name.LocalName.Equals(attrName))?.Value;
+        return self?.Attributes().FirstOrDefault(a => a.Name.LocalName.Equals(attrName))?.Value ?? string.Empty;
     }
 
 }

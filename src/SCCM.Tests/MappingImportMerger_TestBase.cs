@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using SCCM.Core;
+using static SCCM.Tests.Extensions;
 
 namespace SCCM.Tests;
 
@@ -14,8 +15,6 @@ public abstract class MappingImportMerger_TestBase
     {
         this._merger = new MappingImportMerger();
     }
-
-    protected static string RandomString() => Guid.NewGuid().ToString();
 
     protected void Detects_All_Unchanged_Arrange()
     {

@@ -66,11 +66,8 @@ public class MappingImporter
 
     private void ReadActionMaps(XElement actionMaps)
     {
-        var actionProfiles = actionMaps.GetChildren("ActionProfiles");
-        foreach (var ap in actionProfiles)
-        {
-            ReadActionProfiles(ap);
-        }
+        var actionProfiles = actionMaps.GetChildren("ActionProfiles").Single(ap => ap.GetAttribute("profileName") == "default");
+        ReadActionProfiles(actionProfiles);
     }
 
     private void ReadActionProfiles(XElement actionProfiles)
