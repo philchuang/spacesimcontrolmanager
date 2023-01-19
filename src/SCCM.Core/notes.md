@@ -1,4 +1,4 @@
-# TODO make consistent nomenclature
+# TERMINOLOGY
 
 ACTIONS
 

@@ -14,7 +14,7 @@ public class MappingExporter_Update_Tests
 {
     private MappingExporter? _updater;
     private readonly IPlatform _platform;
-    private readonly IFolders _folders;
+    private readonly ISCFolders _folders;
     private MappingData _data = new MappingData();
     private XDocument? _originalXml = null;
     private XDocument? _updatedXml = null;
@@ -22,7 +22,7 @@ public class MappingExporter_Update_Tests
     public MappingExporter_Update_Tests()
     {
         this._platform = new PlatformForTest(DateTime.UtcNow);
-        this._folders = new FoldersForTest();
+        this._folders = new SCFoldersForTest();
     }
 
     [SetUp]

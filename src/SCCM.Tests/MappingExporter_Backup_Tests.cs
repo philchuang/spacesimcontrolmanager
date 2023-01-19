@@ -9,12 +9,12 @@ public class MappingExporter_Backup_Tests
 {
     private readonly MappingExporter _updater;
     private readonly IPlatform _platform;
-    private readonly IFolders _folders;
+    private readonly ISCFolders _folders;
 
     public MappingExporter_Backup_Tests()
     {
         this._platform = new PlatformForTest(DateTime.UtcNow);
-        this._folders = new FoldersForTest(sccmDir: System.IO.Directory.GetCurrentDirectory());
+        this._folders = new SCFoldersForTest(sccmDir: System.IO.Directory.GetCurrentDirectory());
         this._updater = new MappingExporter(this._platform, this._folders, Samples.GetActionMapsXmlPath());
     }
 

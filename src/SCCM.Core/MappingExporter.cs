@@ -7,37 +7,51 @@ using static SCCM.Core.XmlExtensions;
 
 namespace SCCM.Core;
 
-public class MappingExporter
+public interface IMappingExporter
+{
+    event Action<string> StandardOutput;
+    event Action<string> WarningOutput;
+    event Action<string> DebugOutput;
+
+    string GameConfigPath { get; }
+
+    string Backup();
+    string RestoreLatest();
+    Task Preview(MappingData source);
+    Task Update(MappingData source);
+}
+
+public class MappingExporter : IMappingExporter
 {
     public event Action<string> StandardOutput = delegate {};
     public event Action<string> WarningOutput = delegate {};
     public event Action<string> DebugOutput = delegate {};
 
-    public string ActionMapsXmlPath { get; private set; }
+    public string GameConfigPath { get; private set; }
 
     private static Regex XML_REGEX = new Regex(@"<(\w[\w\d_]+)[^>]*>.+</\1>");
 
     private readonly IPlatform _platform;
-    private readonly IFolders _folders;
+    private readonly ISCFolders _folders;
     private ActionMapsXmlHelper? _xml;
     
-    public MappingExporter(IPlatform platform, IFolders folders, string actionmapsxmlpath)
+    public MappingExporter(IPlatform platform, ISCFolders folders, string actionmapsxmlpath)
     {
         this._platform = platform;
         this._folders = folders;
-        this.ActionMapsXmlPath = actionmapsxmlpath;
+        this.GameConfigPath = actionmapsxmlpath;
     }
 
     public string Backup()
     {
-        if (!System.IO.File.Exists(this.ActionMapsXmlPath))
+        if (!System.IO.File.Exists(this.GameConfigPath))
         {
-            throw new FileNotFoundException($"Could not find the Star Citizen mappings file at [{this.ActionMapsXmlPath}]!");
+            throw new FileNotFoundException($"Could not find the Star Citizen mappings file at [{this.GameConfigPath}]!");
         }
 
         // make backup of actionmaps.xml
         var actionmapsxmlBackup = System.IO.Path.Combine(this._folders.SccmDir, $"actionmaps.xml.{this._platform.UtcNow.ToLocalTime().ToString("yyyyMMddHHmmss")}.bak");
-        System.IO.File.Copy(this.ActionMapsXmlPath, actionmapsxmlBackup);
+        System.IO.File.Copy(this.GameConfigPath, actionmapsxmlBackup);
         return actionmapsxmlBackup;
     }
 
@@ -52,7 +66,7 @@ public class MappingExporter
         }
 
         // copy latest file to actionmaps.xml
-        System.IO.File.Copy(latest, this.ActionMapsXmlPath, true);
+        System.IO.File.Copy(latest, this.GameConfigPath, true);
 
         return latest;
     }
@@ -79,7 +93,7 @@ public class MappingExporter
     {
         this.Validate(source);
 
-        this._xml = await ActionMapsXmlHelper.Load(this.ActionMapsXmlPath, "default");
+        this._xml = await ActionMapsXmlHelper.Load(this.GameConfigPath, "default");
 
         this.ExportInputDevices(source.Inputs);
         this.ExportMappings(source.Mappings);
@@ -87,7 +101,7 @@ public class MappingExporter
         if (!apply) return;
 
         this.StandardOutput($"Saving new actionmaps.xml...");
-        await this._xml.Save(this.ActionMapsXmlPath);
+        await this._xml.Save(this.GameConfigPath);
         this.StandardOutput($"Saved, run \"restore\" command to revert.");
     }
 
