@@ -19,6 +19,11 @@ public class Platform : IPlatform
     
     public void Open(string path)
     {
+        if (!System.IO.File.Exists(path))
+        {
+            throw new FileNotFoundException(path);
+        }
+        
         new System.Diagnostics.Process
         {
             StartInfo = new System.Diagnostics.ProcessStartInfo(path)

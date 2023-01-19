@@ -1,21 +1,32 @@
 ﻿using NUnit.Framework;
 using SCCM.Core;
+using static SCCM.Tests.Extensions;
 
 namespace SCCM.Tests;
 
 [TestFixture]
 public class DataSerializer_Read_Tests
 {
-    private readonly DataSerializer _serializer;
+    private DataSerializer _serializer = new DataSerializer(string.Empty);
+
+    private string TestDataPath => new System.IO.FileInfo(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), TestContext.CurrentContext.Test.Name, "scmappings.json")).FullName;
 
     public DataSerializer_Read_Tests()
     {
-        _serializer = new DataSerializer(Samples.GetPartialMappingsJsonPath());
     }
 
-    [OneTimeSetUp]
+    [SetUp]
     public void Init()
     {
+        System.IO.Directory.CreateDirectory(new FileInfo(this.TestDataPath).DirectoryName);
+        System.IO.File.Copy(Samples.GetPartialMappingsJsonPath(), this.TestDataPath, true);
+        this._serializer = new DataSerializer(this.TestDataPath);
+    }
+
+    [TearDown]
+    protected void Cleanup()
+    {
+        System.IO.Directory.Delete(new FileInfo(this.TestDataPath).DirectoryName, true);
     }
 
     [Test]
@@ -48,7 +59,27 @@ public class DataSerializer_Read_Tests
         AssertSccm.AreEqual(expected, actual);
     }
 
-    // TODO test FNF exception
+    [Test]
+    public async Task Handles_Malformed_MappingsFile()
+    {
+        // Arrange
+        await System.IO.File.WriteAllTextAsync(this.TestDataPath, RandomString());
 
-    // TODO test malformed JSON handling
+        // Act
+        var ex = Assert.ThrowsAsync<SccmException>(() => this._serializer.Read());
+        Assert.IsTrue(ex.Message.StartsWith("Could not read SCCM mapping data file at"));
+    }
+
+    [Test]
+    public async Task Handles_NotFound_MappingsFile()
+    {
+        // Arrange
+        System.IO.File.Delete(this.TestDataPath);
+
+        // Act
+        var result = await this._serializer.Read();
+
+        // Assert
+        Assert.IsNull(result);
+    }
 }
