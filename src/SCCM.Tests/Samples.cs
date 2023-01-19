@@ -15,7 +15,7 @@ public static class Samples
 
     public static string GetPartialMappingsJsonPath()
     {
-        return new System.IO.FileInfo(System.IO.Path.Combine(GetDir(), "mappings.3.17.4.partial.json")).FullName;
+        return new System.IO.FileInfo(System.IO.Path.Combine(GetDir(), "scmappings.3.17.4.partial.json")).FullName;
     }
 
 }
