@@ -1,6 +1,5 @@
 {
     "dotnet-test-explorer.testProjectPath": "**/*Tests.csproj",
     "csharp.unitTestDebuggingOptions": {
-    },
-    "testExplorer.addToEditorContextMenu": true
+    }
 }
