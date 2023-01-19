@@ -16,9 +16,7 @@ public class MappingImportMerger : IMappingImportMerger
     {
         this.CalculateDiffs(current, updated);
 
-        if (!this.Result.CanMerge) return false;
-
-        return true;
+        return this.Result.HasDifferences && this.Result.CanMerge;
     }
 
     public MappingData Merge(MappingData current, MappingData updated)
