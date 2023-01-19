@@ -27,11 +27,12 @@ public class DataSerializer
         }
     }
 
-    public async Task<MappingData> Read()
+    public async Task<MappingData?> Read()
     {
         if (!System.IO.File.Exists(this.SavePath))
         {
-            throw new FileNotFoundException($"Could not find the Star Citizen Control Mapper mappings file at [{this.SavePath}]!");
+            this.StandardOutput($"Could not find the Star Citizen Control Mapper mappings file at [{this.SavePath}]!");
+            return null;
         }
 
         return JsonConvert.DeserializeObject<MappingData>(await File.ReadAllTextAsync(this.SavePath));

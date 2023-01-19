@@ -9,10 +9,11 @@ public class Mapper
     public string ReadLocation { get; set; } = string.Empty;
     public string SaveLocation { get; set; } = string.Empty;
 
+    public string StarCitizenActionmapsXmlPath { get => System.IO.Path.Combine(this.ReadLocation, Constants.SC_ACTIONMAPS_XML_NAME); }
+    public string SccmMappingsJsonPath { get => System.IO.Path.Combine(this.SaveLocation, Constants.SCCM_SCMAPPINGS_JSON_NAME); }
+
     private readonly IPlatform _platform;
     private readonly IFolders _folders;
-
-    private MappingData? _data = null;
 
     public Mapper(IPlatform platform, IFolders folders)
     {
@@ -30,61 +31,63 @@ public class Mapper
         }
 
         this.SaveLocation = this._folders.SccmDir;
-
-        // TODO load current mappings.json
     }
 
-    private MappingUpdater CreateUpdater()
+    private MappingImporter CreateImporter()
     {
-        var updater = new MappingUpdater(this._platform, this._folders, GetStarCitizenActionmapsXmlPath());
-        updater.StandardOutput += this.StandardOutput;
-        updater.WarningOutput += this.WarningOutput;
-        updater.DebugOutput += this.DebugOutput;
-        return updater;
+        var importer = new MappingImporter(this._platform, this.StarCitizenActionmapsXmlPath);
+        importer.StandardOutput += this.StandardOutput;
+        importer.WarningOutput += this.WarningOutput;
+        importer.DebugOutput += this.DebugOutput;
+        return importer;
     }
 
-    private string GetStarCitizenActionmapsXmlPath()
+    private MappingExporter CreateExporter()
     {
-        return System.IO.Path.Combine(this.ReadLocation, "actionmaps.xml");
+        var exporter = new MappingExporter(this._platform, this._folders, StarCitizenActionmapsXmlPath);
+        exporter.StandardOutput += this.StandardOutput;
+        exporter.WarningOutput += this.WarningOutput;
+        exporter.DebugOutput += this.DebugOutput;
+        return exporter;
     }
 
-    private string GetSccmMappingsJsonPath()
+    private async Task<MappingData?> LoadMappingData()
     {
-        return System.IO.Path.Combine(this.SaveLocation, "mappings.json");
+        var serializer = new DataSerializer(this.SccmMappingsJsonPath);
+        return await serializer.Read();
     }
 
-    public async Task ImportAndSave()
+    public async Task ImportAndSave(ImportMode mode)
     {
-        await this.Import();
-        await this.Save();
-    }
+        var importer = this.CreateImporter();
 
-    public async Task Import()
-    {
-        var actionmapsxml = GetStarCitizenActionmapsXmlPath();
-        // read-in XML file
-        var reader = new MappingImporter(this._platform, actionmapsxml);
-        reader.StandardOutput += this.StandardOutput;
-        reader.WarningOutput += this.WarningOutput;
-        reader.DebugOutput += this.DebugOutput;
-
-        var updated = await reader.Read();
-        if (this._data != null)
+        var updatedData = await importer.Read();
+        
+        var currentData = await this.LoadMappingData();
+        if (currentData == null || mode == ImportMode.Overwrite)
         {
-            PreviewMerge(this._data, updated);
-            // TODO merge
+            await this.Save(updatedData);
+            return;
         }
-        else
+
+        if (mode == ImportMode.Default)
         {
-            this._data = updated;
+            this.PreviewMerge(currentData, updatedData);
+            return;
+        }
+
+        if (mode == ImportMode.Merge)
+        {
+            var mergedData = this.Merge(currentData, updatedData);
+            await this.Save(mergedData);
         }
     }
 
-    private void PreviewMerge(MappingData previous, MappingData updated)
+    private void PreviewMerge(MappingData current, MappingData updated)
     {
         // capture differences
         var inputDiffs = ComparisonHelper.Compare(
-            previous.Inputs, updated.Inputs,
+            current.Inputs, updated.Inputs,
             i => $"{i.Type}-{i.Product}",
             (p, c) => p.Instance != c.Instance ||
                 ComparisonHelper.DictionariesAreDifferent(
@@ -92,68 +95,61 @@ public class Mapper
                     c.Settings.ToDictionary(s => s.Name))
             );
         var mappingDiffs = ComparisonHelper.Compare(
-            previous.Mappings, updated.Mappings,
+            current.Mappings, updated.Mappings,
             m => $"{m.ActionMap}-{m.Action}",
             (p, c) => p.Input != c.Input || p.MultiTap != c.MultiTap);
-        // TODO report differences
+        
+        // TODO report differences via StandardOutput
     }
 
-    public async Task Save()
+    private MappingData Merge(MappingData current, MappingData updated)
     {
-        if (this._data == null)
+        // TODO implement
+        return current;
+    }
+
+    public async Task Save(MappingData data)
+    {
+        if (data == null)
         {
-            throw new ArgumentNullException(nameof(_data));
+            throw new ArgumentNullException(nameof(data));
         }
 
         System.IO.Directory.CreateDirectory(this.SaveLocation);
-        var serializer = new DataSerializer(this.GetSccmMappingsJsonPath());
-        await serializer.Write(this._data);
-        this.StandardOutput($"Mappings backed up to [{this.GetSccmMappingsJsonPath()}].");
+        var serializer = new DataSerializer(this.SccmMappingsJsonPath);
+        await serializer.Write(data);
+        this.StandardOutput($"Mappings backed up to [{this.SccmMappingsJsonPath}].");
     }
 
-    public async Task LoadAndUpdate()
+    public async Task Export()
     {
-        await Load();
-        await Update();
-    }
+        var data = await this.LoadMappingData();
+        if (data == null) throw new Exception("Could not load saved mappings!");
 
-    public async Task Load()
-    {
-        var serializer = new DataSerializer(this.GetSccmMappingsJsonPath());
-        this._data = await serializer.Read();
-    }
-
-    public async Task Update()
-    {
-        if (this._data == null)
-        {
-            throw new ArgumentNullException(nameof(_data));
-        }
-
-        var updater = CreateUpdater();
-        updater.Backup();
-        await updater.Update(this._data);
-        this.StandardOutput($"Mappings restored to [{updater.ActionMapsXmlPath}].");
+        var exporter = this.CreateExporter();
+        exporter.Backup();
+        await exporter.Update(data);
+        this.StandardOutput($"Mappings restored to [{exporter.ActionMapsXmlPath}].");
     }
 
     public async Task Backup()
     {
-        var updater = CreateUpdater();
-        var backup = updater.Backup();
+        var exporter = this.CreateExporter();
+        var backup = exporter.Backup();
         this.StandardOutput($"actionmaps.xml backed up to [{backup}].");
     }
 
     public async Task Restore()
     {
-        var updater = CreateUpdater();
-        var backup = updater.RestoreLatest();
+        var exporter = this.CreateExporter();
+        var backup = exporter.RestoreLatest();
         this.StandardOutput($"actionmaps.xml restored from [{backup}].");
     }
 
     public async Task Open()
     {
         // TODO write test
-        this._platform.Open(this.GetSccmMappingsJsonPath());
-        this.StandardOutput($"Opening [{this.GetSccmMappingsJsonPath()}] in the default editor, change the Preserve property to choose which settings are overwritten.");
+        this._platform.Open(this.SccmMappingsJsonPath);
+        this.StandardOutput($"Opening [{this.SccmMappingsJsonPath}] in the default editor, change the Preserve property to choose which settings are overwritten.");
     }
 }
