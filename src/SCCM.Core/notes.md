@@ -21,8 +21,4 @@
 - original vs updated
 - testdata + testxml
 
-## TODO
-
-### Handle multiple rebind elements per action
-
-Just realized that binding different input types to the same action results in multiple rebind elements. I'm assuming that there can only be one rebind per input type. Now have to update the importers and exporters to handle this, I think the core data model can remain the same.
+## TODOs

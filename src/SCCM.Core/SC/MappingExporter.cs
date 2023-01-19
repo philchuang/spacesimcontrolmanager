@@ -127,8 +127,8 @@ public class MappingExporter : IMappingExporter
 
     private void RestoreInputs(IEnumerable<InputDevice> inputs)
     {
-        // only restore joysticks for now
-        var preservedInputs = inputs.Where(i => string.Equals("joystick", i.Type, StringComparison.OrdinalIgnoreCase) && i.Preserve).ToList();
+        // only restore joysticks and gamepads for now
+        var preservedInputs = inputs.Where(i => (string.Equals("joystick", i.Type, StringComparison.OrdinalIgnoreCase) || string.Equals("gamepad", i.Type, StringComparison.OrdinalIgnoreCase)) && i.Preserve).ToList();
         var inputsToAdd = new List<InputDevice>();
         // map of current prefix => exported input, current options element, current rebind elements
         var inputsToRemap = new Dictionary<string, (InputDevice input, XElement options, IList<XElement> rebinds)>();
@@ -193,8 +193,9 @@ public class MappingExporter : IMappingExporter
         // add missing inputs
         foreach (var input in inputsToAdd)
         {
-            // TODO write test
             var options = new XElement("options", new XAttribute("type", input.Type), new XAttribute("instance", input.Instance.ToString()), new XAttribute("Product", input.Product));
+            this.DebugOutput($"Creating {options.ToString()}...");
+            this.StandardOutput($"Restoring {input.Type}-{input.Instance} input [{input.Product}]");
             this._xml.AddOptionsElement(options);
         }
     }
@@ -234,14 +235,14 @@ public class MappingExporter : IMappingExporter
                             settingValueElement.Remove(); // already exists and needs to be overwritten
                         }
                         
-                        this.StandardOutput($"Updating {input.Product}/<{setting.Name}>/{prop.Value}...");
+                        this.StandardOutput($"Updating {input.Product}/{setting.Name}/{prop.Value}...");
                         settingValueElement = XElement.Parse(prop.Value);
                         settingElement.Add(settingValueElement);
                     }
                     else if (!string.Equals(settingElement.GetAttribute(prop.Key), prop.Value))
                     {
                         // handle attribute property
-                        this.StandardOutput($"Updating {input.Product}/<{setting.Name}>@{prop.Key} to {prop.Value}...");
+                        this.StandardOutput($"Updating {input.Product}/{setting.Name}/{prop.Key} to {prop.Value}...");
                         settingElement.SetAttributeValue(prop.Key, prop.Value);                    
                     }
                 }
@@ -273,12 +274,11 @@ public class MappingExporter : IMappingExporter
                 actionmapElement.Add(actionElement);
             }
 
-            // TODO write test where this correctly selects from multiple rebinds based on the input type
             var rebindElement = actionElement.GetChildren("rebind").SingleOrDefault(r => (r.GetAttribute("input") ?? string.Empty).StartsWith(ActionMapsXmlHelper.GetOptionsTypeAbbv(mapping.InputType)));
             if (rebindElement == null)
             {
                 this.DebugOutput($"Creating <rebind input=\"{mapping.Input}\" />...");
-                this.StandardOutput($"Adding {mapping.ActionMap}-{mapping.Action} for {mapping.Input}...");
+                this.StandardOutput($"Adding {mapping.ActionMap}/{mapping.Action} for {mapping.Input}...");
                 rebindElement = new XElement("rebind");
                 rebindElement.SetAttributeValue("input", mapping.Input);
                 actionElement.Add(rebindElement);
@@ -287,7 +287,7 @@ public class MappingExporter : IMappingExporter
             {
                 if (!string.Equals(rebindElement.GetAttribute("input"), mapping.Input))
                 {
-                    this.StandardOutput($"Updating {mapping.ActionMap}-{mapping.Action} to {mapping.Input}...");
+                    this.StandardOutput($"Updating {mapping.ActionMap}/{mapping.Action} to {mapping.Input}...");
                     rebindElement.SetAttributeValue("input", mapping.Input);
                 }
             }
