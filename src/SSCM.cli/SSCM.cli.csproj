@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyName>SCCM</AssemblyName>
-    <Version>0.1.0</Version>
+    <AssemblyName>SSCM</AssemblyName>
+    <Version>0.5.0</Version>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -13,6 +13,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SCCM.Core\SCCM.Core.csproj"/>
+    <ProjectReference Include="..\SSCM.Core\SSCM.Core.csproj"/>
   </ItemGroup>
 </Project>

@@ -24,3 +24,5 @@
 ## TODOs
 
 ### Rename SCCM to ...? Space Sim Controls Manager
+
+### make SC a subcommand from the root for the CLI

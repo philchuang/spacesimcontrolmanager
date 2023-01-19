@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCCM.Core", "SCCM.Core\SCCM.Core.csproj", "{C1F2FDF9-6F1F-4E43-8378-A6980CB0509C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSCM.Core", "SSCM.Core\SSCM.Core.csproj", "{C1F2FDF9-6F1F-4E43-8378-A6980CB0509C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCCM.cli", "SCCM.cli\SCCM.cli.csproj", "{932A93F6-720F-4ECC-B5BF-AFEEDA861AD5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSCM.cli", "SSCM.cli\SSCM.cli.csproj", "{932A93F6-720F-4ECC-B5BF-AFEEDA861AD5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCCM.Tests", "SCCM.Tests\SCCM.Tests.csproj", "{52F3B4A6-3B42-4989-9752-8D233AE1C2C7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSCM.Tests", "SSCM.Tests\SSCM.Tests.csproj", "{52F3B4A6-3B42-4989-9752-8D233AE1C2C7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
