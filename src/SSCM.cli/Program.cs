@@ -27,6 +27,7 @@ class Program
             .ConfigureAppConfiguration(app =>
             {
                 app.AddJsonFile("appsettings.json", true);
+                app.AddJsonFile("appsettings.local.json", true);
                 config = app.Build();
             })
             .ConfigureServices(services =>

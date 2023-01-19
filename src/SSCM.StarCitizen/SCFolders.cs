@@ -24,10 +24,12 @@ public class SCFolders : ISCFolders
         this._platform = platform;
         this._config = config;
         var settings = this._config.GetSection("SCFolders");
+
+        var valueOrNull = (string? s) => string.IsNullOrWhiteSpace(s) ? null : s;
         if (settings != null)
         {
-            this._actionMapsDir = settings[nameof(ActionMapsDir)];
-            this._sscmDataDir = settings[nameof(SscmDataDir)];
+            this._actionMapsDir = valueOrNull(settings[nameof(ActionMapsDir)]?.Trim());
+            this._sscmDataDir = valueOrNull(settings[nameof(SscmDataDir)]?.Trim());
         }
     }
 
