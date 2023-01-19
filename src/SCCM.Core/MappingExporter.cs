@@ -15,8 +15,11 @@ public class MappingExporter
 
     public string ActionMapsXmlPath { get; private set; }
 
+    private static Regex XML_REGEX = new Regex(@"<(\w[\w\d_]+)[^>]*>.+</\1>");
+
     private readonly IPlatform _platform;
     private readonly IFolders _folders;
+    private ActionMapsXmlHelper? _xml;
     
     public MappingExporter(IPlatform platform, IFolders folders, string actionmapsxmlpath)
     {
@@ -54,17 +57,17 @@ public class MappingExporter
         return latest;
     }
 
-    public async Task Preview(MappingData data)
+    public async Task Preview(MappingData source)
     {
-        await this.Export(data, false);
+        await this.Export(source, false);
     }
 
-    public async Task Update(MappingData data)
+    public async Task Update(MappingData source)
     {
-        await this.Export(data, true);
+        await this.Export(source, true);
     }
 
-    private void Validate(MappingData data)
+    private void Validate(MappingData source)
     {
         // TODO implement
 
@@ -72,136 +75,38 @@ public class MappingExporter
         // all preserved mappings need to reference a preserved input
     }
 
-    private async Task Export(MappingData data, bool apply)
+    private async Task Export(MappingData source, bool apply)
     {
-        if (!System.IO.File.Exists(this.ActionMapsXmlPath))
-        {
-            throw new FileNotFoundException($"Could not find the Star Citizen mappings file at [{this.ActionMapsXmlPath}]!");
-        }
+        this.Validate(source);
 
-        this.Validate(data);
+        this._xml = await ActionMapsXmlHelper.Load(this.ActionMapsXmlPath, "default");
 
-        using (var fs = new FileStream(this.ActionMapsXmlPath, FileMode.Open))
-        {
-            var ct = new CancellationToken();
-            var xd = await XDocument.LoadAsync(fs, LoadOptions.None, ct);
-
-            this.SetupXDocument(xd);
-        }
-
-        this.ExportInputDevices(data.Inputs);
-        this.ExportMappings(data.Mappings);
+        this.ExportInputDevices(source.Inputs);
+        this.ExportMappings(source.Mappings);
 
         if (!apply) return;
 
         this.StandardOutput($"Saving new actionmaps.xml...");
-        using (var fs = new FileStream(this.ActionMapsXmlPath, FileMode.Create))
-        using (var xw = XmlWriter.Create(fs, new XmlWriterSettings { Async = true, Indent = true }))
-        {
-            var ct = new CancellationToken();
-            await this._xd.WriteToAsync(xw, ct);
-        }
+        await this._xml.Save(this.ActionMapsXmlPath);
         this.StandardOutput($"Saved, run \"restore\" command to revert.");
-    }
-
-    private XDocument? _xd;
-    private XElement? _actionProfilesDefaultElement;
-
-    private void SetupXDocument(XDocument xd)
-    {
-        if (xd.Root == null)
-        {
-            throw new InvalidDataException($"Expecting <ActionMaps>, found nothing!");
-        }
-
-        if (!xd.Root.Name.LocalName.Equals("ActionMaps"))
-        {
-            throw new InvalidDataException($"Expecting <ActionMaps>, found <{xd.Root.Name.LocalName}>!");
-        }
-
-        this._xd = xd;
-        this._actionProfilesDefaultElement = this._xd.Root.GetChildren("ActionProfiles").Single(ap => ap.GetAttribute("profileName") == "default");
-        if (this._actionProfilesDefaultElement == null)
-        {
-            throw new InvalidDataException($"Could not find <ActionProfiles> with profileName [default].");
-        }
-    }
-
-    private static Regex XML_REGEX = new Regex(@"<(\w[\w\d_]+)[^>]*>.+</\1>");
-
-    private static string GetPrefixForOptionsElement(XElement options)
-    {
-        var type = options.GetAttribute("type");
-        var instance = options.GetAttribute("instance");
-
-        var typeAbbv = type switch {
-            "joystick" => "js",
-            "keyboard" => "kb",
-            _ => throw new ArgumentOutOfRangeException(type),
-        };
-
-        return $"{typeAbbv}{instance}_";
-    }
-
-    private (string, string) GetOptionsTypeAndInstanceForPrefix(string prefix)
-    {
-        var regex = new Regex(@"^(\w+)(\d+)_.*$");
-        var match = regex.Match(prefix);
-        var typeAbbv = match.Groups[1].Value;
-        var instance = match.Groups[2].Value;
-        var type = typeAbbv switch {
-            "js" => "joystick",
-            "kb" => "keyboard",
-            _ => throw new ArgumentOutOfRangeException(typeAbbv),
-        };
-        return (type, instance);
-    }
-
-    private List<XElement> GetAllActionRebindsForOptions(XElement options)
-    {
-        return this.GetAllActionRebindsForInputPrefix(GetPrefixForOptionsElement(options));
-    }
-
-    private List<XElement> GetAllActionRebindsForInputPrefix(string prefix)
-    {
-        return this._actionProfilesDefaultElement.XPathSelectElements($"//*/rebind[starts-with(@input, '{prefix}')]").ToList();
-    }
-
-    private XElement? GetOptionsElementForInput(InputDevice input)
-    {
-        return this._actionProfilesDefaultElement.XPathSelectElements($"//*/options[@type='{input.Type}' and @instance='{input.Instance}' and @Product='{input.Product}']").SingleOrDefault();
-    }
-
-    private XElement? GetElementForInputSetting(InputDevice input, string settingName)
-    {
-        return this._actionProfilesDefaultElement.XPathSelectElements($"//*/options[@type='{input.Type}' and @instance='{input.Instance}' and @Product='{input.Product}']/{settingName}").SingleOrDefault();
-    }
-
-    private XElement? GetActionmapForMapping(Mapping mapping)
-    {
-        return this._actionProfilesDefaultElement.XPathSelectElements($"//*/actionmap[@name='{mapping.ActionMap}']").SingleOrDefault();
-    }
-
-    private XElement? GetActionForMapping(Mapping mapping)
-    {
-        return this._actionProfilesDefaultElement.XPathSelectElements($"//*/actionmap[@name='{mapping.ActionMap}']/action[@name='{mapping.Action}']").SingleOrDefault();
     }
 
     private void RestoreInputs(IEnumerable<InputDevice> inputs)
     {
         // only restore joysticks for now
-        var preserved = inputs.Where(i => string.Equals("joystick", i.Type, StringComparison.OrdinalIgnoreCase) && i.Preserve).ToList();
-        var addInputs = new List<InputDevice>();
-        var remapOptionsMap = new Dictionary<string, (InputDevice input, XElement options, IList<XElement> rebinds)>();
-        var removeForPrefixes = new List<string>();
-        foreach (var exportInput in preserved)
+        var preservedInputs = inputs.Where(i => string.Equals("joystick", i.Type, StringComparison.OrdinalIgnoreCase) && i.Preserve).ToList();
+        var inputsToAdd = new List<InputDevice>();
+        // map of current prefix => exported input, current options element, current rebind elements
+        var inputsToRemap = new Dictionary<string, (InputDevice input, XElement options, IList<XElement> rebinds)>();
+        var inputPrefixesToRemove = new List<string>();
+        foreach (var exportedInput in preservedInputs)
         {
-            var targetInputByInstance = this._xd.XPathSelectElements($"//*/options[@type='{exportInput.Type}' and @instance='{exportInput.Instance}']").SingleOrDefault();
-            var targetInputByProduct = this._xd.XPathSelectElements($"//*/options[@type='{exportInput.Type}' and @Product='{exportInput.Product}']").SingleOrDefault();
+            var targetInputByInstance = this._xml.GetOptionsElementForInputTypeAndInstance(exportedInput);
+            var targetInputByProduct = this._xml.GetOptionsElementForInputTypeAndProduct(exportedInput);
 
             if (targetInputByProduct != null)
             { // exported input exists
-                if (string.Equals(exportInput.Instance.ToString(), targetInputByProduct.GetAttribute("instance"), StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(exportedInput.Instance.ToString(), targetInputByProduct.GetAttribute("instance"), StringComparison.OrdinalIgnoreCase))
                 { // 1-1: exported input matches
                     // do nothing
                     continue;
@@ -209,53 +114,53 @@ public class MappingExporter
 
                 // 1-0: exported input has a different instance ID
                 // remap bindings
-                remapOptionsMap[exportInput.GetMappingPrefix()] = (exportInput, targetInputByProduct, GetAllActionRebindsForOptions(targetInputByProduct));
+                inputsToRemap[ActionMapsXmlHelper.GetInputPrefixForOptionsElement(targetInputByProduct)] = (exportedInput, targetInputByProduct, this._xml.GetAllActionRebindsForOptions(targetInputByProduct));
                 // delete bindings that are in the way of the exported input instance
-                removeForPrefixes.Add(GetPrefixForOptionsElement(targetInputByProduct));
+                inputPrefixesToRemove.Add(ActionMapsXmlHelper.GetInputPrefixForInputDevice(exportedInput));
                 continue;
             }
             
             if (targetInputByInstance != null)
             { // 0-1: exported input doesn't exist and something else has that instance ID
                 // delete bindings that are in the way of the exported input instance
-                removeForPrefixes.Add(GetPrefixForOptionsElement(targetInputByInstance));
+                inputPrefixesToRemove.Add(ActionMapsXmlHelper.GetInputPrefixForOptionsElement(targetInputByInstance));
             }
             else
             { // 0-0: exported input doesn't exist and nothing else has that instance ID
-                addInputs.Add(exportInput);
+                inputsToAdd.Add(exportedInput);
             }
         }
 
-        // delete via removeInputPrefixes if not in remapInputPrefixes.Keys
-        foreach (var prefix in removeForPrefixes.Where(p => !remapOptionsMap.ContainsKey(p)))
+        // delete via removeForPrefixes if not in remapOptionsMap.Keys
+        foreach (var prefix in inputPrefixesToRemove.Where(p => !inputsToRemap.ContainsKey(p)))
         {
             this.StandardOutput($"Removing mappings like [{prefix}]...");
-            this.GetAllActionRebindsForInputPrefix(prefix).ForEach(rebind => rebind.Parent.Remove());
-            var (type, instance) = GetOptionsTypeAndInstanceForPrefix(prefix);
+            this._xml.GetAllActionRebindsForInputPrefix(prefix).ForEach(rebind => rebind.Parent.Remove());
+            var (type, instance) = ActionMapsXmlHelper.GetOptionsTypeAndInstanceForPrefix(prefix);
             this.StandardOutput($"Removing input for {type} {instance}...");
-            this._actionProfilesDefaultElement.XPathSelectElement($"options[@type='{type}' and @instance='{instance}']").Remove();
+            this._xml.GetOptionsElementForInputTypeAndInstance(type, instance).Remove();
         }
 
-        // remap via remapInputPrefixes
-        foreach (var newPrefixAndElements in remapOptionsMap)
+        // remap via remapOptionsMap
+        foreach (var oldPrefixAndElements in inputsToRemap)
         {
-            var newPrefix = newPrefixAndElements.Key;
-            var (input, options, rebinds) = newPrefixAndElements.Value;
-            var oldPrefix = GetPrefixForOptionsElement(options);
+            var oldPrefix = oldPrefixAndElements.Key;
+            var (exportedInput, optionsElementToUpdate, rebindElementsToUpdate) = oldPrefixAndElements.Value;
+            var newPrefix = ActionMapsXmlHelper.GetInputPrefixForInputDevice(exportedInput);
             this.StandardOutput($"Rebinding mappings from [{oldPrefix}] to [{newPrefix}]...");
-            foreach (var rebind in rebinds)
+            foreach (var rebind in rebindElementsToUpdate)
             {
                 rebind.SetAttributeValue("input", rebind.GetAttribute("input").Replace(oldPrefix, newPrefix));
             }
             
-            options.SetAttributeValue("instance", input.Instance);
+            optionsElementToUpdate.SetAttributeValue("instance", exportedInput.Instance);
         }
 
-        // add missing inputs
-        foreach (var input in addInputs)
+        // add missing inputs TODO test
+        foreach (var input in inputsToAdd)
         {
             var options = new XElement("options", new XAttribute("type", input.Type), new XAttribute("instance", input.Instance.ToString()), new XAttribute("Product", input.Product));
-            this._actionProfilesDefaultElement.Add(options);
+            this._xml.AddOptionsElement(options);
         }
     }
 
@@ -267,10 +172,10 @@ public class MappingExporter
         {
             foreach (var setting in input.Settings.Where(s => s.Preserve))
             {
-                var settingElement = this.GetElementForInputSetting(input, setting.Name);
+                var settingElement = this._xml.GetElementForInputSetting(input, setting.Name);
                 if (settingElement == null)
                 {
-                    var inputElement = this.GetOptionsElementForInput(input);
+                    var inputElement = this._xml.GetOptionsElementForInputDevice(input);
                     if (inputElement == null)
                     {
                         throw new SccmException($"Could not find <options> element for type [{input.Type}] instance [{input.Instance}] Product [{input.Product}].");
@@ -280,7 +185,6 @@ public class MappingExporter
                     // create setting element
                     settingElement = new XElement(setting.Name);
                     inputElement.Add(settingElement);
-                    // this._inputElementMap[$"{input.Type}-{input.Instance}-{input.Product}-{setting.Name}"] = settingElement;
                 }
 
                 foreach (var prop in setting.Properties)
@@ -314,18 +218,17 @@ public class MappingExporter
     {
         foreach (var mapping in mappings.Where(m => m.Preserve))
         {
-            var actionElement = this.GetActionForMapping(mapping);
+            var actionElement = this._xml.GetActionForMapping(mapping);
             if (actionElement == null)
             {
-                var actionmapElement = this.GetActionmapForMapping(mapping);
+                var actionmapElement = this._xml.GetActionmapForMapping(mapping);
                 if (actionmapElement == null)
                 {
                     this.StandardOutput($"Creating <actionmap name=\"{mapping.ActionMap}\">...");
                     // create <actionmap>
                     actionmapElement = new XElement("actionmap");
                     actionmapElement.SetAttributeValue("name", mapping.ActionMap);
-                    this._actionProfilesDefaultElement.Add(actionmapElement);
-                    // this._actionElementMap[$"{mapping.ActionMap}-"] = actionmapElement;
+                    this._xml.AddActionmapElement(actionmapElement);
                 }
 
                 this.StandardOutput($"Creating <action name=\"{mapping.Action}\">...");
@@ -333,7 +236,6 @@ public class MappingExporter
                 actionElement = new XElement("action");
                 actionElement.SetAttributeValue("name", mapping.Action);
                 actionmapElement.Add(actionElement);
-                // this._actionElementMap[$"{mapping.ActionMap}-{mapping.Action}"] = actionmapElement;
             }
 
             var rebindElement = actionElement.GetChildren("rebind").SingleOrDefault();

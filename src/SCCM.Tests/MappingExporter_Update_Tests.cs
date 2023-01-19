@@ -506,7 +506,6 @@ public class MappingExporter_Update_Tests
         await this.Act();
 
         // Assert
-        Assert.Fail();
         var updatedXmlStr = this._updatedXml.ToString(SaveOptions.DisableFormatting);
         // assert-1: joystick inputs 1 and 2 are restored (2->1, 3->2)
         foreach (var joystick in exportedJoystickInputs)
@@ -523,8 +522,8 @@ public class MappingExporter_Update_Tests
         // assert-3: joystick input 1 is removed
         Assert.IsFalse(updatedXmlStr.Contains(targetJoystick1Element.GetAttribute("Product")));
         // assert-4: all mappings for js2 are rewritten for exported js1, ditto js3 -> js2
-        targetJoystick2Mappings.Select(e => new { ActionMap = e.Parent.GetAttribute("name"), Action = e.Parent.Parent.GetAttribute("name"), RestoredBinding = e.GetAttribute("input").Replace("js2_", "js1") })
-            .Concat(targetJoystick3Mappings.Select(e => new { ActionMap = e.Parent.GetAttribute("name"), Action = e.Parent.Parent.GetAttribute("name"), RestoredBinding = e.GetAttribute("input").Replace("js3_", "js2") }))
+        targetJoystick2Mappings.Select(e => new { ActionMap = e.Parent.Parent.GetAttribute("name"), Action = e.Parent.GetAttribute("name"), RestoredBinding = e.GetAttribute("input").Replace("js2_", "js1_") })
+            .Concat(targetJoystick3Mappings.Select(e => new { ActionMap = e.Parent.Parent.GetAttribute("name"), Action = e.Parent.GetAttribute("name"), RestoredBinding = e.GetAttribute("input").Replace("js3_", "js2_") }))
             .ToList()
             .ForEach(mapping => {
                 if (preservedMappings.Any(m => m.ActionMap == mapping.ActionMap && m.Action == mapping.Action)) return; // skip preserved mappings, will test later

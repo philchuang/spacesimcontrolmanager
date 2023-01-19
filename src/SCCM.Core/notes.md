@@ -1,17 +1,18 @@
 # TODO make consistent nomenclature
 
-TERMS
+ACTIONS
 
 - import: load data from actionmaps.xml into scmappings.json
 - merge: merge data from actionmaps.xml into scmappings.json
-- target: actionmaps.xml
 - export: update target with data from scmappings.json
 
 DATA MODEL
 
-- input :: &lt;options>
+- source: collection of captured values and whether or not they should be preserved
+- target: game-specific configuration, actionmaps.xml for SC
+- input (joysticks, etc.) :: &lt;options>
 - input setting :: children of &lt;options>
-- mapping :: &lt;action>
+- mapping (bindings) :: &lt;action>
 
 UNIT TESTS
 
