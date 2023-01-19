@@ -18,23 +18,6 @@ public class MappingExporter_Update_Tests
     private MappingData _data = new MappingData();
     private XDocument? _originalXml = null;
     private XDocument? _updatedXml = null;
-    private XElement? _actionMapsElement = null;
-    private XElement? _actionProfilesDefaultElement = null;
-
-    private string GetTestXmlPath()
-    {
-        return new System.IO.FileInfo(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), TestContext.CurrentContext.Test.Name, "actionmaps.xml")).FullName;
-    }
-
-    private async Task<XDocument> LoadTestXml()
-    {
-        using (var fs = new FileStream(this.GetTestXmlPath(), FileMode.Open))
-        {
-            var ct = new CancellationToken();
-            return await XDocument.LoadAsync(fs, LoadOptions.None, ct);
-        }
-    }
-
 
     public MappingExporter_Update_Tests()
     {
@@ -45,23 +28,17 @@ public class MappingExporter_Update_Tests
     [SetUp]
     protected async Task Init()
     {
-        System.IO.Directory.CreateDirectory(new FileInfo(this.GetTestXmlPath()).DirectoryName);
-        System.IO.File.Copy(Samples.GetActionMapsXmlPath(), this.GetTestXmlPath(), true);
         this._updater = new MappingExporter(this._platform, this._folders, this.GetTestXmlPath());
         this._updater.StandardOutput += s => TestContext.Out.WriteLine($"[STD  ]\t{s}");
         this._updater.DebugOutput += s => TestContext.Out.WriteLine($"[DEBUG]\t{s}");
         this._updater.WarningOutput += s => TestContext.Out.WriteLine($"[WARN ]\t{s}");
-        this._originalXml = await this.LoadTestXml();
-    }
 
-    [TearDown]
-    protected async Task Cleanup()
-    {
-        System.IO.Directory.Delete(new FileInfo(this.GetTestXmlPath()).DirectoryName, true);
+        this._originalXml = await this.LoadXml(Samples.GetActionMapsXmlPath());
     }
 
     private async Task Act()
     {
+        System.IO.Directory.CreateDirectory(new FileInfo(this.GetTestXmlPath()).DirectoryName);
         using (var fs = new FileStream(this.GetTestXmlPath(), FileMode.Create))
         using (var xw = XmlWriter.Create(fs, new XmlWriterSettings { Async = true, Indent = true }))
         {
@@ -69,22 +46,48 @@ public class MappingExporter_Update_Tests
             await this._originalXml.WriteToAsync(xw, ct);
         }
         await this._updater.Update(this._data);
-        this._updatedXml = await this.LoadTestXml();
-        if (this._updatedXml != null)
+        this._updatedXml = await this.LoadXml(this.GetTestXmlPath());
+    }
+
+    private void AssertBasics()
+    {
+        Assert.NotNull(this._updatedXml);
+        Assert.NotNull(this._updatedXml.Root);
+        Assert.AreEqual("ActionMaps", this._updatedXml.Root.Name.LocalName);
+        Assert.NotNull(this._updatedXml.XPathSelectElement("/ActionMaps/ActionProfiles[@profileName='default']"));
+    }
+
+    [TearDown]
+    protected void Cleanup()
+    {
+        System.IO.Directory.Delete(new FileInfo(this.GetTestXmlPath()).DirectoryName, true);
+    }
+
+    private string GetTestXmlPath()
+    {
+        return new System.IO.FileInfo(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), TestContext.CurrentContext.Test.Name, "actionmaps.xml")).FullName;
+    }
+
+    private async Task<XDocument> LoadXml(string path)
+    {
+        using (var fs = new FileStream(path, FileMode.Open))
         {
-            if (this._updatedXml.Root == null)
-            {
-                throw new InvalidDataException($"Expecting <ActionMaps>, found nothing!");
-            }
-
-            if (!this._updatedXml.Root.Name.LocalName.Equals("ActionMaps"))
-            {
-                throw new InvalidDataException($"Expecting <ActionMaps>, found <{this._updatedXml.Root.Name.LocalName}>!");
-            }
-
-            this._actionMapsElement = this._updatedXml.Root;
-            this._actionProfilesDefaultElement = this._actionMapsElement.GetChildren("ActionProfiles").Single(ap => ap.GetAttribute("profileName") == "default");
+            var ct = new CancellationToken();
+            return await XDocument.LoadAsync(fs, LoadOptions.None, ct);
         }
+    }
+
+    private XElement GetInputElement(XDocument xd, InputDevice input)
+    {
+        if (!string.IsNullOrWhiteSpace(input.Product))
+            return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/options[@type='{input.Type}' and @instance='{input.Instance}' and @Product='{input.Product}']").SingleOrDefault();
+
+        return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/options[@type='{input.Type}' and @instance='{input.Instance}'").SingleOrDefault();
+    }
+
+    private XElement GetActionRebindElement(XDocument xd, Mapping mapping)
+    {
+        return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/actionmap[@name='{mapping.ActionMap}']/action[@name='{mapping.Action}']/rebind").SingleOrDefault();
     }
 
     private void Arrange_Default_MappingData()
@@ -138,37 +141,23 @@ public class MappingExporter_Update_Tests
         };
     }
 
-    private void AssertBasics()
+    private (string, Mapping) Arrange_Update_overwrites_mapping_change(bool preserve)
     {
-        Assert.NotNull(this._updatedXml);
-        Assert.NotNull(this._actionMapsElement);
-        Assert.NotNull(this._actionProfilesDefaultElement);
+        this.Arrange_Default_MappingData();
+        this._data.Mappings.ToList().ForEach(m => m.Preserve = false);
+        var mapping = this._data.Mappings.Single(m => m.ActionMap == "spaceship_movement" && m.Action == "v_ifcs_toggle_cruise_control");
+        mapping.Preserve = preserve;
+        var actionRebindElement = this.GetActionRebindElement(this._originalXml, mapping);
+        var originalInputValue = actionRebindElement.GetAttribute("input");
+        mapping.Input = mapping.Input == originalInputValue ? RandomString() : mapping.Input;
+        return (originalInputValue, mapping);
     }
-
-    private XElement GetInputElement(XDocument xd, InputDevice input)
-    {
-        if (!string.IsNullOrWhiteSpace(input.Product))
-            return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/options[@type='{input.Type}' and @instance='{input.Instance}' and @Product='{input.Product}']").SingleOrDefault();
-
-        return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/options[@type='{input.Type}' and @instance='{input.Instance}'").SingleOrDefault();
-    }
-
-    private XElement GetActionRebindElement(XDocument xd, Mapping mapping)
-    {
-        return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/actionmap[@name='{mapping.ActionMap}']/action[@name='{mapping.Action}']/rebind").SingleOrDefault();
-    }
-
+    
     [Test]
     public async Task Update_overwrites_mapping_change()
     {
         // Arrange
-        this.Arrange_Default_MappingData();
-        this._data.Mappings.ToList().ForEach(m => m.Preserve = false);
-        var mapping = this._data.Mappings.Single(m => m.ActionMap == "spaceship_movement" && m.Action == "v_ifcs_toggle_cruise_control");
-        mapping.Preserve = true;
-        var actionRebindElement = this.GetActionRebindElement(this._originalXml, mapping);
-        var originalInput = actionRebindElement.GetAttribute("input");
-        mapping.Input = mapping.Input == originalInput ? RandomString() : mapping.Input;
+        var (originalInputValue, mapping) = this.Arrange_Update_overwrites_mapping_change(true);
 
         // Act
         await this.Act();
@@ -187,13 +176,7 @@ public class MappingExporter_Update_Tests
     public async Task Update_ignores_mapping_change()
     {
         // Arrange
-        this.Arrange_Default_MappingData();
-        this._data.Mappings.ToList().ForEach(m => m.Preserve = false);
-        var mapping = this._data.Mappings.Single(m => m.ActionMap == "spaceship_movement" && m.Action == "v_ifcs_toggle_cruise_control");
-        mapping.Preserve = false;
-        var actionRebindElement = this.GetActionRebindElement(this._originalXml, mapping);
-        var originalInput = actionRebindElement.GetAttribute("input");
-        mapping.Input = mapping.Input == originalInput ? RandomString() : mapping.Input;
+        var (originalInputValue, mapping) = this.Arrange_Update_overwrites_mapping_change(false);
 
         // Act
         await this.Act();
@@ -205,7 +188,7 @@ public class MappingExporter_Update_Tests
 
         var changedActionRebindElement = this.GetActionRebindElement(this._updatedXml, mapping);
         Assert.NotNull(changedActionRebindElement, nameof(changedActionRebindElement));
-        Assert.AreEqual(originalInput, changedActionRebindElement.GetAttribute("input"));
+        Assert.AreEqual(originalInputValue, changedActionRebindElement.GetAttribute("input"));
     }
 
     [Test]
@@ -256,7 +239,7 @@ public class MappingExporter_Update_Tests
         Assert.AreEqual(mapping.Input, addedActionRebindElement.GetAttribute("input"));
     }
 
-    protected (InputDevice, InputDeviceSetting, string, string) Update_overwrites_input_setting_Arrange(bool settingPreserve)
+    protected (InputDevice, InputDeviceSetting, string, string) Arrange_Update_overwrites_input_setting(bool settingPreserve)
     {
         this.Arrange_Default_MappingData();
         this._data.Inputs.SelectMany(i => i.Settings).ToList().ForEach(s => s.Preserve = false);
@@ -281,7 +264,7 @@ public class MappingExporter_Update_Tests
     public async Task Update_overwrites_input_setting_change()
     {
         // Arrange
-        var (exportedInput, exportedSetting, exportedSettingValueName, targetSettingValue) = this.Update_overwrites_input_setting_Arrange(settingPreserve: true);
+        var (exportedInput, exportedSetting, exportedSettingValueName, targetSettingValue) = this.Arrange_Update_overwrites_input_setting(settingPreserve: true);
 
         // Act
         await this.Act();
@@ -365,7 +348,7 @@ public class MappingExporter_Update_Tests
     public async Task Update_ignores_input_setting_change()
     {
         // Arrange
-        var (exportedInput, exportedSetting, exportedSettingValueName, targetSettingValue) = this.Update_overwrites_input_setting_Arrange(settingPreserve: false);
+        var (exportedInput, exportedSetting, exportedSettingValueName, targetSettingValue) = this.Arrange_Update_overwrites_input_setting(settingPreserve: false);
 
         // Act
         await this.Act();
