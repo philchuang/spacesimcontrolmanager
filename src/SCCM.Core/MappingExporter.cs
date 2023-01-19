@@ -155,6 +155,11 @@ public class MappingExporter
 
     private async Task ExportInputDevices(IEnumerable<InputDevice> inputs)
     {
+        foreach (var input in inputs.Where(i => i.Preserve))
+        {
+            // TODO implement
+        }
+
         foreach (var input in inputs)
         {
             foreach (var setting in input.Settings.Where(s => s.Preserve))
