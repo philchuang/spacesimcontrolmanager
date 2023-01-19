@@ -13,6 +13,8 @@ public class DataSerializer
 
     public string SavePath { get; private set; }
 
+    public Formatting Formatting { get; set; } = Formatting.Indented;
+
     public DataSerializer(string path)
     {
         this.SavePath = path;
@@ -23,7 +25,7 @@ public class DataSerializer
         using (var fs = File.Open(this.SavePath, FileMode.Create))
         using (var sw = new StreamWriter(fs))
         {
-            await sw.WriteAsync(JsonConvert.SerializeObject(data));
+            await sw.WriteAsync(JsonConvert.SerializeObject(data, this.Formatting));
         }
     }
 

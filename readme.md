@@ -10,7 +10,9 @@ Imports the Star Citizen actionmaps.xml and saves it locally in a mappings JSON 
 
 ```cmd
 > SCCM.exe import
-TODO sample output
+Read in 4 input devices.
+Read in 114 mappings.
+Mappings backed up to [My Documents\SCCM\scmappings.json].
 ```
 
 ### Edit
@@ -19,7 +21,7 @@ Opens the mappings JSON file in the system default editor. Edit the `Preserve` p
 
 ```cmd
 > SCCM.exe edit
-TODO sample output
+Opening [My Documents\SCCM\scmappings.json] in the default editor, change the Preserve property to choose which settings are overwritten.
 ```
 
 ### Export
@@ -42,10 +44,17 @@ Instead of importing, this command displays the differences between the current 
 TODO sample output
 ```
 
-In order to force the import, use the `-force` option.
+#### Merge mappings
 
 ```cmd
-> SCCM.exe import -force
+> SCCM.exe import merge
+TODO sample output
+```
+
+#### Overwrite mappings
+
+```cmd
+> SCCM.exe import overwrite
 TODO sample output
 ```
 
@@ -55,7 +64,7 @@ Makes a local copy of the Star Citizen actionmaps.xml which can be restored late
 
 ```cmd
 > SCCM.exe backup
-TODO sample output
+actionmaps.xml backed up to [My Documents\SCCM\actionmaps.xml.20221223022032.bak].
 ```
 
 ### Restore the backed-up Star Citizen actionmaps.xml
@@ -64,5 +73,5 @@ Restores the latest local backup of the Star Citizen actionmaps.xml.
 
 ```cmd
 > SCCM.exe restore
-TODO sample output
+actionmaps.xml restored from [My Documents\SCCM\actionmaps.xml.20221223022032.bak].
 ```
