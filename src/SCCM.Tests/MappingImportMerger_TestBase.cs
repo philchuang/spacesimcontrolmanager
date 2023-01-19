@@ -3,16 +3,16 @@ using SCCM.Core;
 
 namespace SCCM.Tests;
 
-public abstract class MappingMerger_TestBase
+public abstract class MappingImportMerger_TestBase
 {
-    protected readonly MappingMerger _merger;
+    protected readonly MappingImportMerger _merger;
 
     protected MappingData _current = new MappingData();
     protected MappingData _updated = new MappingData();
 
-    protected MappingMerger_TestBase()
+    protected MappingImportMerger_TestBase()
     {
-        this._merger = new MappingMerger();
+        this._merger = new MappingImportMerger();
     }
 
     protected static string RandomString() => Guid.NewGuid().ToString();
