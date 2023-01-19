@@ -19,6 +19,7 @@ class Program
         root.AddGlobalOption(debugOption);
         root.AddCommand(BuildImportCommand(mapper, debugOption));
         root.AddCommand(BuildEditCommand(mapper));
+        root.AddCommand(BuildEditSCCommand(mapper));
         root.AddCommand(BuildExportCommand(mapper, debugOption));
         root.AddCommand(BuildBackupCommand(mapper, debugOption));
         root.AddCommand(BuildRestoreCommand(mapper, debugOption));
@@ -60,6 +61,16 @@ class Program
         cmd.AddAlias("open");
         cmd.SetHandler(() => {
             mapper.Open();
+        });
+        return cmd;
+    }
+
+    private static Command BuildEditSCCommand(SCCM.Core.Mapper mapper)
+    {
+        var cmd = new Command("editsc", "Opens the Star Citizen actionmaps.xml in the system default editor.");
+        cmd.AddAlias("opensc");
+        cmd.SetHandler(() => {
+            mapper.OpenScXml();
         });
         return cmd;
     }

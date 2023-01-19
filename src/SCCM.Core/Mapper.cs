@@ -80,7 +80,8 @@ public class Mapper
             await this.Save(updatedData);
             return;
         }
-
+        this.StandardOutput("");
+        
         var merger = this.CreateMerger();
 
         if (mode == ImportMode.Default)
@@ -148,5 +149,12 @@ public class Mapper
         // TODO write simple test
         this._platform.Open(this.SccmMappingsJsonPath);
         this.StandardOutput($"Opening [{this.SccmMappingsJsonPath}] in the default editor, change the Preserve property to choose which settings are overwritten.");
+    }
+    
+    public void OpenScXml()
+    {
+        // TODO write simple test
+        this._platform.Open(this.StarCitizenActionmapsXmlPath);
+        this.StandardOutput($"Opening [{this.StarCitizenActionmapsXmlPath}] in the default editor.");
     }
 }
