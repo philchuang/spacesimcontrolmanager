@@ -17,6 +17,7 @@ class Program
 
         var root = new RootCommand("Star Citizen Control Mapper Tool");
         root.AddCommand(BuildReadCommand(mapper, debugOption));
+        root.AddCommand(BuildEditCommand(mapper));
         root.AddCommand(BuildUpdateCommand(mapper, debugOption));
         root.AddCommand(BuildBackupCommand(mapper, debugOption));
         root.AddCommand(BuildRestoreCommand(mapper, debugOption));
@@ -32,6 +33,15 @@ class Program
             await mapper.ImportAndSave();
         },
         debugOption);
+        return cmd;
+    }
+
+    private static Command BuildEditCommand(SCCM.Core.Mapper mapper)
+    {
+        var cmd = new Command("edit", "Opens the imported Star Citizen control mappings JSON file.");
+        cmd.SetHandler(async () => {
+            await mapper.Open();
+        });
         return cmd;
     }
 
