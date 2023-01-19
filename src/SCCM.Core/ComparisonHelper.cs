@@ -30,13 +30,12 @@ public static class ComparisonHelper
         if (left.Count != right.Count) return true;
         if (left.Keys.Except(right.Keys).Any()) return true;
 
-        return left.Where(lkvp => {
-            if (!right.TryGetValue(lkvp.Key, out var rval)) return false;
+        return left.Any(lkvp => {
+            if (!right.TryGetValue(lkvp.Key, out var rval)) return true;
             if (lkvp.Value == null && rval == null) return false;
             if (lkvp.Value == null || rval == null) return true;
-            return lkvp.Value.Equals(rval);
-        })
-        .Any();
+            return !lkvp.Value.Equals(rval);
+        });
     }
 }
 
