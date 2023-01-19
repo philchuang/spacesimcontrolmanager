@@ -55,7 +55,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         Assert.IsTrue(this._merger.Result.HasDifferences);
         Assert.IsTrue(this._merger.Result.CanMerge);
         Assert.AreEqual(1, this._merger.Result.MergeActions.Count);
-        AssertSccm.AreEqual(new MappingMergeAction(null, MappingMergeActionMode.Add, this._updated.Inputs[1]), this._merger.Result.MergeActions[0]);
+        AssertSccm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, this._updated.Inputs[1]), this._merger.Result.MergeActions[0]);
     }
 
     [Test]
@@ -80,8 +80,8 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         Assert.IsTrue(this._merger.Result.HasDifferences);
         Assert.IsTrue(this._merger.Result.CanMerge);
         Assert.AreEqual(2, this._merger.Result.MergeActions.Count);
-        AssertSccm.AreEqual(new MappingMergeAction(null, MappingMergeActionMode.Remove, this._current.Inputs[1]), this._merger.Result.MergeActions[0]);
-        AssertSccm.AreEqual(new MappingMergeAction(null, MappingMergeActionMode.Remove, this._current.Mappings[0]), this._merger.Result.MergeActions[1]);
+        AssertSccm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, this._current.Inputs[1]), this._merger.Result.MergeActions[0]);
+        AssertSccm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, this._current.Mappings[0]), this._merger.Result.MergeActions[1]);
     }
 
     [Test]
@@ -156,7 +156,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         Assert.IsTrue(this._merger.Result.HasDifferences);
         Assert.IsTrue(this._merger.Result.CanMerge);
         Assert.AreEqual(1, this._merger.Result.MergeActions.Count);
-        AssertSccm.AreEqual(new MappingMergeAction(currentInput, MappingMergeActionMode.Add, updatedInput.Settings[0]), this._merger.Result.MergeActions[0]);
+        AssertSccm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, updatedInput.Settings[0]), this._merger.Result.MergeActions[0]);
     }
 
     [Test]
@@ -181,7 +181,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         Assert.IsTrue(this._merger.Result.HasDifferences);
         Assert.IsTrue(this._merger.Result.CanMerge);
         Assert.AreEqual(1, this._merger.Result.MergeActions.Count);
-        AssertSccm.AreEqual(new MappingMergeAction(currentInput, MappingMergeActionMode.Remove, currentInput.Settings[0]), this._merger.Result.MergeActions[0]);
+        AssertSccm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, currentInput.Settings[0]), this._merger.Result.MergeActions[0]);
     }
 
     [Test]
@@ -231,7 +231,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         Assert.IsTrue(this._merger.Result.HasDifferences);
         Assert.IsTrue(this._merger.Result.CanMerge);
         Assert.AreEqual(1, this._merger.Result.MergeActions.Count);
-        AssertSccm.AreEqual(new MappingMergeAction(currentInput, MappingMergeActionMode.Replace, updatedInput.Settings[0]), this._merger.Result.MergeActions[0]);
+        AssertSccm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Replace, updatedInput.Settings[0]), this._merger.Result.MergeActions[0]);
     }
 
     [Test]
@@ -279,7 +279,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         Assert.IsTrue(this._merger.Result.HasDifferences);
         Assert.IsTrue(this._merger.Result.CanMerge);
         Assert.AreEqual(1, this._merger.Result.MergeActions.Count);
-        AssertSccm.AreEqual(new MappingMergeAction(null, MappingMergeActionMode.Add, addedMapping), this._merger.Result.MergeActions[0]);
+        AssertSccm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, addedMapping), this._merger.Result.MergeActions[0]);
     }
 
     [Test]
@@ -302,7 +302,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         Assert.IsTrue(this._merger.Result.HasDifferences);
         Assert.IsTrue(this._merger.Result.CanMerge);
         Assert.AreEqual(1, this._merger.Result.MergeActions.Count);
-        AssertSccm.AreEqual(new MappingMergeAction(null, MappingMergeActionMode.Remove, removedMapping), this._merger.Result.MergeActions[0]);
+        AssertSccm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, removedMapping), this._merger.Result.MergeActions[0]);
     }
 
     [Test]
@@ -351,7 +351,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         Assert.IsTrue(this._merger.Result.HasDifferences);
         Assert.IsTrue(this._merger.Result.CanMerge);
         Assert.AreEqual(1, this._merger.Result.MergeActions.Count);
-        AssertSccm.AreEqual(new MappingMergeAction(originalMapping, MappingMergeActionMode.Replace, changedMapping), this._merger.Result.MergeActions[0]);
+        AssertSccm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Replace, changedMapping), this._merger.Result.MergeActions[0]);
     }
     
     [Test]
@@ -398,31 +398,31 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
 
         Assert.AreEqual(1, this._merger.Result.InputDiffs.Added.Count);
         AssertSccm.AreEqual(addedInput, this._merger.Result.InputDiffs.Added[0]);
-        AssertSccm.AreEqual(new MappingMergeAction (null, MappingMergeActionMode.Add, addedInput), this._merger.Result.MergeActions[++mergeActionsIdx]);
+        AssertSccm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, addedInput), this._merger.Result.MergeActions[++mergeActionsIdx]);
 
         Assert.AreEqual(1, this._merger.Result.InputDiffs.Removed.Count);
         AssertSccm.AreEqual(removedInput, this._merger.Result.InputDiffs.Removed[0]);
-        AssertSccm.AreEqual(new MappingMergeAction (null, MappingMergeActionMode.Remove, removedInput), this._merger.Result.MergeActions[++mergeActionsIdx]);
+        AssertSccm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, removedInput), this._merger.Result.MergeActions[++mergeActionsIdx]);
 
         Assert.AreEqual(2, this._merger.Result.InputDiffs.Changed.Count);
         AssertSccm.AreEqual(currentChangingInput, this._merger.Result.InputDiffs.Changed[0].Current);
         AssertSccm.AreEqual(updatedChangingInput, this._merger.Result.InputDiffs.Changed[0].Updated);
-        AssertSccm.AreEqual(new MappingMergeAction (currentChangingInput, MappingMergeActionMode.Add, addedSetting), this._merger.Result.MergeActions[++mergeActionsIdx]);
-        AssertSccm.AreEqual(new MappingMergeAction (currentChangingInput, MappingMergeActionMode.Remove, removedSetting), this._merger.Result.MergeActions[++mergeActionsIdx]);
-        AssertSccm.AreEqual(new MappingMergeAction (currentChangingInput, MappingMergeActionMode.Replace, updatedChangingSetting), this._merger.Result.MergeActions[++mergeActionsIdx]);
+        AssertSccm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, addedSetting), this._merger.Result.MergeActions[++mergeActionsIdx]);
+        AssertSccm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, removedSetting), this._merger.Result.MergeActions[++mergeActionsIdx]);
+        AssertSccm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Replace, updatedChangingSetting), this._merger.Result.MergeActions[++mergeActionsIdx]);
 
         Assert.AreEqual(1, this._merger.Result.MappingDiffs.Added.Count);
         AssertSccm.AreEqual(addedMapping, this._merger.Result.MappingDiffs.Added[0]);
-        AssertSccm.AreEqual(new MappingMergeAction (null, MappingMergeActionMode.Add, addedMapping), this._merger.Result.MergeActions[++mergeActionsIdx]);
+        AssertSccm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, addedMapping), this._merger.Result.MergeActions[++mergeActionsIdx]);
 
         Assert.AreEqual(2, this._merger.Result.MappingDiffs.Removed.Count);
         Assert2.DictionaryEquals(new[] { removedMapping, removedMappingButPreserved }.ToDictionary(m => $"{m.ActionMap}-{m.Action}"), this._merger.Result.MappingDiffs.Removed.ToDictionary(m => $"{m.ActionMap}-{m.Action}"), true, AssertSccm.AreEqual);
-        AssertSccm.AreEqual(new MappingMergeAction (null, MappingMergeActionMode.Remove, removedMapping), this._merger.Result.MergeActions[++mergeActionsIdx]);
+        AssertSccm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, removedMapping), this._merger.Result.MergeActions[++mergeActionsIdx]);
 
         Assert.AreEqual(2, this._merger.Result.MappingDiffs.Changed.Count);
         AssertSccm.AreEqual(currentChangedMapping, this._merger.Result.MappingDiffs.Changed[0].Current);
         AssertSccm.AreEqual(updatedChangedMapping, this._merger.Result.MappingDiffs.Changed[0].Updated);
-        AssertSccm.AreEqual(new MappingMergeAction (currentChangedMapping, MappingMergeActionMode.Replace, updatedChangedMapping), this._merger.Result.MergeActions[++mergeActionsIdx]);
+        AssertSccm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Replace, updatedChangedMapping), this._merger.Result.MergeActions[++mergeActionsIdx]);
         AssertSccm.AreEqual(currentChangedMappingButPreserved, this._merger.Result.MappingDiffs.Changed[1].Current);
         AssertSccm.AreEqual(updatedChangedMappingButPreserved, this._merger.Result.MappingDiffs.Changed[1].Updated);
 

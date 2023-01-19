@@ -156,9 +156,10 @@ public class MappingExporter
             optionsElementToUpdate.SetAttributeValue("instance", exportedInput.Instance);
         }
 
-        // add missing inputs TODO test
+        // add missing inputs
         foreach (var input in inputsToAdd)
         {
+            // TODO write test
             var options = new XElement("options", new XAttribute("type", input.Type), new XAttribute("instance", input.Instance.ToString()), new XAttribute("Product", input.Product));
             this._xml.AddOptionsElement(options);
         }
