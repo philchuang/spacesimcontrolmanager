@@ -78,21 +78,21 @@ function Publish($srcFolder, $outputPath, $options, $metadataPath, $zip)
 }
 
 &{
-    $workspaceFolder = [System.IO.Path]::GetFullPath("$PSScriptRoot\..")
-    $srcFolder = "$workspaceFolder\src\SSCM.cli"
-    $releasesFolder = "$workspaceFolder\releases"
-    $metadataPath = "$releasesFolder\release.json"
+    $workspaceFolder = [System.IO.Path]::GetFullPath("$PSScriptRoot/..")
+    $srcFolder = "$workspaceFolder/src/SSCM.cli"
+    $releasesFolder = "$workspaceFolder/releases"
+    $metadataPath = "$releasesFolder/release.json"
 
     Write-Host "Writing metadata..."
     $metadata = GetMetadata
     WriteMetadata $metadata $metadataPath
     $suffix = if ($AddHash) { "-$($metadata.commit_hash)" } else { "" }
 
-    Publish $srcFolder "$releasesFolder\sscm-win$suffix" "" $metadataPath $Zipped
+    Publish $srcFolder "$releasesFolder/sscm-win$suffix" "" $metadataPath $Zipped
 
     if ($AllTargets) {
-        Publish $srcFolder "$releasesFolder\sscm-win-full$suffix" "--sc" $metadataPath $Zipped
-        Publish $srcFolder "$releasesFolder\sscm-linux$suffix" "--os linux" $metadataPath $Zipped
-        Publish $srcFolder "$releasesFolder\sscm-linux-full$suffix" "--os linux --sc" $metadataPath $Zipped
+        Publish $srcFolder "$releasesFolder/sscm-win-full$suffix" "--sc" $metadataPath $Zipped
+        Publish $srcFolder "$releasesFolder/sscm-linux$suffix" "--os linux" $metadataPath $Zipped
+        Publish $srcFolder "$releasesFolder/sscm-linux-full$suffix" "--os linux --sc" $metadataPath $Zipped
     }
 }
