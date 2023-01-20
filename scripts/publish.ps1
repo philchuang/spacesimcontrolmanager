@@ -81,7 +81,7 @@ function Publish($srcFolder, $outputPath, $options, $metadataPath, $zip)
     $metadataPath = "$releasesFolder/release.json"
 
     Write-Host "Creating directory [$releasesFolder]..."
-    New-Item -Path $dir -ItemType Directory -Force | Out-Null
+    New-Item -Path $releasesFolder -ItemType Directory -Force | Out-Null
 
     Write-Host "Writing metadata..."
     $metadata = GetMetadata
