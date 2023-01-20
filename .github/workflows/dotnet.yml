@@ -1,25 +1,32 @@
 # This workflow will build a .NET project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
 
-name: .NET
+name: build-dotnet
 
 on:
   push:
-    branches: [ "master", "dev" ]
+    branches: [ "master", "dev"]
+    tags: [ "v*.*.*" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "dev" ]
 
 jobs:
-  build:
 
+  build:
     runs-on: ubuntu-latest
+    env:
+      DO_PUBLISH: ${{ github.ref_type == 'tag' && github.event_name == 'push' }}
 
     steps:
+    # - name: DEBUG
+    #   run: |
+    #     echo DO_PUBLISH = ${{ env.DO_PUBLISH}}
+    #     return 1
     - uses: actions/checkout@v3
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 7.0.x
     - name: Restore dependencies
       run: dotnet restore
       working-directory: ./src
@@ -29,3 +36,15 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
       working-directory: ./src
+
+    - name: Publish
+      if: ${{ env.DO_PUBLISH == 'true' }}
+      shell: pwsh
+      run: ./publish.ps1 -AddHash -AllTargets -Zipped -BuildId '${{ github.run_id }}' -CommitHash '${{ github.sha }}' -RefName '${{ github.ref_name }}'
+      working-directory: ./scripts
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: ${{ env.DO_PUBLISH == 'true' }}
+      with:
+        files: ./releases/sscm-*.zip
