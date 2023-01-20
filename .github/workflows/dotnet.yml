@@ -47,4 +47,5 @@ jobs:
       uses: softprops/action-gh-release@v1
       if: ${{ env.DO_PUBLISH == 'true' }}
       with:
+        body_path: ./releasenotes.md
         files: ./releases/sscm-*.zip
