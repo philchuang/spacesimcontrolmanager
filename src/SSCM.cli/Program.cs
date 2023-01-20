@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.CommandLine;
 using SSCM.Core;
-using SSCM.StarCitizen;
 
 namespace SSCM.cli;
 
@@ -34,20 +33,25 @@ class Program
             {
                 services.AddSingleton<IConfiguration>(s => config!);
                 services.AddSingleton<IPlatform, Platform>();
-                services.AddSingleton<ISCFolders, SCFolders>();
+                services.AddSingleton<SSCM.StarCitizen.ISCFolders, SSCM.StarCitizen.SCFolders>();
                 // TODO adapt to read this in dynamically based on DLLs
-                services.AddTransient<IControlManager>(s => new ControlManager(s.GetService<IPlatform>()!, s.GetService<ISCFolders>()!));
+                services.AddTransient<IControlManager>(s => new SSCM.StarCitizen.SCControlManager(s.GetService<IPlatform>()!, s.GetService<SSCM.StarCitizen.ISCFolders>()!));
+                services.AddTransient<IControlManager>(s => new SSCM.Elite.EDControlManager(s.GetService<IPlatform>()!));
             });
     }
 
     private static List<IControlManager> CreateManagers(IHost host)
     {
-        // TODO adapt to get all IControlManager implementations
-        var manager = host.Services.GetRequiredService<IControlManager>();
-        manager.StandardOutput += Console.WriteLine;
-        manager.WarningOutput += Console.WriteLine;
-        manager.DebugOutput += s => { if (ShowDebugOutput) Console.WriteLine(s); };
-        return new List<IControlManager> { manager };
+        var managers = host.Services.GetServices<IControlManager>().ToList();
+        
+        foreach (var manager in managers)
+        {
+            manager.StandardOutput += Console.WriteLine;
+            manager.WarningOutput += Console.WriteLine;
+            manager.DebugOutput += s => { if (ShowDebugOutput) Console.WriteLine(s); };
+        }
+
+        return managers;
     }
 
     private static Command BuildRootCommand(List<IControlManager> managers)

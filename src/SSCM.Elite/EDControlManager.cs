@@ -1,34 +1,30 @@
 using SSCM.Core;
 
-namespace SSCM.StarCitizen;
+namespace SSCM.Elite;
 
 // TODO write tests for this class
 
-public class SCControlManager : ControlManagerBase<MappingData>
+public class EDControlManager : ControlManagerBase<MappingData>
 {
-    protected override string GameConfigPath => System.IO.Path.Combine(this.GameConfigLocation, Constants.SC_ACTIONMAPS_XML_NAME);
-    protected override string MappingDataSavePath => System.IO.Path.Combine(this.AppSaveLocation, Constants.SSCM_SCMAPPINGS_JSON_NAME);
+    protected override string GameConfigPath => System.IO.Path.Combine(this.GameConfigLocation, "TODO");
+    protected override string MappingDataSavePath => System.IO.Path.Combine(this.AppSaveLocation, "TODO");
 
-    public override string CommandAlias => "sc";
-    public override string GameType => "Star Citizen";
+    public override string CommandAlias => "ed";
+    public override string GameType => "Elite: Dangerous";
 
-    private readonly ISCFolders _folders;
-
-    public SCControlManager(IPlatform platform, ISCFolders folders) : base(platform)
+    public EDControlManager(IPlatform platform) : base(platform)
     {
-        this._folders = folders;
         Initialize();
     }
 
     private void Initialize()
     {
-        this.GameConfigLocation = this._folders.ActionMapsDir;
-        this.AppSaveLocation = this._folders.SscmDataDir;
+        // TODO
     }
 
     protected override IMappingDataRepository<MappingData> CreateMappingDataRepository()
     {
-        var repo = new MappingDataRepositoryDefault<MappingData>(this.Platform, this.MappingDataSavePath, "scmappings.{0}.json.bak");
+        var repo = new MappingDataRepositoryDefault<MappingData>(this.Platform, this.MappingDataSavePath, "edmappings.{0}.json.bak");
         repo.StandardOutput += WriteLineStandard;
         repo.WarningOutput += WriteLineWarning;
         repo.DebugOutput += WriteLineDebug;
@@ -55,7 +51,7 @@ public class SCControlManager : ControlManagerBase<MappingData>
 
     protected override IMappingExporter<MappingData> CreateExporter()
     {
-        var exporter = new MappingExporter(this.Platform, this._folders, GameConfigPath);
+        var exporter = new MappingExporter(this.Platform, GameConfigPath);
         exporter.StandardOutput += WriteLineStandard;
         exporter.WarningOutput += WriteLineWarning;
         exporter.DebugOutput += WriteLineDebug;

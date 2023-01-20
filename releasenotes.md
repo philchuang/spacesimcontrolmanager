@@ -9,10 +9,11 @@
 
 ## Changelog
 
+v1.0.7 - added Elite: Dangerous
 v1.0.6 - renamed files to make it easier to run
 v1.0.5 - added report command
 v1.0.4 - added friendlier export messages
 
 ## Upcoming
 
-* Elite Dangerous support
+* Synchronize mappings between Elite Dangerous &lt;-&gt; Star Citizen

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>SpaceSimControlManager</AssemblyName>
-    <Version>1.0.6</Version>
+    <Version>1.0.7</Version>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -14,6 +14,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SSCM.Core\SSCM.Core.csproj" />
+    <ProjectReference Include="..\SSCM.Elite\SSCM.Elite.csproj" />
     <ProjectReference Include="..\SSCM.StarCitizen\SSCM.StarCitizen.csproj" />
   </ItemGroup>
   <ItemGroup>
