@@ -51,8 +51,6 @@ function GetMetadata()
 
 function WriteMetadata($metadata, $path)
 {
-    $dir = [System.IO.Path]::GetDirectoryName($path)
-    New-Item -Path $dir -ItemType Directory -Force | Out-Null
     Set-Content -Path $path -Value (ConvertTo-Json $metadata) -Encoding Ascii
 }
 
@@ -77,21 +75,24 @@ function Publish($srcFolder, $outputPath, $options, $metadataPath, $zip)
 }
 
 &{
-    $workspaceFolder = [System.IO.Path]::GetFullPath("$PSScriptRoot\..")
-    $srcFolder = "$workspaceFolder\src\SSCM.cli"
-    $releasesFolder = "$workspaceFolder\releases"
-    $metadataPath = "$releasesFolder\release.json"
+    $repoRoot = [System.IO.Path]::GetFullPath("$PSScriptRoot/..")
+    $srcFolder = "$repoRoot/src/SSCM.cli"
+    $releasesFolder = "$repoRoot/releases"
+    $metadataPath = "$releasesFolder/release.json"
+
+    Write-Host "Creating directory [$releasesFolder]..."
+    New-Item -Path $dir -ItemType Directory -Force | Out-Null
 
     Write-Host "Writing metadata..."
     $metadata = GetMetadata
     WriteMetadata $metadata $metadataPath
     $suffix = if ($AddHash) { "-$($metadata.commit_hash)" } else { "" }
 
-    Publish $srcFolder "$releasesFolder\sscm-win$suffix" "" $metadataPath $Zipped
+    Publish $srcFolder "$releasesFolder/sscm-win$suffix" "" $metadataPath $Zipped
 
     if ($AllTargets) {
-        Publish $srcFolder "$releasesFolder\sscm-win-full$suffix" "--sc" $metadataPath $Zipped
-        Publish $srcFolder "$releasesFolder\sscm-linux$suffix" "--os linux" $metadataPath $Zipped
-        Publish $srcFolder "$releasesFolder\sscm-linux-full$suffix" "--os linux --sc" $metadataPath $Zipped
+        Publish $srcFolder "$releasesFolder/sscm-win-full$suffix" "--sc" $metadataPath $Zipped
+        Publish $srcFolder "$releasesFolder/sscm-linux$suffix" "--os linux" $metadataPath $Zipped
+        Publish $srcFolder "$releasesFolder/sscm-linux-full$suffix" "--os linux --sc" $metadataPath $Zipped
     }
 }
