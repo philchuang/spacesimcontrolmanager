@@ -5,10 +5,10 @@ name: build-dotnet
 
 on:
   push:
-    branches: [ "master", "dev", "build-action", "features/*" ]
+    branches: [ "master", "dev"]
     tags: [ "v*.*.*" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "dev" ]
 
 jobs:
 
