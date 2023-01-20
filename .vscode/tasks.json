@@ -15,14 +15,9 @@
         },
         {
             "label": "publish",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "publish",
-                "${workspaceFolder}/src/SSCM.cli/SSCM.cli.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
-            ],
+            "command": "./scripts/publish.ps1",
+            "type": "shell",
+            "args": [],
             "problemMatcher": "$msCompile"
         },
         {
