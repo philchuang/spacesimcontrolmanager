@@ -1,3 +1,4 @@
+// TODO refactor namespace to SpaceSimControlManager.StarCitizen
 namespace SSCM.Core.StarCitizen;
 
 // TODO write tests for this class
@@ -33,7 +34,7 @@ public class ControlManager : ControlManagerBase
         return repo;
     }
 
-    protected override MappingImporter CreateImporter()
+    protected override IMappingImporter CreateImporter()
     {
         var importer = new MappingImporter(this.Platform, this.GameConfigPath);
         importer.StandardOutput += WriteLineStandard;
@@ -42,7 +43,7 @@ public class ControlManager : ControlManagerBase
         return importer;
     }
 
-    protected override MappingImportMerger CreateMerger()
+    protected override IMappingImportMerger CreateMerger()
     {
         var merger = new MappingImportMerger();
         merger.StandardOutput += WriteLineStandard;
@@ -51,12 +52,18 @@ public class ControlManager : ControlManagerBase
         return merger;
     }
 
-    protected override MappingExporter CreateExporter()
+    protected override IMappingExporter CreateExporter()
     {
         var exporter = new MappingExporter(this.Platform, this._folders, GameConfigPath);
         exporter.StandardOutput += WriteLineStandard;
         exporter.WarningOutput += WriteLineWarning;
         exporter.DebugOutput += WriteLineDebug;
+        return exporter;
+    }
+
+    protected override IMappingReporter CreateReporter()
+    {
+        var exporter = new MappingReporter();
         return exporter;
     }
 }
