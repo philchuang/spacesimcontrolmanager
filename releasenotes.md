@@ -1,6 +1,6 @@
 # Release Notes
 
-Same as the previous version, but now with release notes!
+v1.0.4 - added friendlier export messages
 
 ## Attached files
 
