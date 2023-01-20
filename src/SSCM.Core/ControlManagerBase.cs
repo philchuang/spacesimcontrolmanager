@@ -105,8 +105,15 @@ public abstract class ControlManagerBase : IControlManager
 
         var exporter = this.CreateExporter();
         WriteLineStandard($"PREVIEWING EXPORT:");
-        await exporter.Preview(data);
-        WriteLineStandard($"CONFIGURATION NOT UPDATED: Execute \"export apply\" to apply these changes.");
+        var changed = await exporter.Preview(data);
+        if (changed)
+        {
+            WriteLineStandard($"CONFIGURATION NOT UPDATED: Execute \"export apply\" to apply these changes.");
+        }
+        else
+        {
+            WriteLineStandard($"CONFIGURATION NOT UPDATED: No changes necessary.");
+        }
     }
 
     public async Task ExportApply()

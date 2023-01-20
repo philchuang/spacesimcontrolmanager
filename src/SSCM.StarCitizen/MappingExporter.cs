@@ -54,14 +54,14 @@ public class MappingExporter : IMappingExporter
         return latest;
     }
 
-    public async Task Preview(MappingData source)
+    public async Task<bool> Preview(MappingData source)
     {
-        await this.Export(source, false);
+        return await this.Export(source, false);
     }
 
-    public async Task Update(MappingData source)
+    public async Task<bool> Update(MappingData source)
     {
-        await this.Export(source, true);
+        return await this.Export(source, true);
     }
 
     private void Validate(MappingData source)
@@ -108,25 +108,29 @@ public class MappingExporter : IMappingExporter
         }
     }
 
-    private async Task Export(MappingData source, bool apply)
+    private async Task<bool> Export(MappingData source, bool apply)
     {
         this.Validate(source);
 
         this._xml = await ActionMapsXmlHelper.Load(this.GameConfigPath, "default");
 
-        this.ExportInputDevices(source.Inputs);
-        this.ExportMappings(source.Mappings);
+        var changed = this.ExportInputDevices(source.Inputs);
+        changed = changed | this.ExportMappings(source.Mappings);
 
-        if (!apply) return;
+        if (apply)
+        {
+            this.StandardOutput("Saving updated actionmaps.xml...");
+            await this._xml.Save(this.GameConfigPath);
+            this.StandardOutput("Saved, run \"restore\" command to revert.");
+            this.StandardOutput("MUST RESTART STAR CITIZEN FOR CHANGES TO TAKE AFFECT.");
+        }
 
-        this.StandardOutput("Saving updated actionmaps.xml...");
-        await this._xml.Save(this.GameConfigPath);
-        this.StandardOutput("Saved, run \"restore\" command to revert.");
-        this.StandardOutput("MUST RESTART STAR CITIZEN FOR CHANGES TO TAKE AFFECT.");
+        return changed;
     }
 
-    private void RestoreInputs(IEnumerable<InputDevice> inputs)
+    private bool RestoreInputs(IEnumerable<InputDevice> inputs)
     {
+        var changed = false;
         // only restore joysticks and gamepads for now
         var preservedInputs = inputs.Where(i => (string.Equals("joystick", i.Type, StringComparison.OrdinalIgnoreCase) || string.Equals("gamepad", i.Type, StringComparison.OrdinalIgnoreCase)) && i.Preserve).ToList();
         var inputsToAdd = new List<InputDevice>();
@@ -168,6 +172,7 @@ public class MappingExporter : IMappingExporter
         // delete via removeForPrefixes if not in remapOptionsMap.Keys
         foreach (var prefix in inputPrefixesToRemove.Where(p => !inputsToRemap.ContainsKey(p)))
         {
+            changed = true;
             this.StandardOutput($"Removing mappings like [{prefix}]...");
             this._xml.GetAllActionRebindsForInputPrefix(prefix).ForEach(rebind => rebind.Parent.Remove());
             var (type, instance) = ActionMapsXmlHelper.GetOptionsTypeAndInstanceForPrefix(prefix);
@@ -178,6 +183,7 @@ public class MappingExporter : IMappingExporter
         // remap via remapOptionsMap
         foreach (var oldPrefixAndElements in inputsToRemap)
         {
+            changed = true;
             var oldPrefix = oldPrefixAndElements.Key;
             var (exportedInput, optionsElementToUpdate, rebindElementsToUpdate) = oldPrefixAndElements.Value;
             var newPrefix = exportedInput.GetInputPrefix();
@@ -193,16 +199,19 @@ public class MappingExporter : IMappingExporter
         // add missing inputs
         foreach (var input in inputsToAdd)
         {
+            changed = true;
             var options = new XElement("options", new XAttribute("type", input.Type), new XAttribute("instance", input.Instance.ToString()), new XAttribute("Product", input.Product));
             this.DebugOutput($"Creating {options.ToString()}...");
             this.StandardOutput($"Restoring {input.Type}-{input.Instance} input [{input.Product}]");
             this._xml.AddOptionsElement(options);
         }
+
+        return changed;
     }
 
-    private void ExportInputDevices(IEnumerable<InputDevice> inputs)
+    private bool ExportInputDevices(IEnumerable<InputDevice> inputs)
     {
-        this.RestoreInputs(inputs);
+        var changed = this.RestoreInputs(inputs);
 
         foreach (var input in inputs)
         {
@@ -217,6 +226,7 @@ public class MappingExporter : IMappingExporter
                         throw new SscmException($"Could not find <options> element for type [{input.Type}] instance [{input.Instance}] Product [{input.Product}].");
                     }
 
+                    changed = true;
                     this.DebugOutput($"Creating <{setting.Name}>...");
                     // create setting element
                     settingElement = new XElement(setting.Name);
@@ -235,12 +245,14 @@ public class MappingExporter : IMappingExporter
                             settingValueElement.Remove(); // already exists and needs to be overwritten
                         }
                         
+                        changed = true;
                         this.StandardOutput($"Updating {input.Product}/{setting.Name}/{prop.Value}...");
                         settingValueElement = XElement.Parse(prop.Value);
                         settingElement.Add(settingValueElement);
                     }
                     else if (!string.Equals(settingElement.GetAttribute(prop.Key), prop.Value))
                     {
+                        changed = true;
                         // handle attribute property
                         this.StandardOutput($"Updating {input.Product}/{setting.Name}/{prop.Key} to {prop.Value}...");
                         settingElement.SetAttributeValue(prop.Key, prop.Value);                    
@@ -248,10 +260,13 @@ public class MappingExporter : IMappingExporter
                 }
             }
         }
+
+        return changed;
     }
 
-    private void ExportMappings(IEnumerable<Mapping> mappings)
+    private bool ExportMappings(IEnumerable<Mapping> mappings)
     {
+        var changed = false;
         foreach (var mapping in mappings.Where(m => m.Preserve))
         {
             var actionElement = this._xml.GetActionForMapping(mapping);
@@ -267,6 +282,7 @@ public class MappingExporter : IMappingExporter
                     this._xml.AddActionmapElement(actionmapElement);
                 }
 
+                changed = true;
                 this.DebugOutput($"Creating <action name=\"{mapping.Action}\">...");
                 // create <action>
                 actionElement = new XElement("action");
@@ -277,6 +293,7 @@ public class MappingExporter : IMappingExporter
             var rebindElement = actionElement.GetChildren("rebind").SingleOrDefault(r => (r.GetAttribute("input") ?? string.Empty).StartsWith(ActionMapsXmlHelper.GetOptionsTypeAbbv(mapping.InputType)));
             if (rebindElement == null)
             {
+                changed = true;
                 this.DebugOutput($"Creating <rebind input=\"{mapping.Input}\" />...");
                 this.StandardOutput($"Adding {mapping.ActionMap}/{mapping.Action} for {mapping.Input}...");
                 rebindElement = new XElement("rebind");
@@ -287,10 +304,13 @@ public class MappingExporter : IMappingExporter
             {
                 if (!string.Equals(rebindElement.GetAttribute("input"), mapping.Input))
                 {
+                    changed = true;
                     this.StandardOutput($"Updating {mapping.ActionMap}/{mapping.Action} to {mapping.Input}...");
                     rebindElement.SetAttributeValue("input", mapping.Input);
                 }
             }
         }
+        
+        return changed;
     }
 }
