@@ -16,6 +16,9 @@ public interface IControlManager
     Task Import(ImportMode mode);
     Task ExportPreview();
     Task ExportApply();
+    Task<string> Report(bool preservedOnly = false);
+    Task<string> ReportInputs(bool preservedOnly = false);
+    Task<string> ReportMappings(bool preservedOnly = false);
     void Backup();
     void Restore();
     void Open();
@@ -40,6 +43,7 @@ public abstract class ControlManagerBase : IControlManager
     protected abstract string MappingDataSavePath { get; }
     protected IPlatform Platform { get; init; }
     private readonly Lazy<IMappingDataRepository> _lazyMappingDataRepository;
+    // TODO make IMappingDataRepository app-specific
     protected IMappingDataRepository MappingDataRepository => this._lazyMappingDataRepository.Value;
 
     protected ControlManagerBase(IPlatform platform)
@@ -52,6 +56,7 @@ public abstract class ControlManagerBase : IControlManager
     protected abstract IMappingImporter CreateImporter();
     protected abstract IMappingImportMerger CreateMerger();
     protected abstract IMappingExporter CreateExporter();
+    protected abstract IMappingReporter CreateReporter();
 
     public async Task Import(ImportMode mode)
     {
@@ -125,6 +130,27 @@ public abstract class ControlManagerBase : IControlManager
         exporter.Backup();
         await exporter.Update(data);
         WriteLineStandard($"CONFIGURATION UPDATED: Changes applied to [{exporter.GameConfigPath}].");
+    }
+
+    public async Task<string> Report(bool preservedOnly = false)
+    {
+        var reporter = this.CreateReporter();
+        var data = await this.MappingDataRepository.Load();
+        return reporter.Report(data ?? new MappingData(), preservedOnly);
+    }
+
+    public async Task<string> ReportInputs(bool preservedOnly = false)
+    {
+        var reporter = this.CreateReporter();
+        var data = await this.MappingDataRepository.Load();
+        return reporter.ReportInputs(data ?? new MappingData(), preservedOnly);
+    }
+
+    public async Task<string> ReportMappings(bool preservedOnly = false)
+    {
+        var reporter = this.CreateReporter();
+        var data = await this.MappingDataRepository.Load();
+        return reporter.ReportMappings(data ?? new MappingData(), preservedOnly);
     }
 
     public void Backup()

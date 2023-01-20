@@ -15,8 +15,8 @@ class Program
     {
         var host = CreateDefaultBuilder().Build();
 
-        var manager = CreateManager(host);
-        var root = BuildRootCommand(manager);
+        var managers = CreateManagers(host);
+        var root = BuildRootCommand(managers);
         return await root.InvokeAsync(args);
     }
 
@@ -35,21 +35,22 @@ class Program
                 services.AddSingleton<IConfiguration>(s => config!);
                 services.AddSingleton<IPlatform, Platform>();
                 services.AddSingleton<ISCFolders, SCFolders>();
-                // TODO add capability to choose which space sim, e.g. SC, ED
+                // TODO adapt to read this in dynamically based on DLLs
                 services.AddTransient<IControlManager>(s => new ControlManager(s.GetService<IPlatform>()!, s.GetService<ISCFolders>()!));
             });
     }
 
-    private static IControlManager CreateManager(IHost host)
+    private static List<IControlManager> CreateManagers(IHost host)
     {
+        // TODO adapt to get all IControlManager implementations
         var manager = host.Services.GetRequiredService<IControlManager>();
         manager.StandardOutput += Console.WriteLine;
         manager.WarningOutput += Console.WriteLine;
         manager.DebugOutput += s => { if (ShowDebugOutput) Console.WriteLine(s); };
-        return manager;
+        return new List<IControlManager> { manager };
     }
 
-    private static Command BuildRootCommand(IControlManager manager)
+    private static Command BuildRootCommand(List<IControlManager> managers)
     {
         var debugOption = new Option<bool>(
             aliases: new [] { "--debug", "-d" },
@@ -58,24 +59,21 @@ class Program
 
         var root = new RootCommand("Space Sim Control Manager");
         root.AddGlobalOption(debugOption);
-        AddStarCitizenCommands(manager, root, debugOption);
-        AddEliteDangerousCommands(manager, root, debugOption);
+        managers.ForEach(m => AddCommands(m, root, debugOption));
         return root;
     }
 
-    /* IMPLEMENTATION NOTES
-     * - have managers be loaded automatically based on DLL search instead of explicitly?
-     */
-    private static void AddStarCitizenCommands(IControlManager manager, RootCommand root, Option<bool> debugOption)
+    private static void AddCommands(IControlManager manager, RootCommand root, Option<bool> debugOption)
     {
-        var sc = new Command(manager.CommandAlias, $"Manage {manager.GameType} mappings");
-        sc.AddCommand(BuildImportCommand(manager, debugOption));
-        sc.AddCommand(BuildEditCommand(manager));
-        sc.AddCommand(BuildEditGameCommand(manager));
-        sc.AddCommand(BuildExportCommand(manager, debugOption));
-        sc.AddCommand(BuildBackupCommand(manager, debugOption));
-        sc.AddCommand(BuildRestoreCommand(manager, debugOption));
-        root.AddCommand(sc);
+        var mgr = new Command(manager.CommandAlias, $"Manage {manager.GameType} mappings");
+        mgr.AddCommand(BuildImportCommand(manager, debugOption));
+        mgr.AddCommand(BuildReportCommand(manager));
+        mgr.AddCommand(BuildEditCommand(manager));
+        mgr.AddCommand(BuildEditGameCommand(manager));
+        mgr.AddCommand(BuildExportCommand(manager, debugOption));
+        mgr.AddCommand(BuildBackupCommand(manager, debugOption));
+        mgr.AddCommand(BuildRestoreCommand(manager, debugOption));
+        root.AddCommand(mgr);
     }
 
     private static Command BuildImportCommand(IControlManager manager, Option<bool> debugOption)
@@ -103,6 +101,39 @@ class Program
             },
             debugOption);
         cmd.AddCommand(overwrite);
+
+        return cmd;
+    }
+
+    private static Command BuildReportCommand(IControlManager manager)
+    {
+        var preservedOnlyOption = new Option<bool>(
+            aliases: new [] { "--preserved", "-p" },
+            description: "Only report data marked for preservation"
+        );
+
+        var cmd = new Command("report", "Outputs saved input and mappings data in CSV format.");
+        cmd.AddOption(preservedOnlyOption);
+        cmd.SetHandler(async (preservedOnly) => {
+            Console.WriteLine(await manager.Report(preservedOnly: preservedOnly));
+        },
+        preservedOnlyOption);
+
+        var inputsCmd = new Command("inputs", "Outputs input data in CSV format.");
+        inputsCmd.AddOption(preservedOnlyOption);
+        inputsCmd.SetHandler(async(preservedOnly) => {
+            Console.WriteLine(await manager.ReportInputs(preservedOnly: preservedOnly));
+        },
+        preservedOnlyOption);
+        cmd.AddCommand(inputsCmd);
+
+        var mappingsCmd = new Command("mappings", "Outputs mappings data in CSV format.");
+        mappingsCmd.AddOption(preservedOnlyOption);
+        mappingsCmd.SetHandler(async(preservedOnly) => {
+            Console.WriteLine(await manager.ReportMappings(preservedOnly: preservedOnly));
+        },
+        preservedOnlyOption);
+        cmd.AddCommand(mappingsCmd);
 
         return cmd;
     }
