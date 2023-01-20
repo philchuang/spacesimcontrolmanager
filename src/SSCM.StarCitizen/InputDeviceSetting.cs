@@ -1,4 +1,4 @@
-namespace SSCM.Core;
+namespace SSCM.StarCitizen;
 
 public class InputDeviceSetting
 {

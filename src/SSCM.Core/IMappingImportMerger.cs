@@ -1,14 +1,14 @@
 namespace SSCM.Core;
 
-public interface IMappingImportMerger
+public interface IMappingImportMerger<TData>
 {
     event Action<string> StandardOutput;
     event Action<string> WarningOutput;
     event Action<string> DebugOutput;
 
-    MappingMergeResult Result { get; }
+    MappingMergeResultBase<TData> Result { get; }
 
-    bool Preview(MappingData current, MappingData updated);
+    bool Preview(TData current, TData updated);
     
-    MappingData Merge(MappingData current, MappingData updated);
+    TData Merge(TData current, TData updated);
 }

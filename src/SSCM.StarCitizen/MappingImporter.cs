@@ -1,10 +1,10 @@
 ﻿using System.Xml.Linq;
 using SSCM.Core;
-using static SSCM.Core.Extensions;
+using static SSCM.StarCitizen.Extensions;
 
 namespace SSCM.StarCitizen;
 
-public class MappingImporter : IMappingImporter
+public class MappingImporter : IMappingImporter<MappingData>
 {
     public event Action<string> StandardOutput = delegate {};
     public event Action<string> WarningOutput = delegate {};

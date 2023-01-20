@@ -2,7 +2,6 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
-using SSCM.Core;
 
 namespace SSCM.StarCitizen;
 

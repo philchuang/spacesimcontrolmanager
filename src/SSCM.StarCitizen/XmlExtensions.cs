@@ -1,6 +1,6 @@
 using System.Xml.Linq;
 
-namespace SSCM.Core;
+namespace SSCM.StarCitizen;
 
 public static class XmlExtensions
 {

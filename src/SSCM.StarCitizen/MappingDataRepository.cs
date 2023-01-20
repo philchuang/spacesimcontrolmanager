@@ -1,6 +1,8 @@
-namespace SSCM.Core;
+using SSCM.Core;
 
-public class MappingDataRepository : IMappingDataRepository
+namespace SSCM.StarCitizen;
+
+public class MappingDataRepository : IMappingDataRepository<MappingData>
 {
     public event Action<string> StandardOutput = delegate {};
     public event Action<string> WarningOutput = delegate {};
@@ -21,6 +23,8 @@ public class MappingDataRepository : IMappingDataRepository
         this.BackupFilenameFormat = backupFilenameFormat;
     }
 
+    public MappingData CreateNew() => new MappingData();
+
     public async Task<MappingData?> Load(string? saveFilePath = null)
     {
         if (string.IsNullOrWhiteSpace(saveFilePath))
@@ -28,7 +32,7 @@ public class MappingDataRepository : IMappingDataRepository
             saveFilePath = this.MappingDataSavePath;
         }
 
-        var serializer = new DataSerializer(saveFilePath);
+        var serializer = new DataSerializer<MappingData>(saveFilePath);
         return await serializer.Read();
     }
 
@@ -46,7 +50,7 @@ public class MappingDataRepository : IMappingDataRepository
 
         var saveDir = new FileInfo(saveFilePath).DirectoryName;
         System.IO.Directory.CreateDirectory(saveDir);
-        var serializer = new DataSerializer(saveFilePath);
+        var serializer = new DataSerializer<MappingData>(saveFilePath);
         await serializer.Write(data);
         this.StandardOutput($"Mappings saved to [{this.MappingDataSavePath}].");
     }

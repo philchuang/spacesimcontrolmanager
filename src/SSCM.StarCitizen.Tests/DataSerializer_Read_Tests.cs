@@ -7,7 +7,7 @@ namespace SSCM.StarCitizen.Tests;
 [TestFixture]
 public class DataSerializer_Read_Tests
 {
-    private DataSerializer _serializer = new DataSerializer(string.Empty);
+    private DataSerializer<MappingData> _serializer = new DataSerializer<MappingData>(string.Empty);
 
     private string TestDataPath => new System.IO.FileInfo(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), TestContext.CurrentContext.Test.Name, "scmappings.json")).FullName;
 
@@ -20,7 +20,7 @@ public class DataSerializer_Read_Tests
     {
         System.IO.Directory.CreateDirectory(new FileInfo(this.TestDataPath).DirectoryName);
         System.IO.File.Copy(Samples.GetPartialMappingsJsonPath(), this.TestDataPath, true);
-        this._serializer = new DataSerializer(this.TestDataPath);
+        this._serializer = new DataSerializer<MappingData>(this.TestDataPath);
     }
 
     [TearDown]

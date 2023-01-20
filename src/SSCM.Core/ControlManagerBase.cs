@@ -25,7 +25,7 @@ public interface IControlManager
     void OpenGameConfig();
 }
 
-public abstract class ControlManagerBase : IControlManager
+public abstract class ControlManagerBase<TData> : IControlManager
 {
     public event Action<string> StandardOutput = delegate {};
     protected void WriteLineStandard(string s) => this.StandardOutput(s);
@@ -42,21 +42,21 @@ public abstract class ControlManagerBase : IControlManager
     protected abstract string GameConfigPath { get; }
     protected abstract string MappingDataSavePath { get; }
     protected IPlatform Platform { get; init; }
-    private readonly Lazy<IMappingDataRepository> _lazyMappingDataRepository;
+    private readonly Lazy<IMappingDataRepository<TData>> _lazyMappingDataRepository;
     // TODO make IMappingDataRepository app-specific
-    protected IMappingDataRepository MappingDataRepository => this._lazyMappingDataRepository.Value;
+    protected IMappingDataRepository<TData> MappingDataRepository => this._lazyMappingDataRepository.Value;
 
     protected ControlManagerBase(IPlatform platform)
     {
         this.Platform = platform;
-        this._lazyMappingDataRepository = new Lazy<IMappingDataRepository>(() => this.CreateMappingDataRepository());
+        this._lazyMappingDataRepository = new Lazy<IMappingDataRepository<TData>>(() => this.CreateMappingDataRepository());
     }
 
-    protected abstract IMappingDataRepository CreateMappingDataRepository();
-    protected abstract IMappingImporter CreateImporter();
-    protected abstract IMappingImportMerger CreateMerger();
-    protected abstract IMappingExporter CreateExporter();
-    protected abstract IMappingReporter CreateReporter();
+    protected abstract IMappingDataRepository<TData> CreateMappingDataRepository();
+    protected abstract IMappingImporter<TData> CreateImporter();
+    protected abstract IMappingImportMerger<TData> CreateMerger();
+    protected abstract IMappingExporter<TData> CreateExporter();
+    protected abstract IMappingReporter<TData> CreateReporter();
 
     public async Task Import(ImportMode mode)
     {
@@ -136,21 +136,21 @@ public abstract class ControlManagerBase : IControlManager
     {
         var reporter = this.CreateReporter();
         var data = await this.MappingDataRepository.Load();
-        return reporter.Report(data ?? new MappingData(), preservedOnly);
+        return reporter.Report(data ?? this.MappingDataRepository.CreateNew(), preservedOnly);
     }
 
     public async Task<string> ReportInputs(bool preservedOnly = false)
     {
         var reporter = this.CreateReporter();
         var data = await this.MappingDataRepository.Load();
-        return reporter.ReportInputs(data ?? new MappingData(), preservedOnly);
+        return reporter.ReportInputs(data ?? this.MappingDataRepository.CreateNew(), preservedOnly);
     }
 
     public async Task<string> ReportMappings(bool preservedOnly = false)
     {
         var reporter = this.CreateReporter();
         var data = await this.MappingDataRepository.Load();
-        return reporter.ReportMappings(data ?? new MappingData(), preservedOnly);
+        return reporter.ReportMappings(data ?? this.MappingDataRepository.CreateNew(), preservedOnly);
     }
 
     public void Backup()

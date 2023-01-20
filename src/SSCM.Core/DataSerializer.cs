@@ -2,7 +2,8 @@
 
 namespace SSCM.Core;
 
-public class DataSerializer
+public class DataSerializer<TData>
+    where TData : class
 {
     public event Action<string> StandardOutput = delegate {};
     public event Action<string> WarningOutput = delegate {};
@@ -17,7 +18,7 @@ public class DataSerializer
         this.SavePath = path;
     }
 
-    public async Task Write(MappingData data)
+    public async Task Write(TData data)
     {
         using (var fs = File.Open(this.SavePath, FileMode.Create))
         using (var sw = new StreamWriter(fs))
@@ -31,7 +32,7 @@ public class DataSerializer
         return JsonConvert.SerializeObject(data, this.Formatting);
     }
 
-    public async Task<MappingData?> Read()
+    public async Task<TData?> Read()
     {
         if (!System.IO.File.Exists(this.SavePath))
         {
@@ -41,7 +42,7 @@ public class DataSerializer
 
         try
         {
-            return JsonConvert.DeserializeObject<MappingData>(await File.ReadAllTextAsync(this.SavePath));
+            return JsonConvert.DeserializeObject<TData>(await File.ReadAllTextAsync(this.SavePath));
         }
         catch (JsonReaderException ex)
         {

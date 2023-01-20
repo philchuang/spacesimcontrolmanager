@@ -5,7 +5,7 @@ using static SSCM.StarCitizen.Extensions;
 
 namespace SSCM.StarCitizen;
 
-public class MappingExporter : IMappingExporter
+public class MappingExporter : IMappingExporter<MappingData>
 {
     public event Action<string> StandardOutput = delegate {};
     public event Action<string> WarningOutput = delegate {};

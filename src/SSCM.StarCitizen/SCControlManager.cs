@@ -4,7 +4,7 @@ namespace SSCM.StarCitizen;
 
 // TODO write tests for this class
 
-public class ControlManager : ControlManagerBase
+public class ControlManager : ControlManagerBase<MappingData>
 {
     protected override string GameConfigPath => System.IO.Path.Combine(this.GameConfigLocation, Constants.SC_ACTIONMAPS_XML_NAME);
     protected override string MappingDataSavePath => System.IO.Path.Combine(this.AppSaveLocation, Constants.SSCM_SCMAPPINGS_JSON_NAME);
@@ -26,7 +26,7 @@ public class ControlManager : ControlManagerBase
         this.AppSaveLocation = this._folders.SscmDataDir;
     }
 
-    protected override IMappingDataRepository CreateMappingDataRepository()
+    protected override IMappingDataRepository<MappingData> CreateMappingDataRepository()
     {
         var repo = new MappingDataRepository(this.Platform, this.MappingDataSavePath, "scmappings.{0}.json.bak");
         repo.StandardOutput += WriteLineStandard;
@@ -35,7 +35,7 @@ public class ControlManager : ControlManagerBase
         return repo;
     }
 
-    protected override IMappingImporter CreateImporter()
+    protected override IMappingImporter<MappingData> CreateImporter()
     {
         var importer = new MappingImporter(this.Platform, this.GameConfigPath);
         importer.StandardOutput += WriteLineStandard;
@@ -44,7 +44,7 @@ public class ControlManager : ControlManagerBase
         return importer;
     }
 
-    protected override IMappingImportMerger CreateMerger()
+    protected override IMappingImportMerger<MappingData> CreateMerger()
     {
         var merger = new MappingImportMerger();
         merger.StandardOutput += WriteLineStandard;
@@ -53,7 +53,7 @@ public class ControlManager : ControlManagerBase
         return merger;
     }
 
-    protected override IMappingExporter CreateExporter()
+    protected override IMappingExporter<MappingData> CreateExporter()
     {
         var exporter = new MappingExporter(this.Platform, this._folders, GameConfigPath);
         exporter.StandardOutput += WriteLineStandard;
@@ -62,7 +62,7 @@ public class ControlManager : ControlManagerBase
         return exporter;
     }
 
-    protected override IMappingReporter CreateReporter()
+    protected override IMappingReporter<MappingData> CreateReporter()
     {
         var exporter = new MappingReporter();
         return exporter;

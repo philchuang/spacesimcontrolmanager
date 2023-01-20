@@ -3,7 +3,7 @@ using SSCM.Core;
 
 namespace SSCM.StarCitizen;
 
-public class MappingReporter : IMappingReporter
+public class MappingReporter : IMappingReporter<MappingData>
 {
     private const string INPUT_HEADER = @"Id,Type,Name,Preserve,SettingNames";
     private const string MAPPING_HEADER = @"Group,Action,Preserve,InputType,Binding,Options";

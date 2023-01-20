@@ -2,13 +2,21 @@ using SSCM.Core;
 
 namespace SSCM.StarCitizen;
 
-public class MappingImportMerger : IMappingImportMerger
+public class MappingImportMerger : IMappingImportMerger<MappingData>
 {
     public event Action<string> StandardOutput = delegate {};
     public event Action<string> WarningOutput = delegate {};
     public event Action<string> DebugOutput = delegate {};
 
-    public MappingMergeResult Result { get; private set; } = new MappingMergeResult(new MappingData(), new MappingData(), new ComparisonResult<InputDevice>(), new ComparisonResult<Mapping> ());
+    public MappingMergeResult ResultSC {
+        get;
+        set;
+    } = new MappingMergeResult(new MappingData(), new MappingData(), new ComparisonResult<InputDevice>(), new ComparisonResult<Mapping> ());
+
+    public MappingMergeResultBase<MappingData> Result {
+        get => this.ResultSC;
+        set => this.ResultSC = (MappingMergeResult) value;
+    }
 
     public MappingImportMerger()
     {
@@ -110,7 +118,7 @@ public class MappingImportMerger : IMappingImportMerger
 
     private void AnalyzeResult()
     {
-        this.Result.HasDifferences = this.Result.InputDiffs.Any() || this.Result.MappingDiffs.Any();
+        this.Result.HasDifferences = this.ResultSC.InputDiffs.Any() || this.ResultSC.MappingDiffs.Any();
         this.Result.CanMerge = true;
         this.AnalyzeInputDiffs();
         this.AnalyzeMappingDiffs();
@@ -127,7 +135,7 @@ public class MappingImportMerger : IMappingImportMerger
     {
         if (!this.Result.CanMerge) return;
 
-        if (this.Result.InputDiffs.HasChangedInputInstanceId())
+        if (this.ResultSC.InputDiffs.HasChangedInputInstanceId())
         {
             // input device changed - if instance changed, can't merge because that would change all the bindings
             this.StandardOutput("WARNING: Input Instance IDs have changed and prevents a merge. Please manually resolve or execute import overwrite.");
@@ -135,14 +143,14 @@ public class MappingImportMerger : IMappingImportMerger
             return;
         }
 
-        foreach (var input in this.Result.InputDiffs.Added)
+        foreach (var input in this.ResultSC.InputDiffs.Added)
         {
             // input device added - add to current
             this.StandardOutput($"INPUT added and will merge: [{input.Product}]");
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Add, input));
         }
 
-        foreach (var input in this.Result.InputDiffs.Removed)
+        foreach (var input in this.ResultSC.InputDiffs.Removed)
         {
             // input device removed - if referenced by preserved binding, can't merge - else remove current
             if (this.Result.Current.GetRelatedMappings(input).Any(m => m.Preserve))
@@ -161,7 +169,7 @@ public class MappingImportMerger : IMappingImportMerger
         }
 
         // at this point, only settings have changed
-        foreach (var pair in this.Result.InputDiffs.Changed)
+        foreach (var pair in this.ResultSC.InputDiffs.Changed)
         {
             var settingDiffs = ComparisonHelper.Compare(
                 pair.Current.Settings, 
@@ -221,7 +229,7 @@ public class MappingImportMerger : IMappingImportMerger
     {
         if (!this.Result.CanMerge) return;
 
-        foreach (var mapping in this.Result.MappingDiffs.Added)
+        foreach (var mapping in this.ResultSC.MappingDiffs.Added)
         {
             // mapping added - add with preserve = true
             this.StandardOutput($"MAPPING added and will merge: [{mapping.ActionMap}-{mapping.Action}] => {mapping.Input}");
@@ -229,7 +237,7 @@ public class MappingImportMerger : IMappingImportMerger
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Add, mapping));
         }
 
-        foreach (var mapping in this.Result.MappingDiffs.Removed)
+        foreach (var mapping in this.ResultSC.MappingDiffs.Removed)
         {
             // mapping removed - remove if current preserve == false - else keep current
             if (!mapping.Preserve)
@@ -243,7 +251,7 @@ public class MappingImportMerger : IMappingImportMerger
             }
         }
 
-        foreach (var pair in this.Result.MappingDiffs.Changed)
+        foreach (var pair in this.ResultSC.MappingDiffs.Changed)
         {
             // setting changed - update if preserve == false - else keep current
             if (!pair.Current.Preserve)

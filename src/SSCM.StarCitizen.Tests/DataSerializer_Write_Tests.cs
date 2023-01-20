@@ -8,7 +8,7 @@ namespace SSCM.StarCitizen.Tests;
 [TestFixture]
 public class DataSerializer_Write_Tests
 {
-    private readonly DataSerializer _serializer;
+    private readonly DataSerializer<MappingData> _serializer;
     private MappingData? _data;
 
     private static string GetTestJsonPath()
@@ -18,7 +18,7 @@ public class DataSerializer_Write_Tests
 
     public DataSerializer_Write_Tests()
     {
-        _serializer = new DataSerializer(GetTestJsonPath()) { Formatting = Formatting.None };
+        _serializer = new DataSerializer<MappingData>(GetTestJsonPath()) { Formatting = Formatting.None };
     }
 
     [OneTimeSetUp]

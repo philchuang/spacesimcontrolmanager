@@ -1,6 +1,6 @@
 namespace SSCM.Core;
 
-public interface IMappingExporter
+public interface IMappingExporter<TData>
 {
     event Action<string> StandardOutput;
     event Action<string> WarningOutput;
@@ -10,6 +10,6 @@ public interface IMappingExporter
 
     string Backup();
     string RestoreLatest();
-    Task<bool> Preview(MappingData source);
-    Task<bool> Update(MappingData source);
+    Task<bool> Preview(TData source);
+    Task<bool> Update(TData source);
 }

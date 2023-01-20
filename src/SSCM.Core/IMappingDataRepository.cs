@@ -1,6 +1,6 @@
-using SSCM.Core;
+namespace SSCM.Core;
 
-public interface IMappingDataRepository
+public interface IMappingDataRepository<TData>
 {
     event Action<string> StandardOutput;
     event Action<string> WarningOutput;
@@ -8,9 +8,11 @@ public interface IMappingDataRepository
 
     string MappingDataSavePath { get; set; }
 
-    Task<MappingData?> Load(string? saveFilePath = null);
+    TData CreateNew();
 
-    Task Save(MappingData data, string? saveFilePath = null);
+    Task<TData?> Load(string? saveFilePath = null);
+
+    Task Save(TData data, string? saveFilePath = null);
 
     string? Backup();
 

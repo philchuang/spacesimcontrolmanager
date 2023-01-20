@@ -1,6 +1,5 @@
-namespace SSCM.Core;
+namespace SSCM.StarCitizen;
 
-// TODO make this class Star Citizen-specific, mappable to a generic mapping class
 public class Mapping
 {
     public string ActionMap { get; set; } = string.Empty;
