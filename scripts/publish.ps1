@@ -51,6 +51,8 @@ function GetMetadata()
 
 function WriteMetadata($metadata, $path)
 {
+    $dir = [System.IO.Path]::GetDirectoryName($path)
+    New-Item -Path $dir -ItemType Directory -Force | Out-Null
     Set-Content -Path $path -Value (ConvertTo-Json $metadata) -Encoding Ascii
 }
 
