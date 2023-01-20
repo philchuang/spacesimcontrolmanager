@@ -1,6 +1,6 @@
-using SSCM.Core.StarCitizen;
+using SSCM.StarCitizen;
 
-namespace SSCM.Tests.Mocks;
+namespace SSCM.StarCitizen.Tests.Mocks;
 
 public class SCFoldersForTest : ISCFolders
 {

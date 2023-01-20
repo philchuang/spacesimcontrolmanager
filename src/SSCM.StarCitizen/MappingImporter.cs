@@ -1,7 +1,8 @@
 ﻿using System.Xml.Linq;
+using SSCM.Core;
 using static SSCM.Core.Extensions;
 
-namespace SSCM.Core.StarCitizen;
+namespace SSCM.StarCitizen;
 
 public class MappingImporter : IMappingImporter
 {

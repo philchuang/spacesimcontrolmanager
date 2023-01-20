@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
+using SSCM.Core;
 
-namespace SSCM.Core.StarCitizen;
+namespace SSCM.StarCitizen;
 
 public interface ISCFolders
 {

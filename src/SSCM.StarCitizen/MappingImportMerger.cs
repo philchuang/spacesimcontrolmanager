@@ -1,4 +1,6 @@
-namespace SSCM.Core.StarCitizen;
+using SSCM.Core;
+
+namespace SSCM.StarCitizen;
 
 public class MappingImportMerger : IMappingImportMerger
 {

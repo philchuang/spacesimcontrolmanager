@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.CommandLine;
 using SSCM.Core;
-using SSCM.Core.StarCitizen;
+using SSCM.StarCitizen;
 
 namespace SSCM.cli;
 
@@ -58,6 +58,7 @@ class Program
         );
 
         var root = new RootCommand("Space Sim Control Manager");
+        root.Name = "sscm";
         root.AddGlobalOption(debugOption);
         managers.ForEach(m => AddCommands(m, root, debugOption));
         return root;

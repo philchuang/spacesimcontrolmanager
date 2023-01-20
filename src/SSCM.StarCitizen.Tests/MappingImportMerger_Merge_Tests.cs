@@ -1,7 +1,8 @@
 using NUnit.Framework;
 using SSCM.Core;
+using SSCM.Tests;
 
-namespace SSCM.Tests;
+namespace SSCM.StarCitizen.Tests;
 
 [TestFixture]
 public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase

@@ -1,6 +1,7 @@
 using System.Text;
+using SSCM.Core;
 
-namespace SSCM.Core.StarCitizen;
+namespace SSCM.StarCitizen;
 
 public class MappingReporter : IMappingReporter
 {

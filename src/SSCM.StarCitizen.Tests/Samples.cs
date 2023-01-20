@@ -1,4 +1,4 @@
-namespace SSCM.Tests;
+namespace SSCM.StarCitizen.Tests;
 
 public static class Samples
 {

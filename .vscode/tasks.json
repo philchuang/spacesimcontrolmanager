@@ -38,7 +38,7 @@
             "type": "process",
             "args": [
                 "test",
-                "${workspaceFolder}/src/SSCM.Tests/SSCM.Tests.csproj"
+                "${workspaceFolder}/src/SSCM.StarCitizen.Tests/SSCM.StarCitizen.Tests.csproj"
             ],
             "problemMatcher": "$msCompile",
             "group": {

@@ -54,11 +54,26 @@ function WriteMetadata($metadata, $path)
     Set-Content -Path $path -Value (ConvertTo-Json $metadata) -Encoding Ascii
 }
 
+function ForceRename($path, $oldname, $newname)
+{
+    if (!(Test-Path "$path\$oldname")) { return }
+
+    if (Test-Path "$path\$newname")
+    {
+        Remove-Item -Path "$path\$newname" -Force -Recurse
+    }
+    
+    Rename-Item -Path "$path\$oldname" -NewName $newname
+}
+
 function Publish($srcFolder, $outputPath, $options, $metadataPath, $zip)
 {
     Write-Host "Publishing..."
+    New-Item -Path $outputPath -ItemType Directory -Force | Out-Null
     Exec "dotnet publish $srcFolder -o $outputPath $options"
 
+    ForceRename $outputPath "SpaceSimControlManager.exe" "sscm.exe" # windows
+    ForceRename $outputPath "SpaceSimControlManager" "sscm" # linux
     Copy-Item -Path $metadataPath -Destination $outputPath
 
     if ($zip) {

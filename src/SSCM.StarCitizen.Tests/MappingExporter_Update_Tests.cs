@@ -1,15 +1,17 @@
 using NUnit.Framework;
 using SSCM.Core;
-using SSCM.Core.StarCitizen;
+using SSCM.StarCitizen;
+using SSCM.StarCitizen.Tests.Mocks;
+using SSCM.Tests;
 using SSCM.Tests.Mocks;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
-using static SSCM.Core.StarCitizen.Extensions;
+using static SSCM.StarCitizen.Extensions;
 using static SSCM.Tests.Extensions;
 
-namespace SSCM.Tests;
+namespace SSCM.StarCitizen.Tests;
 
 [TestFixture]
 public class MappingExporter_Update_Tests

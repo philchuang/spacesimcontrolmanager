@@ -1,5 +1,6 @@
-// TODO refactor namespace to SpaceSimControlManager.StarCitizen
-namespace SSCM.Core.StarCitizen;
+using SSCM.Core;
+
+namespace SSCM.StarCitizen;
 
 // TODO write tests for this class
 

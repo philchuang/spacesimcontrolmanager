@@ -1,4 +1,4 @@
-namespace SSCM.Core.StarCitizen;
+namespace SSCM.StarCitizen;
 
 public static class Constants
 {

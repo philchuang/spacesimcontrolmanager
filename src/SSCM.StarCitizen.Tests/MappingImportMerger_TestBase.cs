@@ -1,9 +1,9 @@
 using NUnit.Framework;
 using SSCM.Core;
-using SSCM.Core.StarCitizen;
+using SSCM.StarCitizen;
 using static SSCM.Tests.Extensions;
 
-namespace SSCM.Tests;
+namespace SSCM.StarCitizen.Tests;
 
 public abstract class MappingImportMerger_TestBase
 {

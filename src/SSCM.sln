@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSCM.Core", "SSCM.Core\SSCM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSCM.cli", "SSCM.cli\SSCM.cli.csproj", "{932A93F6-720F-4ECC-B5BF-AFEEDA861AD5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSCM.Tests", "SSCM.Tests\SSCM.Tests.csproj", "{52F3B4A6-3B42-4989-9752-8D233AE1C2C7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSCM.StarCitizen.Tests", "SSCM.StarCitizen.Tests\SSCM.StarCitizen.Tests.csproj", "{52F3B4A6-3B42-4989-9752-8D233AE1C2C7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

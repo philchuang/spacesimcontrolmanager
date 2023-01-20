@@ -1,9 +1,11 @@
 using NUnit.Framework;
 using SSCM.Core;
-using SSCM.Core.StarCitizen;
+using SSCM.StarCitizen;
+using SSCM.StarCitizen.Tests.Mocks;
+using SSCM.Tests;
 using SSCM.Tests.Mocks;
 
-namespace SSCM.Tests;
+namespace SSCM.StarCitizen.Tests;
 
 [TestFixture]
 public class MappingExporter_Restore_Tests

@@ -1,13 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <ProjectReference Include="..\SSCM.Core\SSCM.Core.csproj" />
-  </ItemGroup>
-
   <PropertyGroup>
+    <AssemblyName>SpaceSimControlManager.StarCitizen</AssemblyName>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SSCM.Core\SSCM.Core.csproj" />
+  </ItemGroup>
 
 </Project>

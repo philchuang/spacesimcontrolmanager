@@ -1,39 +1,31 @@
-﻿using NUnit.Framework;
+﻿using Newtonsoft.Json;
+using NUnit.Framework;
 using SSCM.Core;
-using static SSCM.Tests.Extensions;
+using SSCM.StarCitizen;
 
-namespace SSCM.Tests;
+namespace SSCM.StarCitizen.Tests;
 
 [TestFixture]
-public class DataSerializer_Read_Tests
+public class DataSerializer_Write_Tests
 {
-    private DataSerializer _serializer = new DataSerializer(string.Empty);
+    private readonly DataSerializer _serializer;
+    private MappingData? _data;
 
-    private string TestDataPath => new System.IO.FileInfo(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), TestContext.CurrentContext.Test.Name, "scmappings.json")).FullName;
-
-    public DataSerializer_Read_Tests()
+    private static string GetTestJsonPath()
     {
+        return new System.IO.FileInfo(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), Constants.SSCM_SCMAPPINGS_JSON_NAME)).FullName;
     }
 
-    [SetUp]
-    public void Init()
+    public DataSerializer_Write_Tests()
     {
-        System.IO.Directory.CreateDirectory(new FileInfo(this.TestDataPath).DirectoryName);
-        System.IO.File.Copy(Samples.GetPartialMappingsJsonPath(), this.TestDataPath, true);
-        this._serializer = new DataSerializer(this.TestDataPath);
+        _serializer = new DataSerializer(GetTestJsonPath()) { Formatting = Formatting.None };
     }
 
-    [TearDown]
-    protected void Cleanup()
-    {
-        System.IO.Directory.Delete(new FileInfo(this.TestDataPath).DirectoryName, true);
-    }
-
-    [Test]
-    public async Task Read_MatchesSampleData()
+    [OneTimeSetUp]
+    public async Task Init()
     {
         // matches data from mappings.3.17.4.sample.json
-        var expected = new MappingData
+        this._data = new MappingData
         {
             ReadTime = DateTime.Parse("2022-12-22T05:42:36.1532351Z").ToUniversalTime(),
             Inputs = new InputDevice[] {
@@ -54,32 +46,18 @@ public class DataSerializer_Read_Tests
                 new Mapping { ActionMap = "spaceship_targeting", Action = "v_target_unlock_selected", Input = "js1_button16", InputType = "joystick", MultiTap = 2, Preserve = true },
             },
         };
-        var actual = await this._serializer.Read();
 
-        AssertSscm.AreEqual(expected, actual);
+        await this._serializer.Write(this._data);
     }
 
     [Test]
-    public async Task Handles_Malformed_MappingsFile()
+    public async Task Write_MatchesSampleJson()
     {
-        // Arrange
-        await System.IO.File.WriteAllTextAsync(this.TestDataPath, RandomString());
+        var expectedStrRead = await System.IO.File.ReadAllTextAsync(Samples.GetPartialMappingsJsonPath());
+        var expectedData = JsonConvert.DeserializeObject<MappingData>(expectedStrRead);
+        var expectedStrWrite = JsonConvert.SerializeObject(expectedData);
+        var actualStrRead = await System.IO.File.ReadAllTextAsync(GetTestJsonPath());
 
-        // Act
-        var ex = Assert.ThrowsAsync<SscmException>(() => this._serializer.Read());
-        Assert.IsTrue(ex.Message.StartsWith("Could not read SSCM mapping data file at"));
-    }
-
-    [Test]
-    public async Task Handles_NotFound_MappingsFile()
-    {
-        // Arrange
-        System.IO.File.Delete(this.TestDataPath);
-
-        // Act
-        var result = await this._serializer.Read();
-
-        // Assert
-        Assert.IsNull(result);
+        Assert.AreEqual(expectedStrWrite, actualStrRead);
     }
 }

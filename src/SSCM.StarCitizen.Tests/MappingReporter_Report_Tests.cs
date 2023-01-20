@@ -1,9 +1,10 @@
 using NUnit.Framework;
 using SSCM.Core;
-using SSCM.Core.StarCitizen;
+using SSCM.StarCitizen;
+using SSCM.Tests;
 using static SSCM.Tests.Extensions;
 
-namespace SSCM.Tests;
+namespace SSCM.StarCitizen.Tests;
 
 [TestFixture]
 public class MappingReporter_Report_Tests
