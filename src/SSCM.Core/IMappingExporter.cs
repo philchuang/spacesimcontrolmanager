@@ -10,6 +10,6 @@ public interface IMappingExporter
 
     string Backup();
     string RestoreLatest();
-    Task Preview(MappingData source);
-    Task Update(MappingData source);
+    Task<bool> Preview(MappingData source);
+    Task<bool> Update(MappingData source);
 }

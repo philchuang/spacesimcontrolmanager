@@ -44,7 +44,7 @@ public class MappingExporter_Update_Tests
         System.IO.Directory.Delete(new FileInfo(this.GetTargetXmlPath()).DirectoryName, true);
     }
 
-    private async Task Act()
+    private async Task<bool> Act()
     {
         // write _originalXml
         System.IO.Directory.CreateDirectory(new FileInfo(this.GetTargetXmlPath()).DirectoryName);
@@ -56,10 +56,12 @@ public class MappingExporter_Update_Tests
         }
 
         // execute export
-        await this._exporter.Update(this._source);
+        var changed = await this._exporter.Update(this._source);
 
         // read _updatedXml
         this._updatedXml = await this.LoadXml(this.GetTargetXmlPath());
+
+        return changed;
     }
 
     private void AssertBasics()
@@ -169,9 +171,10 @@ public class MappingExporter_Update_Tests
         var (originalInputValue, mapping, actionElement) = this.Arrange_Update_overwrites_mapping_change(true);
 
         // Act
-        await this.Act();
+        var changed = await this.Act();
 
         // Assert
+        Assert.IsTrue(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
         if (this._updatedXml == null) return;
@@ -190,9 +193,10 @@ public class MappingExporter_Update_Tests
         this._source.Mappings.Add(addedMapping);
 
         // Act
-        await this.Act();
+        var changed = await this.Act();
 
         // Assert
+        Assert.IsTrue(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
         if (this._updatedXml == null) return;
@@ -214,9 +218,10 @@ public class MappingExporter_Update_Tests
         var (originalInputValue, mapping, actionElement) = this.Arrange_Update_overwrites_mapping_change(false);
 
         // Act
-        await this.Act();
+        var changed = await this.Act();
 
         // Assert
+        Assert.IsFalse(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
         if (this._updatedXml == null) return;
@@ -236,9 +241,10 @@ public class MappingExporter_Update_Tests
         this._source.Mappings.Add(mapping);
 
         // Act
-        await this.Act();
+        var changed = await this.Act();
 
         // Assert
+        Assert.IsTrue(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
         if (this._updatedXml == null || this._originalXml == null) return;
@@ -260,9 +266,10 @@ public class MappingExporter_Update_Tests
         this._source.Mappings.Add(mapping);
 
         // Act
-        await this.Act();
+        var changed = await this.Act();
 
         // Assert
+        Assert.IsTrue(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
         if (this._updatedXml == null || this._originalXml == null) return;
@@ -302,9 +309,10 @@ public class MappingExporter_Update_Tests
         var (exportedInput, exportedSetting, exportedSettingValueName, targetSettingValue) = this.Arrange_Update_overwrites_input_setting(settingPreserve: true);
 
         // Act
-        await this.Act();
+        var changed = await this.Act();
 
         // Assert
+        Assert.IsTrue(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
         if (this._updatedXml == null) return;
@@ -362,9 +370,10 @@ public class MappingExporter_Update_Tests
         targetSettingValueElement.RemoveAll();
 
         // Act
-        await this.Act();
+        var changed = await this.Act();
 
         // Assert
+        Assert.IsTrue(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
         if (this._updatedXml == null) return;
@@ -386,9 +395,10 @@ public class MappingExporter_Update_Tests
         var (exportedInput, exportedSetting, exportedSettingValueName, targetSettingValue) = this.Arrange_Update_overwrites_input_setting(settingPreserve: false);
 
         // Act
-        await this.Act();
+        var changed = await this.Act();
 
         // Assert
+        Assert.IsFalse(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
         if (this._updatedXml == null) return;
@@ -420,9 +430,10 @@ public class MappingExporter_Update_Tests
         var exportedSettingValue = exportedSetting.Properties.First();
 
         // Act
-        await this.Act();
+        var changed = await this.Act();
 
         // Assert
+        Assert.IsTrue(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
         if (this._updatedXml == null) return;
@@ -452,9 +463,10 @@ public class MappingExporter_Update_Tests
         }
 
         // Act
-        await this.Act();
+        var changed = await this.Act();
 
         // Assert
+        Assert.IsTrue(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
         if (this._updatedXml == null) return;
@@ -537,9 +549,10 @@ public class MappingExporter_Update_Tests
         originalJoystick3Element.GetChildren("flight_move_strafe_vertical").Single().SetAttributeValue("invert", "0");
 
         // Act
-        await this.Act();
+        var changed = await this.Act();
 
         // Assert
+        Assert.IsTrue(changed, nameof(changed));
         var updatedXmlStr = this._updatedXml.ToString(SaveOptions.DisableFormatting);
         // assert-1: joystick inputs 1 and 2 are restored (2->1, 3->2)
         foreach (var joystick in preservedJoystickInputs)
