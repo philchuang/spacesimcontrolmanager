@@ -34,7 +34,7 @@ public class MappingExporter : IMappingExporter<MappingData>
         }
 
         // make backup of actionmaps.xml
-        var actionmapsxmlBackup = System.IO.Path.Combine(this._folders.SscmDataDir, $"actionmaps.xml.{this._platform.UtcNow.ToLocalTime().ToString("yyyyMMddHHmmss")}.bak");
+        var actionmapsxmlBackup = System.IO.Path.Combine(this._folders.ScDataDir, $"actionmaps.xml.{this._platform.UtcNow.ToLocalTime().ToString("yyyyMMddHHmmss")}.bak");
         System.IO.File.Copy(this.GameConfigPath, actionmapsxmlBackup);
         return actionmapsxmlBackup;
     }
@@ -42,11 +42,11 @@ public class MappingExporter : IMappingExporter<MappingData>
     public string RestoreLatest()
     {
         // find all files matching pattern, sort ordinally
-        var backups = System.IO.Directory.GetFiles(this._folders.SscmDataDir, "actionmaps.xml.*.bak");
+        var backups = System.IO.Directory.GetFiles(this._folders.ScDataDir, "actionmaps.xml.*.bak");
         var latest = backups.OrderBy(s => s).LastOrDefault();
         if (latest == null)
         {
-            throw new FileNotFoundException($"Could not find any backup files in [{this._folders.SscmDataDir}]!");
+            throw new FileNotFoundException($"Could not find any backup files in [{this._folders.ScDataDir}]!");
         }
 
         // copy latest file to actionmaps.xml

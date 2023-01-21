@@ -4,12 +4,12 @@ namespace SSCM.StarCitizen.Tests.Mocks;
 
 public class SCFoldersForTest : ISCFolders
 {
-    public string ActionMapsDir { get; private set; }
-    public string SscmDataDir { get; private set; }
+    public string GameConfigDir { get; private set; }
+    public string ScDataDir { get; private set; }
 
-    public SCFoldersForTest(string? actionmapsDir = null, string? sscmDataDir = null)
+    public SCFoldersForTest(string? gameConfigDir = null, string? scDataDir = null)
     {
-        this.ActionMapsDir = actionmapsDir ?? string.Empty;
-        this.SscmDataDir = sscmDataDir ?? string.Empty;
+        this.GameConfigDir = gameConfigDir ?? string.Empty;
+        this.ScDataDir = scDataDir ?? string.Empty;
     }
 }
