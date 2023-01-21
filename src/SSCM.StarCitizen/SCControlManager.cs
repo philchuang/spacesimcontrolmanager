@@ -6,8 +6,9 @@ namespace SSCM.StarCitizen;
 
 public class SCControlManager : ControlManagerBase<MappingData>
 {
-    protected override string GameConfigPath => System.IO.Path.Combine(this.GameConfigLocation, Constants.SC_ACTIONMAPS_XML_NAME);
-    protected override string MappingDataSavePath => System.IO.Path.Combine(this.AppSaveLocation, Constants.SSCM_SCMAPPINGS_JSON_NAME);
+    // TODO move logic to SCFolders
+    protected override string GameConfigPath => System.IO.Path.Combine(this._folders.GameConfigDir, Constants.SC_ACTIONMAPS_XML_NAME);
+    protected override string MappingDataSavePath => System.IO.Path.Combine(this._folders.ScDataDir, Constants.SSCM_SCMAPPINGS_JSON_NAME);
 
     public override string CommandAlias => "sc";
     public override string GameType => "Star Citizen";
@@ -17,13 +18,6 @@ public class SCControlManager : ControlManagerBase<MappingData>
     public SCControlManager(IPlatform platform, ISCFolders folders) : base(platform)
     {
         this._folders = folders;
-        Initialize();
-    }
-
-    private void Initialize()
-    {
-        this.GameConfigLocation = this._folders.GameConfigDir;
-        this.AppSaveLocation = this._folders.ScDataDir;
     }
 
     protected override IMappingDataRepository<MappingData> CreateMappingDataRepository()

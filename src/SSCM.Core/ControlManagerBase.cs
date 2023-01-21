@@ -10,8 +10,6 @@ public interface IControlManager
 
     string CommandAlias { get; }
     string GameType { get; }
-    string GameConfigLocation { get; set; }
-    string AppSaveLocation { get; set; }
 
     Task Import(ImportMode mode);
     Task ExportPreview();
@@ -36,14 +34,11 @@ public abstract class ControlManagerBase<TData> : IControlManager
 
     public abstract string CommandAlias { get; }
     public abstract string GameType { get; }
-    public string GameConfigLocation { get; set; } = string.Empty;
-    public string AppSaveLocation { get; set; } = string.Empty;
-
     protected abstract string GameConfigPath { get; }
     protected abstract string MappingDataSavePath { get; }
     protected IPlatform Platform { get; init; }
+    
     private readonly Lazy<IMappingDataRepository<TData>> _lazyMappingDataRepository;
-    // TODO make IMappingDataRepository app-specific
     protected IMappingDataRepository<TData> MappingDataRepository => this._lazyMappingDataRepository.Value;
 
     protected ControlManagerBase(IPlatform platform)

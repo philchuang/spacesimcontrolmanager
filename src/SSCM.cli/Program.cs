@@ -37,9 +37,10 @@ class Program
                 services.AddSingleton<IPlatform, Platform>();
                 services.AddSingleton<ISscmFolders, SscmFolders>();
                 services.AddSingleton<SSCM.StarCitizen.ISCFolders, SSCM.StarCitizen.SCFolders>();
+                services.AddSingleton<SSCM.Elite.IEDFolders, SSCM.Elite.EDFolders>();
                 // TODO adapt to read this in dynamically based on DLLs
-                services.AddTransient<IControlManager>(s => new SSCM.StarCitizen.SCControlManager(s.GetService<IPlatform>()!, s.GetService<SSCM.StarCitizen.ISCFolders>()!));
-                services.AddTransient<IControlManager>(s => new SSCM.Elite.EDControlManager(s.GetService<IPlatform>()!));
+                services.AddTransient<IControlManager, SSCM.StarCitizen.SCControlManager>();
+                services.AddTransient<IControlManager, SSCM.Elite.EDControlManager>();
             });
     }
 

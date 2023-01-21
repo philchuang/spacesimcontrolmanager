@@ -6,19 +6,19 @@ namespace SSCM.Elite;
 
 public class EDControlManager : ControlManagerBase<MappingData>
 {
-    /* bindings location:
-     * %LOCALAPPDATA%\Frontier Developments\Elite Dangerous\Options\Bindings\Custom.4.0.binds # Odyssey
-     * Custom.3.0.binds # Horizons
-     */
-    
-    protected override string GameConfigPath => System.IO.Path.Combine(this.GameConfigLocation, "TODO");
-    protected override string MappingDataSavePath => System.IO.Path.Combine(this.AppSaveLocation, "TODO");
+    protected override string GameConfigPath => _folders.GameConfigPath;
+    protected override string MappingDataSavePath => _folders.EliteDataDir;
 
     public override string CommandAlias => "ed";
     public override string GameType => "Elite: Dangerous";
 
-    public EDControlManager(IPlatform platform) : base(platform)
+    private readonly IPlatform _platform;
+    private readonly IEDFolders _folders;
+
+    public EDControlManager(IPlatform platform, IEDFolders folders) : base(platform)
     {
+        this._platform = platform;
+        this._folders = folders;
         Initialize();
     }
 

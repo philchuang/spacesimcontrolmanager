@@ -13,7 +13,7 @@ public interface ISCFolders
 public class SCFolders : ISCFolders
 {
     public const string PROGRAM_FILES_SC_PROFILES_DEFAULT_DIR = @"Roberts Space Industries\StarCitizen\LIVE\USER\Client\0\Profiles\default";
-    public const string SSCM_DATA_DIR = "SC";
+    public const string SC_DATA_DIR = "SC";
 
     public string GameConfigDir { get; private set; }
 
@@ -30,6 +30,6 @@ public class SCFolders : ISCFolders
         this._config = config;
 
         this.GameConfigDir = this._config.GetValueOrNull(nameof(SCFolders), nameof(GameConfigDir)) ?? System.IO.Path.Combine(this._platform.ProgramFilesDir, PROGRAM_FILES_SC_PROFILES_DEFAULT_DIR);
-        this.ScDataDir = this._config.GetValueOrNull(nameof(SCFolders), nameof(ScDataDir)) ?? System.IO.Path.Combine(this._sscmFolders.DataDir, SSCM_DATA_DIR);
+        this.ScDataDir = this._config.GetValueOrNull(nameof(SCFolders), nameof(ScDataDir)) ?? System.IO.Path.Combine(this._sscmFolders.DataDir, SC_DATA_DIR);
     }
 }
