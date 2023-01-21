@@ -20,6 +20,8 @@ class Program
         return await root.InvokeAsync(args);
     }
 
+    // TODO working on a config subcommand where the user can set variables (dirs, etc.)
+
     static IHostBuilder CreateDefaultBuilder()
     {
         IConfigurationRoot? config = null;
@@ -34,6 +36,7 @@ class Program
             {
                 services.AddSingleton<IConfiguration>(s => config!);
                 services.AddSingleton<IPlatform, Platform>();
+                services.AddSingleton<ISscmFolders, SscmFolders>();
                 services.AddSingleton<ISCFolders, SCFolders>();
                 // TODO adapt to read this in dynamically based on DLLs
                 services.AddTransient<IControlManager>(s => new ControlManager(s.GetService<IPlatform>()!, s.GetService<ISCFolders>()!));
@@ -74,6 +77,7 @@ class Program
         mgr.AddCommand(BuildExportCommand(manager, debugOption));
         mgr.AddCommand(BuildBackupCommand(manager, debugOption));
         mgr.AddCommand(BuildRestoreCommand(manager, debugOption));
+        // mgr.AddCommand(BuildConfigCommand(manager));
         root.AddCommand(mgr);
     }
 
@@ -202,6 +206,11 @@ class Program
         debugOption);
         return cmd;
     }
+
+    // private static Command BuildConfigCommand(IControlManager manager)
+    // {
+    //     // TODO implement
+    // }
 
     private static void AddEliteDangerousCommands(IControlManager manager, RootCommand root, Option<bool> debugOption)
     {

@@ -17,8 +17,8 @@ public class MappingExporter_Restore_Tests
     public MappingExporter_Restore_Tests()
     {
         this._platform = new PlatformForTest(DateTime.UtcNow, programFilesDir: System.IO.Directory.GetCurrentDirectory());
-        this._folders = new SCFoldersForTest(actionmapsDir: System.IO.Directory.GetCurrentDirectory(), sscmDataDir: System.IO.Directory.GetCurrentDirectory());
-        this._updater = new MappingExporter(this._platform, this._folders, System.IO.Path.Combine(this._folders.ActionMapsDir, "actionmaps.xml"));
+        this._folders = new SCFoldersForTest(gameConfigDir: System.IO.Directory.GetCurrentDirectory(), scDataDir: System.IO.Directory.GetCurrentDirectory());
+        this._updater = new MappingExporter(this._platform, this._folders, System.IO.Path.Combine(this._folders.GameConfigDir, "actionmaps.xml"));
     }
 
     [Test]
@@ -32,7 +32,7 @@ public class MappingExporter_Restore_Tests
         filesToCleanup.Add(actionmapsxmlpath);
 
         // clean out old test data
-        foreach (var f in System.IO.Directory.GetFiles(this._folders.SscmDataDir, "actionmaps.xml.*.bak"))
+        foreach (var f in System.IO.Directory.GetFiles(this._folders.ScDataDir, "actionmaps.xml.*.bak"))
         {
             System.IO.File.Delete(f);
         }
@@ -44,7 +44,7 @@ public class MappingExporter_Restore_Tests
         {
             var backupTime = new DateTime(2022, i, 1, i, i*2, i*3);
             lastContents = $"{nameof(RestoreLatest_Overwrites_Actionmapsxml)}-{Guid.NewGuid().ToString()}";
-            lastBackupPath = System.IO.Path.Combine(this._folders.SscmDataDir, $"actionmaps.xml.{backupTime.ToString("yyyyMMddHHmmss")}.bak");
+            lastBackupPath = System.IO.Path.Combine(this._folders.ScDataDir, $"actionmaps.xml.{backupTime.ToString("yyyyMMddHHmmss")}.bak");
             await System.IO.File.WriteAllTextAsync(lastBackupPath, lastContents);
             filesToCleanup.Add(lastBackupPath);
         }

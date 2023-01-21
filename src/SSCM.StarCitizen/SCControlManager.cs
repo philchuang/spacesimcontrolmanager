@@ -22,8 +22,8 @@ public class ControlManager : ControlManagerBase<MappingData>
 
     private void Initialize()
     {
-        this.GameConfigLocation = this._folders.ActionMapsDir;
-        this.AppSaveLocation = this._folders.SscmDataDir;
+        this.GameConfigLocation = this._folders.GameConfigDir;
+        this.AppSaveLocation = this._folders.ScDataDir;
     }
 
     protected override IMappingDataRepository<MappingData> CreateMappingDataRepository()
