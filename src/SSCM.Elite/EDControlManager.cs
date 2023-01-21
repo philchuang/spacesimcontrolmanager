@@ -6,6 +6,11 @@ namespace SSCM.Elite;
 
 public class EDControlManager : ControlManagerBase<MappingData>
 {
+    /* bindings location:
+     * %LOCALAPPDATA%\Frontier Developments\Elite Dangerous\Options\Bindings\Custom.4.0.binds # Odyssey
+     * Custom.3.0.binds # Horizons
+     */
+    
     protected override string GameConfigPath => System.IO.Path.Combine(this.GameConfigLocation, "TODO");
     protected override string MappingDataSavePath => System.IO.Path.Combine(this.AppSaveLocation, "TODO");
 
