@@ -11,4 +11,13 @@ public static class Extensions
     }
 
     private static string? ValueOrNull(this string? self) => string.IsNullOrWhiteSpace(self) ? null : self;
+
+    public static bool AddIfNotNull<T>(this IList<T> self, T? item)
+        where T: class
+    {
+        if (item == null) return false;
+        
+        self.Add(item);
+        return true;
+    }
 }
