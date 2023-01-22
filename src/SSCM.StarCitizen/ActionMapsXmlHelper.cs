@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using static SSCM.Core.XmlExtensions;
 
 namespace SSCM.StarCitizen;
 
@@ -105,12 +106,12 @@ public class ActionMapsXmlHelper
         return (type, instance);
     }
 
-    public XElement? GetOptionsElementForInputDevice(InputDevice input)
+    public XElement? GetOptionsElementForInputDevice(SCInputDevice input)
     {
         return this.Xml.XPathSelectElements($"{this.ActionProfilesXPath}/options[@type='{input.Type}' and @instance='{input.Instance}' and @Product='{input.Product}']").SingleOrDefault();
     }
 
-    public XElement? GetOptionsElementForInputTypeAndInstance(InputDevice input)
+    public XElement? GetOptionsElementForInputTypeAndInstance(SCInputDevice input)
     {
         return this.GetOptionsElementForInputTypeAndInstance(input.Type, input.Instance.ToString());
     }
@@ -120,22 +121,22 @@ public class ActionMapsXmlHelper
         return this.Xml.XPathSelectElements($"{this.ActionProfilesXPath}/options[@type='{type}' and @instance='{instance}']").SingleOrDefault();
     }
 
-    public XElement? GetOptionsElementForInputTypeAndProduct(InputDevice input)
+    public XElement? GetOptionsElementForInputTypeAndProduct(SCInputDevice input)
     {
         return this.Xml.XPathSelectElements($"{this.ActionProfilesXPath}/options[@type='{input.Type}' and @Product='{input.Product}']").SingleOrDefault();
     }
 
-    public XElement? GetElementForInputSetting(InputDevice input, string settingName)
+    public XElement? GetElementForInputSetting(SCInputDevice input, string settingName)
     {
         return this.Xml.XPathSelectElements($"{this.ActionProfilesXPath}/options[@type='{input.Type}' and @instance='{input.Instance}' and @Product='{input.Product}']/{settingName}").SingleOrDefault();
     }
 
-    public XElement? GetActionmapForMapping(Mapping mapping)
+    public XElement? GetActionmapForMapping(SCMapping mapping)
     {
         return this.Xml.XPathSelectElements($"{this.ActionProfilesXPath}/actionmap[@name='{mapping.ActionMap}']").SingleOrDefault();
     }
 
-    public XElement? GetActionForMapping(Mapping mapping)
+    public XElement? GetActionForMapping(SCMapping mapping)
     {
         return this.Xml.XPathSelectElements($"{this.ActionProfilesXPath}/actionmap[@name='{mapping.ActionMap}']/action[@name='{mapping.Action}']").SingleOrDefault();
     }

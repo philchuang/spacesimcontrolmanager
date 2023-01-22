@@ -4,7 +4,7 @@ namespace SSCM.StarCitizen;
 
 // TODO write tests for this class
 
-public class SCControlManager : ControlManagerBase<MappingData>
+public class SCControlManager : ControlManagerBase<SCMappingData>
 {
     // TODO move logic to SCFolders
     protected override string GameConfigPath => System.IO.Path.Combine(this._folders.GameConfigDir, Constants.SC_ACTIONMAPS_XML_NAME);
@@ -20,16 +20,16 @@ public class SCControlManager : ControlManagerBase<MappingData>
         this._folders = folders;
     }
 
-    protected override IMappingDataRepository<MappingData> CreateMappingDataRepository()
+    protected override IMappingDataRepository<SCMappingData> CreateMappingDataRepository()
     {
-        var repo = new MappingDataRepositoryDefault<MappingData>(this.Platform, this.MappingDataSavePath, "scmappings.{0}.json.bak");
+        var repo = new MappingDataRepositoryDefault<SCMappingData>(this.Platform, this.MappingDataSavePath, "scmappings.{0}.json.bak");
         repo.StandardOutput += WriteLineStandard;
         repo.WarningOutput += WriteLineWarning;
         repo.DebugOutput += WriteLineDebug;
         return repo;
     }
 
-    protected override IMappingImporter<MappingData> CreateImporter()
+    protected override IMappingImporter<SCMappingData> CreateImporter()
     {
         var importer = new MappingImporter(this.Platform, this.GameConfigPath);
         importer.StandardOutput += WriteLineStandard;
@@ -38,7 +38,7 @@ public class SCControlManager : ControlManagerBase<MappingData>
         return importer;
     }
 
-    protected override IMappingImportMerger<MappingData> CreateMerger()
+    protected override IMappingImportMerger<SCMappingData> CreateMerger()
     {
         var merger = new MappingImportMerger();
         merger.StandardOutput += WriteLineStandard;
@@ -47,7 +47,7 @@ public class SCControlManager : ControlManagerBase<MappingData>
         return merger;
     }
 
-    protected override IMappingExporter<MappingData> CreateExporter()
+    protected override IMappingExporter<SCMappingData> CreateExporter()
     {
         var exporter = new MappingExporter(this.Platform, this._folders, GameConfigPath);
         exporter.StandardOutput += WriteLineStandard;
@@ -56,7 +56,7 @@ public class SCControlManager : ControlManagerBase<MappingData>
         return exporter;
     }
 
-    protected override IMappingReporter<MappingData> CreateReporter()
+    protected override IMappingReporter<SCMappingData> CreateReporter()
     {
         var exporter = new MappingReporter();
         return exporter;

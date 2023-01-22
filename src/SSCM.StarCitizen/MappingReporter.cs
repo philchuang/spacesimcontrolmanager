@@ -3,7 +3,7 @@ using SSCM.Core;
 
 namespace SSCM.StarCitizen;
 
-public class MappingReporter : IMappingReporter<MappingData>
+public class MappingReporter : IMappingReporter<SCMappingData>
 {
     private const string INPUT_HEADER = @"Id,Type,Name,Preserve,SettingNames";
     private const string MAPPING_HEADER = @"Group,Action,Preserve,InputType,Binding,Options";
@@ -12,7 +12,7 @@ public class MappingReporter : IMappingReporter<MappingData>
     {
     }
 
-    public string Report(MappingData data, bool preservedOnly)
+    public string Report(SCMappingData data, bool preservedOnly)
     {
         var sb = new StringBuilder();
 
@@ -22,14 +22,14 @@ public class MappingReporter : IMappingReporter<MappingData>
         return sb.ToString();
     }
 
-    public string ReportInputs(MappingData data, bool preservedOnly)
+    public string ReportInputs(SCMappingData data, bool preservedOnly)
     {
         var sb = new StringBuilder();
         ReportInputs(data, preservedOnly, sb);
         return sb.ToString();
     }
 
-    private static void ReportInputs(MappingData data, bool preservedOnly, StringBuilder sb)
+    private static void ReportInputs(SCMappingData data, bool preservedOnly, StringBuilder sb)
     {
         if (!data.Inputs.Any()) return;
         
@@ -46,21 +46,21 @@ public class MappingReporter : IMappingReporter<MappingData>
         }
     }
 
-    private static void WriteInput(InputDevice input, StringBuilder sb)
+    private static void WriteInput(SCInputDevice input, StringBuilder sb)
     {
         sb.Append($"{input.Id},{input.Type},{input.Product},{input.Preserve},");
         if (input.Settings.Any()) sb.Append($"\"{string.Join(", ", input.Settings.Select(s => s.Name).OrderBy(s => s))}\"");
         sb.AppendLine();
     }
 
-    public string ReportMappings(MappingData data, bool preservedOnly)
+    public string ReportMappings(SCMappingData data, bool preservedOnly)
     {
         var sb = new StringBuilder();
         ReportMappings(data, preservedOnly, sb);
         return sb.ToString();
     }
 
-    private static void ReportMappings(MappingData data, bool preservedOnly, StringBuilder sb)
+    private static void ReportMappings(SCMappingData data, bool preservedOnly, StringBuilder sb)
     {
         if (!data.Mappings.Any()) return;
         
@@ -77,7 +77,7 @@ public class MappingReporter : IMappingReporter<MappingData>
         }
     }
 
-    private static void WriteMapping(Mapping mapping, StringBuilder sb)
+    private static void WriteMapping(SCMapping mapping, StringBuilder sb)
     {
         sb.Append($"{mapping.ActionMap},{mapping.Action},{mapping.Preserve},{mapping.InputType},{mapping.Input},");
         if (mapping.MultiTap != null) sb.Append($"\"MultiTap: {mapping.MultiTap}\"");

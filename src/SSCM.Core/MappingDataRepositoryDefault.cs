@@ -1,5 +1,7 @@
 namespace SSCM.Core;
 
+// TODO write tests for this class
+
 public class MappingDataRepositoryDefault<TData> : IMappingDataRepository<TData>
     where TData : class, new()
 {
