@@ -4,7 +4,7 @@ using SSCM.Core;
 
 namespace SSCM.Elite;
 
-public class MappingExporter : IMappingExporter<MappingData>
+public class MappingExporter : IMappingExporter<EDMappingData>
 {
     public event Action<string> StandardOutput = delegate {};
     public event Action<string> WarningOutput = delegate {};
@@ -30,12 +30,12 @@ public class MappingExporter : IMappingExporter<MappingData>
         throw new NotImplementedException();
     }
 
-    public async Task<bool> Preview(MappingData source)
+    public async Task<bool> Preview(EDMappingData source)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<bool> Update(MappingData source)
+    public async Task<bool> Update(EDMappingData source)
     {
         throw new NotImplementedException();
     }

@@ -4,7 +4,7 @@ namespace SSCM.Elite;
 
 // TODO write tests for this class
 
-public class EDControlManager : ControlManagerBase<MappingData>
+public class EDControlManager : ControlManagerBase<EDMappingData>
 {
     protected override string GameConfigPath => _folders.GameConfigPath;
     protected override string MappingDataSavePath => _folders.EliteDataDir;
@@ -19,24 +19,18 @@ public class EDControlManager : ControlManagerBase<MappingData>
     {
         this._platform = platform;
         this._folders = folders;
-        Initialize();
     }
 
-    private void Initialize()
+    protected override IMappingDataRepository<EDMappingData> CreateMappingDataRepository()
     {
-        // TODO
-    }
-
-    protected override IMappingDataRepository<MappingData> CreateMappingDataRepository()
-    {
-        var repo = new MappingDataRepositoryDefault<MappingData>(this.Platform, this.MappingDataSavePath, "edmappings.{0}.json.bak");
+        var repo = new MappingDataRepositoryDefault<EDMappingData>(this.Platform, this.MappingDataSavePath, "edmappings.{0}.json.bak");
         repo.StandardOutput += WriteLineStandard;
         repo.WarningOutput += WriteLineWarning;
         repo.DebugOutput += WriteLineDebug;
         return repo;
     }
 
-    protected override IMappingImporter<MappingData> CreateImporter()
+    protected override IMappingImporter<EDMappingData> CreateImporter()
     {
         var importer = new MappingImporter(this.Platform, this.GameConfigPath);
         importer.StandardOutput += WriteLineStandard;
@@ -45,7 +39,7 @@ public class EDControlManager : ControlManagerBase<MappingData>
         return importer;
     }
 
-    protected override IMappingImportMerger<MappingData> CreateMerger()
+    protected override IMappingImportMerger<EDMappingData> CreateMerger()
     {
         var merger = new MappingImportMerger();
         merger.StandardOutput += WriteLineStandard;
@@ -54,7 +48,7 @@ public class EDControlManager : ControlManagerBase<MappingData>
         return merger;
     }
 
-    protected override IMappingExporter<MappingData> CreateExporter()
+    protected override IMappingExporter<EDMappingData> CreateExporter()
     {
         var exporter = new MappingExporter(this.Platform, GameConfigPath);
         exporter.StandardOutput += WriteLineStandard;
@@ -63,7 +57,7 @@ public class EDControlManager : ControlManagerBase<MappingData>
         return exporter;
     }
 
-    protected override IMappingReporter<MappingData> CreateReporter()
+    protected override IMappingReporter<EDMappingData> CreateReporter()
     {
         var exporter = new MappingReporter();
         return exporter;

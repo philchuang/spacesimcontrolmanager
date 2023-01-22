@@ -3,9 +3,9 @@ using System.Text;
 
 namespace SSCM.Elite;
 
-public class MappingMergeResult : MappingMergeResultBase<MappingData>
+public class MappingMergeResult : MappingMergeResultBase<EDMappingData>
 {
-    public MappingMergeResult(MappingData current, MappingData updated) : base(current, updated)
+    public MappingMergeResult(EDMappingData current, EDMappingData updated) : base(current, updated)
     {
     }
 
