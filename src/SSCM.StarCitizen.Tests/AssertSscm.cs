@@ -6,7 +6,7 @@ namespace SSCM.StarCitizen.Tests;
 
 public static class AssertSscm
 {
-    public static void AreEqual(MappingData? expected, MappingData? actual)
+    public static void AreEqual(SCMappingData? expected, SCMappingData? actual)
     {
         if (expected == null && actual == null) return;
 
@@ -22,7 +22,7 @@ public static class AssertSscm
         Assert2.EnumerableEquals(expected.Mappings, actual.Mappings, AreEqual);
     }
 
-    public static void AreEqual(InputDevice? expected, InputDevice? actual)
+    public static void AreEqual(SCInputDevice? expected, SCInputDevice? actual)
     {
         if (expected == null && actual == null) return;
 
@@ -39,7 +39,7 @@ public static class AssertSscm
         Assert2.EnumerableEquals(expected.Settings, actual.Settings, AreEqual);
     }
 
-    public static void AreEqual(InputDeviceSetting? expected, InputDeviceSetting? actual)
+    public static void AreEqual(SCInputDeviceSetting? expected, SCInputDeviceSetting? actual)
     {
         if (expected == null && actual == null) return;
 
@@ -56,7 +56,7 @@ public static class AssertSscm
         Assert2.DictionaryEquals(expected.Properties, actual.Properties, false, Assert.AreEqual);
     }
 
-    public static void AreEqual(Mapping? expected, Mapping? actual)
+    public static void AreEqual(SCMapping? expected, SCMapping? actual)
     {
         if (expected == null && actual == null) return;
 

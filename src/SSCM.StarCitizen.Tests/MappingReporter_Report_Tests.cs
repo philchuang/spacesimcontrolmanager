@@ -24,9 +24,9 @@ public class MappingReporter_Report_Tests
     {
         // Arrange
         var expected = new List<string> { EXPECTED_INPUT_HEADER };
-        var data = new MappingData();
+        var data = new SCMappingData();
         // basic case
-        var input = new InputDevice {
+        var input = new SCInputDevice {
             Type = RandomString(),
             Instance = 1,
             Product = RandomString(),
@@ -35,14 +35,14 @@ public class MappingReporter_Report_Tests
         data.Inputs.Add(input);
         expected.Add($"{input.Id},{input.Type},{input.Product},{input.Preserve},");
         // basic case with options
-        input = new InputDevice {
+        input = new SCInputDevice {
             Type = RandomString(),
             Instance = 2,
             Product = RandomString(),
             Preserve = true,
             Settings = {
-                new InputDeviceSetting { Name = "A" + RandomString(4) },
-                new InputDeviceSetting { Name = "B" + RandomString(4) },
+                new SCInputDeviceSetting { Name = "A" + RandomString(4) },
+                new SCInputDeviceSetting { Name = "B" + RandomString(4) },
             }
         };
         data.Inputs.Add(input);
@@ -60,9 +60,9 @@ public class MappingReporter_Report_Tests
     {
         // Arrange
         var expected = new List<string> { EXPECTED_MAPPING_HEADER };
-        var data = new MappingData();
+        var data = new SCMappingData();
         // basic case
-        var mapping = new Mapping {
+        var mapping = new SCMapping {
             ActionMap = RandomString(),
             Action = RandomString(),
             Preserve = true,
@@ -72,7 +72,7 @@ public class MappingReporter_Report_Tests
         data.Mappings.Add(mapping);
         expected.Add($"{mapping.ActionMap},{mapping.Action},{mapping.Preserve},{mapping.InputType},{mapping.Input},");
         // basic case with options
-        mapping = new Mapping {
+        mapping = new SCMapping {
             ActionMap = RandomString(),
             Action = RandomString(),
             Preserve = true,
@@ -95,9 +95,9 @@ public class MappingReporter_Report_Tests
     {
         // Arrange
         var expected = new List<string> { EXPECTED_INPUT_HEADER };
-        var data = new MappingData();
+        var data = new SCMappingData();
         // basic case
-        var input = new InputDevice {
+        var input = new SCInputDevice {
             Type = RandomString(),
             Instance = 1,
             Product = RandomString(),
@@ -106,7 +106,7 @@ public class MappingReporter_Report_Tests
         data.Inputs.Add(input);
         expected.Add($"{input.Id},{input.Type},{input.Product},{input.Preserve},");
         // not preserved
-        input = new InputDevice {
+        input = new SCInputDevice {
             Type = RandomString(),
             Instance = 2,
             Product = RandomString(),
@@ -116,7 +116,7 @@ public class MappingReporter_Report_Tests
 
         expected.Add(EXPECTED_MAPPING_HEADER);
         // basic case
-        var mapping = new Mapping {
+        var mapping = new SCMapping {
             ActionMap = RandomString(),
             Action = RandomString(),
             Preserve = true,
@@ -126,7 +126,7 @@ public class MappingReporter_Report_Tests
         data.Mappings.Add(mapping);
         expected.Add($"{mapping.ActionMap},{mapping.Action},{mapping.Preserve},{mapping.InputType},{mapping.Input},");
         // not preserved
-        mapping = new Mapping {
+        mapping = new SCMapping {
             ActionMap = RandomString(),
             Action = RandomString(),
             Preserve = false,

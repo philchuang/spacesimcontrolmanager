@@ -19,7 +19,7 @@ public class MappingExporter_Update_Tests
     private MappingExporter? _exporter;
     private readonly IPlatform _platform;
     private readonly ISCFolders _folders;
-    private MappingData _source = new MappingData();
+    private SCMappingData _source = new SCMappingData();
     private XDocument? _originalXml = null;
     private XDocument? _updatedXml = null;
 
@@ -98,63 +98,63 @@ public class MappingExporter_Update_Tests
         return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/options[@type='{type}' and @instance='{instance}' and @Product='{product}']").SingleOrDefault();
     }
 
-    private XElement? GetActionRebindElement(XDocument xd, Mapping mapping)
+    private XElement? GetActionRebindElement(XDocument xd, SCMapping mapping)
     {
         return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/actionmap[@name='{mapping.ActionMap}']/action[@name='{mapping.Action}']/rebind[starts-with(@input, '{ActionMapsXmlHelper.GetOptionsTypeAbbv(mapping.InputType)}')]").SingleOrDefault();
     }
 
     private void Arrange_Default_MappingData()
     {
-        this._source = new MappingData {
+        this._source = new SCMappingData {
             Inputs = {
-                new InputDevice { Type = "keyboard", Instance = 1, Preserve = true, Product = "Keyboard  {6F1D2B61-D5A0-11CF-BFC7-444553540000}" },
-                new InputDevice { Type = "gamepad", Instance = 1, Preserve = true, Product = "Controller (Gamepad)", Settings = {
-                    new InputDeviceSetting { Name = "flight_view", Preserve = true, Properties = new Dictionary<string, string> { { "exponent", "1" } } }
+                new SCInputDevice { Type = "keyboard", Instance = 1, Preserve = true, Product = "Keyboard  {6F1D2B61-D5A0-11CF-BFC7-444553540000}" },
+                new SCInputDevice { Type = "gamepad", Instance = 1, Preserve = true, Product = "Controller (Gamepad)", Settings = {
+                    new SCInputDeviceSetting { Name = "flight_view", Preserve = true, Properties = new Dictionary<string, string> { { "exponent", "1" } } }
                 } },
-                new InputDevice { Type = "joystick", Instance = 1, Preserve = true, Product = " VKB-Sim Gladiator NXT R    {0200231D-0000-0000-0000-504944564944}" , Settings = {
-                    new InputDeviceSetting { Name = "flight_move_pitch", Preserve = true, Properties = new Dictionary<string, string>() },
+                new SCInputDevice { Type = "joystick", Instance = 1, Preserve = true, Product = " VKB-Sim Gladiator NXT R    {0200231D-0000-0000-0000-504944564944}" , Settings = {
+                    new SCInputDeviceSetting { Name = "flight_move_pitch", Preserve = true, Properties = new Dictionary<string, string>() },
                 } },
-                new InputDevice { Type = "joystick", Instance = 2, Preserve = true, Product = " VKBsim Gladiator EVO OT  L SEM   {3205231D-0000-0000-0000-504944564944}", Settings = {
-                    new InputDeviceSetting { Name = "flight_move_strafe_vertical", Preserve = true, Properties = new Dictionary<string, string> { { "invert", "1" } } },
-                    new InputDeviceSetting { Name = "flight_move_strafe_longitudinal", Preserve = true, Properties = new Dictionary<string, string> { { "invert", "1" } } },
+                new SCInputDevice { Type = "joystick", Instance = 2, Preserve = true, Product = " VKBsim Gladiator EVO OT  L SEM   {3205231D-0000-0000-0000-504944564944}", Settings = {
+                    new SCInputDeviceSetting { Name = "flight_move_strafe_vertical", Preserve = true, Properties = new Dictionary<string, string> { { "invert", "1" } } },
+                    new SCInputDeviceSetting { Name = "flight_move_strafe_longitudinal", Preserve = true, Properties = new Dictionary<string, string> { { "invert", "1" } } },
                 } },
             },
             Mappings = {
-                new Mapping { ActionMap = "seat_general", Action = "v_toggle_mining_mode", Input = "js2_button56", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "seat_general", Action = "v_toggle_quantum_mode", Input = "js2_button19", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "seat_general", Action = "v_toggle_scan_mode", Input = "js2_button54", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_close_all_doors", Input = "js2_button49", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_flightready", Input = "js2_button52", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_lock_all_doors", Input = "js2_button46", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_open_all_doors", Input = "js2_button51", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_toggle_all_doorlocks", Input = "js2_button47", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_toggle_all_doors", Input = "js2_button50", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_general", Action = "v_unlock_all_doors", Input = "js2_button48", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_view", Action = "v_view_cycle_fwd", Input = "js2_button1", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_afterburner", Input = "js2_button3", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_atc_request", Input = "js2_button8", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_autoland", Input = "js2_button10", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_ifcs_speed_limiter_reset_scm", Input = "js2_hat1_right", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_ifcs_toggle_cruise_control", Input = "js2_hat1_left", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_ifcs_toggle_vector_decoupling", Input = "js2_button4", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_roll", Input = "js1_x", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_space_brake", Input = "js2_button5", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_speed_range_down", Input = "js2_hat1_down", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_speed_range_up", Input = "js2_hat1_up", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_strafe_lateral", Input = "js2_x", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_strafe_longitudinal", Input = "js2_y", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_strafe_vertical", Input = "js2_rotz", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_toggle_landing_system", Input = "js2_button7", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_toggle_relative_mouse_mode", Input = "kb1_slash", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_toggle_vtol", Input = "js2_button9", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_transform_deploy", Input = "js2_button61", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_transform_retract", Input = "js2_button58", InputType = "joystick", Preserve = true },
-                new Mapping { ActionMap = "spaceship_movement", Action = "v_yaw", Input = "js1_rotz", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "seat_general", Action = "v_toggle_mining_mode", Input = "js2_button56", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "seat_general", Action = "v_toggle_quantum_mode", Input = "js2_button19", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "seat_general", Action = "v_toggle_scan_mode", Input = "js2_button54", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_general", Action = "v_close_all_doors", Input = "js2_button49", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_general", Action = "v_flightready", Input = "js2_button52", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_general", Action = "v_lock_all_doors", Input = "js2_button46", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_general", Action = "v_open_all_doors", Input = "js2_button51", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_general", Action = "v_toggle_all_doorlocks", Input = "js2_button47", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_general", Action = "v_toggle_all_doors", Input = "js2_button50", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_general", Action = "v_unlock_all_doors", Input = "js2_button48", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_view", Action = "v_view_cycle_fwd", Input = "js2_button1", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_movement", Action = "v_afterburner", Input = "js2_button3", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_movement", Action = "v_atc_request", Input = "js2_button8", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_movement", Action = "v_autoland", Input = "js2_button10", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_movement", Action = "v_ifcs_speed_limiter_reset_scm", Input = "js2_hat1_right", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_movement", Action = "v_ifcs_toggle_cruise_control", Input = "js2_hat1_left", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_movement", Action = "v_ifcs_toggle_vector_decoupling", Input = "js2_button4", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_movement", Action = "v_roll", Input = "js1_x", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_movement", Action = "v_space_brake", Input = "js2_button5", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_movement", Action = "v_speed_range_down", Input = "js2_hat1_down", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_movement", Action = "v_speed_range_up", Input = "js2_hat1_up", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_movement", Action = "v_strafe_lateral", Input = "js2_x", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_movement", Action = "v_strafe_longitudinal", Input = "js2_y", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_movement", Action = "v_strafe_vertical", Input = "js2_rotz", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_movement", Action = "v_toggle_landing_system", Input = "js2_button7", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_movement", Action = "v_toggle_relative_mouse_mode", Input = "kb1_slash", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_movement", Action = "v_toggle_vtol", Input = "js2_button9", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_movement", Action = "v_transform_deploy", Input = "js2_button61", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_movement", Action = "v_transform_retract", Input = "js2_button58", InputType = "joystick", Preserve = true },
+                new SCMapping { ActionMap = "spaceship_movement", Action = "v_yaw", Input = "js1_rotz", InputType = "joystick", Preserve = true },
             }
         };
     }
 
-    private (string, Mapping, XElement) Arrange_Update_overwrites_mapping_change(bool preserve)
+    private (string, SCMapping, XElement) Arrange_Update_overwrites_mapping_change(bool preserve)
     {
         this.Arrange_Default_MappingData();
         this._source.Mappings.ToList().ForEach(m => m.Preserve = false);
@@ -191,7 +191,7 @@ public class MappingExporter_Update_Tests
     {
         // Arrange
         var (originalInputValue, mapping, actionElement) = this.Arrange_Update_overwrites_mapping_change(true);
-        var addedMapping = new Mapping { ActionMap = mapping.ActionMap, Action = mapping.Action, Input = "gp1_dpad_up", InputType = "gamepad", Preserve = true };
+        var addedMapping = new SCMapping { ActionMap = mapping.ActionMap, Action = mapping.Action, Input = "gp1_dpad_up", InputType = "gamepad", Preserve = true };
         this._source.Mappings.Add(addedMapping);
 
         // Act
@@ -239,7 +239,7 @@ public class MappingExporter_Update_Tests
         // Arrange
         this.Arrange_Default_MappingData();
         this._source.Mappings.ToList().ForEach(m => m.Preserve = false);
-        var mapping = new Mapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}", InputType = "joystick", Preserve = true };
+        var mapping = new SCMapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}", InputType = "joystick", Preserve = true };
         this._source.Mappings.Add(mapping);
 
         // Act
@@ -264,7 +264,7 @@ public class MappingExporter_Update_Tests
         // Arrange
         this.Arrange_Default_MappingData();
         this._source.Mappings.ToList().ForEach(m => m.Preserve = false);
-        var mapping = new Mapping { ActionMap = this._source.Mappings.First().ActionMap, Action = RandomString(), Input = $"js2_{RandomString()}", InputType = "joystick", Preserve = true };
+        var mapping = new SCMapping { ActionMap = this._source.Mappings.First().ActionMap, Action = RandomString(), Input = $"js2_{RandomString()}", InputType = "joystick", Preserve = true };
         this._source.Mappings.Add(mapping);
 
         // Act
@@ -283,7 +283,7 @@ public class MappingExporter_Update_Tests
         Assert.AreEqual(mapping.Input, addedActionRebindElement.GetAttribute("input"));
     }
 
-    protected (InputDevice, InputDeviceSetting, string, string) Arrange_Update_overwrites_input_setting(bool settingPreserve)
+    protected (SCInputDevice, SCInputDeviceSetting, string, string) Arrange_Update_overwrites_input_setting(bool settingPreserve)
     {
         this.Arrange_Default_MappingData();
         this._source.Inputs.SelectMany(i => i.Settings).ToList().ForEach(s => s.Preserve = false);
@@ -328,7 +328,7 @@ public class MappingExporter_Update_Tests
         Assert.AreEqual(exportedSetting.Properties[exportedSettingValueName], changedSettingValue);
     }
 
-    private (InputDevice, InputDeviceSetting) Arrange_XmlInputSetting_MappingData()
+    private (SCInputDevice, SCInputDeviceSetting) Arrange_XmlInputSetting_MappingData()
     {
         this.Arrange_Default_MappingData();
         // turn off all preserves
@@ -338,7 +338,7 @@ public class MappingExporter_Update_Tests
         // find first joystick
         var exportedInput = this._source.Inputs.First(i => i.Type == "joystick");
         // add XML setting
-        var exportedSetting = new InputDeviceSetting { Name = "flight_move_pitch", Preserve = true, Properties = new Dictionary<string, string> { { "nonlinearity_curve", "<nonlinearity_curve><point in=\"0\" out=\"0\" /><point in=\"0.1\" out=\"0.063095726\" /><point in=\"0.2\" out=\"0.14495592\" /><point in=\"0.30000001\" out=\"0.23580092\" /><point in=\"0.40000001\" out=\"0.33302128\" /><point in=\"0.44116619\" out=\"0.56157923\" /><point in=\"0.60000002\" out=\"0.54172826\" /><point in=\"0.69999999\" out=\"0.65180492\" /><point in=\"0.80000001\" out=\"0.765082\" /><point in=\"0.90000004\" out=\"0.88123357\" /><point in=\"1\" out=\"1\" /></nonlinearity_curve>" } } };
+        var exportedSetting = new SCInputDeviceSetting { Name = "flight_move_pitch", Preserve = true, Properties = new Dictionary<string, string> { { "nonlinearity_curve", "<nonlinearity_curve><point in=\"0\" out=\"0\" /><point in=\"0.1\" out=\"0.063095726\" /><point in=\"0.2\" out=\"0.14495592\" /><point in=\"0.30000001\" out=\"0.23580092\" /><point in=\"0.40000001\" out=\"0.33302128\" /><point in=\"0.44116619\" out=\"0.56157923\" /><point in=\"0.60000002\" out=\"0.54172826\" /><point in=\"0.69999999\" out=\"0.65180492\" /><point in=\"0.80000001\" out=\"0.765082\" /><point in=\"0.90000004\" out=\"0.88123357\" /><point in=\"1\" out=\"1\" /></nonlinearity_curve>" } } };
         exportedInput.Settings.Add(exportedSetting);
 
         return (exportedInput, exportedSetting);
@@ -423,7 +423,7 @@ public class MappingExporter_Update_Tests
         this._source.Mappings.ToList().ForEach(m => m.Preserve = false);
         
         var exportedInput = this._source.Inputs[1];
-        var exportedSetting = new InputDeviceSetting { Name = "AbcDef", Preserve = true, Properties = { { "GhiJkl", RandomString() } } };
+        var exportedSetting = new SCInputDeviceSetting { Name = "AbcDef", Preserve = true, Properties = { { "GhiJkl", RandomString() } } };
         exportedInput.Settings.Add(exportedSetting);
         
         var targetInputElement = this.GetInputElement(this._originalXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
@@ -499,7 +499,7 @@ public class MappingExporter_Update_Tests
         // data-3: mark gamepad input as preserve, add gamepad mapping
         var preservedGamepadInput = this._source.Inputs.Single(i => string.Equals("gamepad", i.Type));
         preservedGamepadInput.Preserve = true;
-        var preservedGamepadMapping = new Mapping { ActionMap = "spaceship_movement", Action = "v_ifcs_toggle_cruise_control", Input = "gp1_dpad_up", InputType = "gamepad", Preserve = true };
+        var preservedGamepadMapping = new SCMapping { ActionMap = "spaceship_movement", Action = "v_ifcs_toggle_cruise_control", Input = "gp1_dpad_up", InputType = "gamepad", Preserve = true };
         this._source.Mappings.Add(preservedGamepadMapping);
         preservedMappings.Add(preservedGamepadMapping);
         // xml-1: change joystick 1->2, 2->3
@@ -535,7 +535,7 @@ public class MappingExporter_Update_Tests
         originalActionProfilesElement.Add(originalNewActionMapElement);
         var originalJoystick1Mappings = 
             Enumerable.Range(0, 2)
-            .Select(_ => new Mapping { ActionMap = originalNewActionMapElement.GetAttribute("name"), Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick" })
+            .Select(_ => new SCMapping { ActionMap = originalNewActionMapElement.GetAttribute("name"), Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick" })
             .ToList();
         originalJoystick1Mappings
             .Select(m => new XElement("action", new XAttribute("name", m.Action), new XElement("rebind", new XAttribute("input", m.Input))))

@@ -7,14 +7,14 @@ namespace SSCM.StarCitizen.Tests;
 [TestFixture]
 public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 {
-    private MappingData _result = new MappingData();
-    private MappingData _expected = new MappingData();
+    private SCMappingData _result = new SCMappingData();
+    private SCMappingData _expected = new SCMappingData();
 
     public MappingImportMerger_Merge_Tests()
     {
     }
 
-    private MappingData Act()
+    private SCMappingData Act()
     {
         return this._result = this._merger.Merge(this._current, this._updated);
     }
@@ -29,7 +29,7 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
     {
         // Arrange
         this.Detects_Inputs_Added_Arrange();
-        this._expected = new MappingData {
+        this._expected = new SCMappingData {
             Inputs = this._updated.Inputs.Select(i => i.JsonCopy()).ToList(),
         };
 
@@ -45,7 +45,7 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
     {
         // Arrange
         this.Detects_Inputs_Removed_NotPreserved_Arrange();
-        this._expected = new MappingData {
+        this._expected = new SCMappingData {
             Inputs = this._updated.Inputs.Select(i => i.JsonCopy()).ToList(),
         };
 
@@ -61,7 +61,7 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
     {
          // Arrange
         this.Detects_InputSettings_Added_Arrange();
-        this._expected = new MappingData {
+        this._expected = new SCMappingData {
             Inputs = this._updated.Inputs.Select(i => i.JsonCopy()).ToList(),
         };
 
@@ -77,7 +77,7 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
     {
          // Arrange
         this.Detects_InputSettings_Removed_NotPreserved_Arrange();
-        this._expected = new MappingData {
+        this._expected = new SCMappingData {
             Inputs = this._updated.Inputs.Select(i => i.JsonCopy()).ToList(),
         };
 
@@ -93,7 +93,7 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
     {
         // Arrange
         this.Detects_InputSettings_Changed_NotPreserved_Arrange();
-        this._expected = new MappingData {
+        this._expected = new SCMappingData {
             Inputs = this._updated.Inputs.Select(i => i.JsonCopy()).ToList(),
             Mappings = this._updated.Mappings.Select(m => m.JsonCopy()).ToList(),
         };
@@ -110,7 +110,7 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
     {
          // Arrange
         this.Detects_Mapping_Added_Arrange();
-        this._expected = new MappingData {
+        this._expected = new SCMappingData {
             Inputs = this._updated.Inputs.Select(i => i.JsonCopy()).ToList(),
             Mappings = this._updated.Mappings.Select(m => m.JsonCopy()).ToList(),
         };
@@ -127,7 +127,7 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
     {
          // Arrange
         this.Detects_Mapping_Removed_NotPreserved_Arrange();
-        this._expected = new MappingData {
+        this._expected = new SCMappingData {
             Inputs = this._updated.Inputs.Select(i => i.JsonCopy()).ToList(),
             Mappings = this._updated.Mappings.Select(m => m.JsonCopy()).ToList(),
         };
@@ -144,7 +144,7 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
     {
         // Arrange
         this.Detects_Mapping_Changed_NotPreserved_Arrange();
-        this._expected = new MappingData {
+        this._expected = new SCMappingData {
             Inputs = this._updated.Inputs.Select(i => i.JsonCopy()).ToList(),
             Mappings = this._updated.Mappings.Select(m => m.JsonCopy()).ToList(),
         };
@@ -163,7 +163,7 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
         var (addedInput, removedInput, currentChangingInput, updatedChangingInput, 
             addedSetting, removedSetting, updatedChangingSetting, 
             addedMapping, removedMapping, removedMappingButPreserved, currentChangedMapping, updatedChangedMapping, currentChangedMappingButPreserved, updatedChangedMappingButPreserved) = this.Creates_Merge_Actions_Arrange();
-        this._expected = new MappingData {
+        this._expected = new SCMappingData {
             Inputs = {
                 this._updated.Inputs[0].JsonCopy(),
                 this._current.Inputs[1].JsonCopy(),
