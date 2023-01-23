@@ -44,6 +44,10 @@ public class MappingReporter : IMappingReporter<EDMappingData>
             {
                 WriteBinding(m.Group, m.Name, nameof(m.Primary), m.Primary, m.Settings, sb);
             }
+            if (m.Secondary != null && (!preservedOnly || m.Secondary.Preserve))
+            {
+                WriteBinding(m.Group, m.Name, nameof(m.Secondary), m.Secondary, m.Settings, sb);
+            }
         }
     }
 

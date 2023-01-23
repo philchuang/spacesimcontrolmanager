@@ -45,13 +45,14 @@ public class MappingImporter : IMappingImporter<EDMappingData>
             ReadXDocument(xd);
         }
 
-        // remove unbound mappings
         var bindingsCount = 0;
         this._data.Mappings = this._data.Mappings.Where(m =>
         {
             if (m.Primary != null) bindingsCount++;
             if (m.Secondary != null) bindingsCount++;
-            return m.Primary != null || m.Secondary != null;
+            // // remove unbound mappings
+            // return m.Primary != null || m.Secondary != null;
+            return true;
         }).ToList();
 
         // sort
@@ -137,7 +138,12 @@ public class MappingImporter : IMappingImporter<EDMappingData>
     private EDMappingSetting? ReadGenericSetting(XElement settingElement, string? group)
     {
         var name = settingElement.Name.LocalName;
-        group = group ?? this.Config.GetGroupForMapping(name);
+        var groups = this.Config.GetGroupsForMapping(name);
+        if (groups.Count > 1)
+        {
+            WarningOutput($"Found multiple group matches for [{name}]: [{string.Join(",", groups)}]");
+        }
+        group = group ?? groups.First();
 
         if (!settingElement.Attributes().Any(a => string.Equals("Value", a.Name.LocalName)))
         {
@@ -165,7 +171,13 @@ public class MappingImporter : IMappingImporter<EDMappingData>
     {
         var name = mappingElement.Name.LocalName;
 
-        var group = this.Config.GetGroupForMapping(name);
+        var groups = this.Config.GetGroupsForMapping(name);
+        if (groups.Count > 1)
+        {
+            WarningOutput($"Found multiple group matches for [{name}]: [{string.Join(",", groups)}]");
+        }
+        var group = groups.First();
+
         if (string.Equals("TBD", group, StringComparison.OrdinalIgnoreCase))
             WarningOutput($"Could not determine mapping group for <{name}>!");
 
@@ -190,7 +202,7 @@ public class MappingImporter : IMappingImporter<EDMappingData>
         if (string.Equals("Binding", elementName, StringComparison.OrdinalIgnoreCase) || 
             string.Equals("Primary", elementName, StringComparison.OrdinalIgnoreCase))
         {
-            mapping.Primary = ReadBindingElement(childElement);
+            mapping.Primary = ReadBindingElement(childElement, $"{mapping.Name}-{elementName}");
             if (mapping.Primary != null)
             {
                 DebugOutput($"Captured Primary binding [{mapping.Primary.Key.Id}].");
@@ -200,7 +212,7 @@ public class MappingImporter : IMappingImporter<EDMappingData>
 
         if (string.Equals("Secondary", elementName, StringComparison.OrdinalIgnoreCase))
         {
-            mapping.Secondary = ReadBindingElement(childElement);
+            mapping.Secondary = ReadBindingElement(childElement, $"{mapping.Name}-{elementName}");
             if (mapping.Secondary != null)
             {
                 DebugOutput($"Captured Secondary binding [{mapping.Secondary.Key.Id}].");
@@ -211,25 +223,25 @@ public class MappingImporter : IMappingImporter<EDMappingData>
         mapping.Settings.AddIfNotNull(ReadGenericSetting(childElement, mapping.Id));
     }
 
-    private EDBinding? ReadBindingElement(XElement bindingElement)
+    private EDBinding? ReadBindingElement(XElement bindingElement, string mappingName)
     {
-        var key = ReadBindingKeyElement(bindingElement);
+        var key = ReadBindingKeyElement(bindingElement, mappingName);
         if (key == null) return null;
 
         var modifiers = bindingElement.Elements()
             .Where(e => string.Equals("Modifier", e.Name.LocalName, StringComparison.OrdinalIgnoreCase))
-            .Select(ReadBindingKeyElement)
+            .Select(e => ReadBindingKeyElement(e, mappingName))
             .Where(k => k != null)
             .ToList();
 
         return new EDBinding {
             Key = key,
             Modifiers = modifiers!,
-            Preserve = true,
+            Preserve = !string.Equals("{NoDevice}", key.Device, StringComparison.OrdinalIgnoreCase),
         };
     }
 
-    private EDBindingKey? ReadBindingKeyElement(XElement bindingKeyElement)
+    private EDBindingKey? ReadBindingKeyElement(XElement bindingKeyElement, string mappingName)
     {
         string? device = null;
         string? key = null;
@@ -249,27 +261,23 @@ public class MappingImporter : IMappingImporter<EDMappingData>
             }
         }
 
-        if (string.Equals("{NoDevice}", device, StringComparison.OrdinalIgnoreCase))
-        {
-            DebugOutput($"Skipped empty binding.");
-            return null;
-        }
-        
         if (string.IsNullOrWhiteSpace(device))
         {
             WarningOutput($"Could not find @device value!");
-            return null;
         }
 
-        if (string.IsNullOrWhiteSpace(key))
+        if (string.Equals("{NoDevice}", device, StringComparison.OrdinalIgnoreCase))
+        {
+            DebugOutput($"Empty binding for [{mappingName}].");
+        }
+        else if (string.IsNullOrWhiteSpace(key))
         {
             WarningOutput($"Could not find @key value!");
-            return null;
         }
 
         return new EDBindingKey {
-            Device = device,
-            Key = key,
+            Device = device ?? string.Empty,
+            Key = key ?? string.Empty,
         };
     }
 }

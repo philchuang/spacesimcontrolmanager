@@ -50,7 +50,7 @@ public class EDControlManager : ControlManagerBase<EDMappingData>
 
     protected override IMappingExporter<EDMappingData> CreateExporter()
     {
-        var exporter = new MappingExporter(this.Platform, GameConfigPath);
+        var exporter = new MappingExporter(this.Platform, this._folders);
         exporter.StandardOutput += WriteLineStandard;
         exporter.WarningOutput += WriteLineWarning;
         exporter.DebugOutput += WriteLineDebug;

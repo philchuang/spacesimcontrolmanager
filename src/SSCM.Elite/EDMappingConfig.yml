@@ -1,52 +1,79 @@
 # Uses Regexes to determine which ED mappings belong to which groups
 
 GroupMappings:
-  Driving:
-  # wildcard
-  - ^.*Buggy.*$
+  General-InterfaceMode:
   # prefix
-  - ^Steer.+$
-  # exact
-  - ^DriveAssistDefault$
-  - ^DriveSpeedAxis$
-  - ^EnableMenuGroupsSRV$
-  - ^ToggleDriveAssist$
+  - ^UI_.+$
+  # complex
+  - ^Cycle.+(Page|Panel)$
 
-  Camera:
+  General-GalaxyMap:
+  # prefix
+  - ^CamPitch.+$
+  - ^CamTranslate.+$
+  - ^CamYaw.+$
+  - ^CamZoom.+$
+  - ^(Pitch|Roll|Yaw)Camera.*$
+  # exact
+  - ^GalaxyMapHome$
+
+  General-CameraSuite:
   # wildcard
   - ^.*FreeCam.*$
   # prefix
-  - ^Cam.+$
   - ^FStop.+$
-  - ^(Pitch|Roll|Yaw)Camera.*$
+  - ^PhotoCameraToggle.*$
   - ^(Pitch|Roll|Yaw)CameraMouse$
-  # complex
-  - ^FixCamera.+Toggle$
+  - ^VanityCamera.+$
   # exact
-  - ^EnableCameraLockOn$
+  - ^FixCameraRelativeToggle$
+  - ^FixCameraWorldToggle$
   - ^QuitCamera$
+  - ^ToggleAdvanceMode$
   - ^ToggleRotationLock$
-
-  HoloMe:
+  # unkown
+  # Relative Mouse Y-Axis
+  
+  General-HoloMe:
   # prefix
   - ^CommanderCreator.+$
+
+  General-Playlist:
+  # prefix
+  - ^GalnetAudio_.+$
+
+  General-StoreCamera:
+  # prefix
   - ^Store.+$
 
-  VoiceComm:
-  # exact
-  - ^CqcMuteButtonMode$
-  - ^MicrophoneMute$
-  - ^MuteButtonMode$
-
-  Walking:
-  # wildcard
-  - ^.*Humanoid.*$
-  # prefix
+  Ship-MouseControls:
   # complex
+  - ^Mouse(X|Y)(Decay|Mode)$
   # exact
-  - ^EnableMenuGroupsOnFoot$
+  - ^MouseDeadzone$
+  - ^MouseDecayRate$
+  - ^MouseGUI$
+  - ^MouseLinearity$
+  - ^MouseReset$
+  - ^MouseSensitivity$
 
-  Flying:
+  Ship-FlightRotation:
+  # prefix
+  - ^PitchAxis.+$
+  - ^RollAxis.+$
+  - ^YawToRoll.+(?!Landing)$
+  # complex
+  - ^Pitch.+Button.*$
+  - ^Roll.+Button.*$
+  - ^Yaw.+Button.*$
+  - ^Yaw(Left|Right)Button$
+  # exact
+  - ^YawAxisRaw$
+
+  Ship-FlightThrust:
+  - START HERE
+
+  Ship:
   # wildcard
   - ^.*Thrust.*$
   # prefix
@@ -57,30 +84,19 @@ GroupMappings:
   - ^Head(L|l)ook.+$
   - ^MouseHeadlook.*$
   - ^MouseTurret.+$
-  - ^MouseX.+$
-  - ^MouseY.+$
-  - ^PitchAxis.+$
   - ^Radar.+$
-  - ^RollAxis.+$
   - ^SetSpeed.+$
   - ^SAA.+$
   - ^Target.+$
   - ^Throttle.+$
-  - ^YawAxis.+$
-  - ^YawToRoll.+$
   # complex
   - ^(Primary|Secondary)Fire$
-  - ^Cycle.+(Page|Panel)$
   - ^Cycle.+Subsystem$
   - ^Cycle.+Target.*$
-  - ^Focus.+(?!_(Buggy|Humanoid))$
-  - ^GalnetAudio_.+$
+  - ^Focus.+Panel$
   - ^Increase.+Power$
   - ^MultiCrew.+$
   - ^Order.+$
-  - ^Pitch.+Button.*$
-  - ^Roll.+Button.*$
-  - ^Yaw.+?Button.*$
   # exact
   - ^ChargeECM$
   - ^CommsPanelFocusOptions$
@@ -92,13 +108,11 @@ GroupMappings:
   - ^EjectAllCargo$
   - ^ExplorationFSSEnter$
   - ^FireChaffLauncher$
-  - ^GalaxyMap.+(?!_(Buggy|Humanoid))$
   - ^HMDReset$
   - ^Hyperspace$
   - ^HyperSuperCombination$
   - ^LandingGearToggle$
   - ^MotionHeadlook$
-  - ^MouseReset$
   - ^NightVisionToggle$
   - ^OpenCodexGoToDiscovery$
   - ^OpenOrders$
@@ -127,32 +141,47 @@ GroupMappings:
   - ^WingNavLock$
   - ^yawRotateHeadlook$
 
-  UI:
+  SRV:
+  # wildcard
+  - ^.*Buggy.*$
   # prefix
-  - ^UI_.+$
+  - ^Steer.+$
+  # exact
+  - ^DriveAssistDefault$
+  - ^DriveSpeedAxis$
+  - ^EnableMenuGroupsSRV$
+  - ^ToggleDriveAssist$
+
+  VoiceComm:
+  # exact
+  - ^CqcMuteButtonMode$
+  - ^MicrophoneMute$
+  - ^MuteButtonMode$
+
+  OnFoot:
+  # wildcard
+  - ^.*Humanoid.*$
+  # prefix
+  # complex
+  # exact
+  - ^EnableMenuGroupsOnFoot$
 
   TODO:
   # prefix
-  - ^VanityCamera.+$
   # exact
   - ^BackwardKey$
   - ^DecreaseSpeedButtonMax$ # driving?
   - ^DecreaseSpeedButtonPartial$ # driving?
+  - ^EnableCameraLockOn$
   - ^EnableMenuGroups$
   - ^EnableRumbleTrigger$
   - ^ForwardKey$
   - ^FriendsMenu$
   - ^IncreaseSpeedButtonMax$ # driving?
   - ^IncreaseSpeedButtonPartial$ # driving?
-  - ^MouseDeadzone$
-  - ^MouseDecayRate$
-  - ^MouseGUI$
-  - ^MouseLinearity$
-  - ^MouseSensitivity$
   - ^Pause$
   - ^RecallDismissShip$ # driving?
   - ^ShowPGScoreSummaryInput$
-  - ^ToggleAdvanceMode$
   - ^ToggleButtonUpInput$
 
 IgnoreList:

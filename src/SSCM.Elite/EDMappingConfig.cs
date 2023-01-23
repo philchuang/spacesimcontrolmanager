@@ -27,14 +27,10 @@ public class EDMappingConfig
         }
     }
 
-    public string GetGroupForMapping(string mapping)
+    public IList<string> GetGroupsForMapping(string mapping)
     {
-        foreach (var tuple in Regexes)
-        {
-            if (tuple.Item1.IsMatch(mapping)) return tuple.Item2;
-        }
-
-        return "TBD";
+        var matches = this.Regexes.Where(t => t.Item1.IsMatch(mapping)).Select(t => t.Item2).Distinct().ToList();
+        return matches.Any() ? matches : new string[] { "TBD" };
     }
 
     public static EDMappingConfig Load(string path)
