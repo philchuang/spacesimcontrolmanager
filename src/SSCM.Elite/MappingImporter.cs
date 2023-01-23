@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 using SSCM.Core;
 using static SSCM.Core.XmlExtensions;
 
@@ -16,11 +15,16 @@ public class MappingImporter : IMappingImporter<EDMappingData>
     private readonly IPlatform _platform;
 
     private EDMappingData _data = new EDMappingData();
-
+    private Dictionary<string, EDMappingSetting> _settingsMap = new Dictionary<string, EDMappingSetting>();
+    private Dictionary<string, EDMapping> _mappingsMap = new Dictionary<string, EDMapping>();
+    private readonly Lazy<EDMappingConfig> _lazyConfig;
+    private EDMappingConfig Config => this._lazyConfig.Value;
+    
     public MappingImporter(IPlatform platform, string gameConfigPath)
     {
         this._platform = platform;
         this.GameConfigPath = gameConfigPath;
+        this._lazyConfig = new Lazy<EDMappingConfig>(() => EDMappingConfig.Load(Path.Combine(this._platform.WorkingDir, "EDMappingConfig.yml")));
     }
 
     public async Task<EDMappingData> Read()
@@ -41,8 +45,22 @@ public class MappingImporter : IMappingImporter<EDMappingData>
             ReadXDocument(xd);
         }
 
-        // this.StandardOutput($"Read in {this._data.Inputs.Count} input devices.");
-        // this.StandardOutput($"Read in {this._data.Mappings.Count} mappings.");
+        // remove unbound mappings
+        var bindingsCount = 0;
+        this._data.Mappings = this._data.Mappings.Where(m =>
+        {
+            if (m.Primary != null) bindingsCount++;
+            if (m.Secondary != null) bindingsCount++;
+            return m.Primary != null || m.Secondary != null;
+        }).ToList();
+
+        // sort
+        this._data.Mappings = this._data.Mappings.OrderBy(m => m.Group).ThenBy(m => m.Name).ToList();
+        this._data.Settings = this._data.Settings.OrderBy(s => s.Group).ThenBy(s => s.Name).ToList();
+
+        this.StandardOutput($"Captured {this._data.Mappings.Count} mappings with {bindingsCount} bindings.");
+        this.StandardOutput($"Captured {this._data.Settings.Count} settings.");
+
         return this._data;
     }
 
@@ -62,70 +80,81 @@ public class MappingImporter : IMappingImporter<EDMappingData>
         ReadRootElement(root);
     }
 
-    private static readonly IDictionary<string, string> CUSTOM_BIND_TO_GROUPING_MAP = new Dictionary<string, string> {
-        ["^.*Thrust.*$"] = "Flying",
-        ["BackwardKey"] = "TBD",
-        ["ForwardKey"] = "TBD",
-        ["^.*Buggy.*$"] = "Driving",
-        ["^Cam.+$"] = "Camera",
-        ["^ChargeECM$"] = "Combat",
-        ["^CommanderCreator$"] = "Holo-Me",
-        ["^CommsPanelFocusOptions$"] = "Flight UI",
-        ["^CqcMuteButtonMode$"] = "PTT",
-        ["^CycleFireGroup.+"] = "Combat",
-        ["^Cycle.+Target.*"] = "Combat Targeting",
-        ["^Cycle.+(Page|Panel)$"] = "Flight UI",
-        // TBD
-    };
-
-    private static readonly Lazy<IList<Tuple<Regex, string>>> GROUPING_REGEXES = new Lazy<IList<Tuple<Regex, string>>>(() => InitGroupingMapRegex().ToList());
-
-    private static IEnumerable<Tuple<Regex, string>> InitGroupingMapRegex()
-    {
-        foreach (var kvp in CUSTOM_BIND_TO_GROUPING_MAP)
-        {
-            yield return new Tuple<Regex, string>(new Regex(kvp.Key), kvp.Value);
-        }
-    }
-
-    private static string? DetermineGroupForMapping(string mappingName)
-    {
-        foreach (var tuple in GROUPING_REGEXES.Value)
-        {
-            if (tuple.Item1.IsMatch(mappingName)) return tuple.Item2;
-        }
-
-        return null;
-    }
-
     private void ReadRootElement(XElement rootElement)
     {
         foreach (var e in rootElement.Elements())
         {
+            if (this.Config.IgnoreList.Contains(e.Name.LocalName))
+            {
+                DebugOutput($"Skipped [{e.Name.LocalName}].");
+                continue;
+            }
+            
             if (!e.HasElements)
             {
-                this._data.Settings.AddIfNotNull(ReadGenericSetting(e));
+                var setting = ReadGlobalSetting(e);
+                if (setting == null)
+                    continue;
+
+                if (this._settingsMap.ContainsKey(setting.Id))
+                {
+                    WarningOutput($"Already captured setting [{setting.Id}], skipping!");
+                    continue;
+                }
+
+                this._data.Settings.Add(setting);
+                this._settingsMap[setting.Id] = setting;
             }
             else
             {
-                this._data.Mappings.AddIfNotNull(ReadMappingElement(e));
+                var mapping = ReadMappingElement(e);
+                if (mapping == null)
+                    continue;
+
+                if (this._mappingsMap.ContainsKey(mapping.Id))
+                {
+                    WarningOutput($"Already captured mapping [{mapping.Id}], skipping!");
+                    continue;
+                }
+
+                this._data.Mappings.Add(mapping);
+                this._mappingsMap[mapping.Id] = mapping;
             }
         }
     }
 
-    private EDMappingSetting? ReadGenericSetting(XElement settingElement)
+    private EDMappingSetting? ReadGlobalSetting(XElement settingElement)
+    {
+        var setting = ReadGenericSetting(settingElement, null);
+        if (setting == null) return null;
+
+        if (string.Equals("TBD", setting.Group, StringComparison.OrdinalIgnoreCase))
+            WarningOutput($"Could not determine mapping group for <{setting.Name}>!");
+
+        return setting;
+    }
+
+    private EDMappingSetting? ReadGenericSetting(XElement settingElement, string? group)
     {
         var name = settingElement.Name.LocalName;
-        var value = settingElement.GetAttribute("Value");
+        group = group ?? this.Config.GetGroupForMapping(name);
 
-        if (string.IsNullOrWhiteSpace(value))
+        if (!settingElement.Attributes().Any(a => string.Equals("Value", a.Name.LocalName)))
         {
             WarningOutput($"Could not process <{name}>!");
             return null;
         }
+        
+        var value = settingElement.GetAttribute("Value");
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            DebugOutput($"Skipped setting <{name}> because empty value.");
+            return null;
+        }
 
-        DebugOutput($"Captured setting [{name}].");
+        DebugOutput($"Captured setting [{group}-{name}] = [{value}].");
         return new EDMappingSetting {
+            Group = group,
             Name = name,
             Value = value,
             Preserve = true,
@@ -136,12 +165,9 @@ public class MappingImporter : IMappingImporter<EDMappingData>
     {
         var name = mappingElement.Name.LocalName;
 
-        var group = DetermineGroupForMapping(name);
-        if (string.IsNullOrWhiteSpace(group))
-        {
+        var group = this.Config.GetGroupForMapping(name);
+        if (string.Equals("TBD", group, StringComparison.OrdinalIgnoreCase))
             WarningOutput($"Could not determine mapping group for <{name}>!");
-            return null;
-        }
 
         DebugOutput($"Processing mapping [{group}-{name}]...");
         var mapping = new EDMapping {
@@ -167,7 +193,7 @@ public class MappingImporter : IMappingImporter<EDMappingData>
             mapping.Primary = ReadBindingElement(childElement);
             if (mapping.Primary != null)
             {
-                DebugOutput($"Captured Primary binding [{mapping.Primary.Device}-{mapping.Primary.Key}].");
+                DebugOutput($"Captured Primary binding [{mapping.Primary.Key.Id}].");
             }
             return;
         }
@@ -177,19 +203,37 @@ public class MappingImporter : IMappingImporter<EDMappingData>
             mapping.Secondary = ReadBindingElement(childElement);
             if (mapping.Secondary != null)
             {
-                DebugOutput($"Captured Secondary binding [{mapping.Secondary.Device}-{mapping.Secondary.Key}].");
+                DebugOutput($"Captured Secondary binding [{mapping.Secondary.Key.Id}].");
             }
             return;
         }
 
-        mapping.Settings.AddIfNotNull(ReadGenericSetting(childElement));
+        mapping.Settings.AddIfNotNull(ReadGenericSetting(childElement, mapping.Id));
     }
 
     private EDBinding? ReadBindingElement(XElement bindingElement)
     {
+        var key = ReadBindingKeyElement(bindingElement);
+        if (key == null) return null;
+
+        var modifiers = bindingElement.Elements()
+            .Where(e => string.Equals("Modifier", e.Name.LocalName, StringComparison.OrdinalIgnoreCase))
+            .Select(ReadBindingKeyElement)
+            .Where(k => k != null)
+            .ToList();
+
+        return new EDBinding {
+            Key = key,
+            Modifiers = modifiers!,
+            Preserve = true,
+        };
+    }
+
+    private EDBindingKey? ReadBindingKeyElement(XElement bindingKeyElement)
+    {
         string? device = null;
         string? key = null;
-        foreach (var attr in bindingElement.Attributes())
+        foreach (var attr in bindingKeyElement.Attributes())
         {
             if (string.Equals("Device", attr.Name.LocalName, StringComparison.OrdinalIgnoreCase))
             {
@@ -204,6 +248,12 @@ public class MappingImporter : IMappingImporter<EDMappingData>
                 WarningOutput($"Unhandled attribute [{attr.Name.LocalName}]!");
             }
         }
+
+        if (string.Equals("{NoDevice}", device, StringComparison.OrdinalIgnoreCase))
+        {
+            DebugOutput($"Skipped empty binding.");
+            return null;
+        }
         
         if (string.IsNullOrWhiteSpace(device))
         {
@@ -217,10 +267,9 @@ public class MappingImporter : IMappingImporter<EDMappingData>
             return null;
         }
 
-        return new EDBinding {
+        return new EDBindingKey {
             Device = device,
             Key = key,
-            Preserve = true,
         };
     }
 }

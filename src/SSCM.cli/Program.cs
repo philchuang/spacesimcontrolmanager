@@ -51,8 +51,8 @@ class Program
         foreach (var manager in managers)
         {
             manager.StandardOutput += Console.WriteLine;
-            manager.WarningOutput += Console.WriteLine;
-            manager.DebugOutput += s => { if (ShowDebugOutput) Console.WriteLine(s); };
+            manager.WarningOutput += s => Console.WriteLine($"[WARN ] {s}");
+            manager.DebugOutput += s => { if (ShowDebugOutput) Console.WriteLine($"[DEBUG] {s}"); };
         }
 
         return managers;
@@ -129,21 +129,23 @@ class Program
         },
         preservedOnlyOption);
 
-        var inputsCmd = new Command("inputs", "Outputs input data in CSV format.");
-        inputsCmd.AddOption(preservedOnlyOption);
-        inputsCmd.SetHandler(async(preservedOnly) => {
-            Console.WriteLine(await manager.ReportInputs(preservedOnly: preservedOnly));
-        },
-        preservedOnlyOption);
-        cmd.AddCommand(inputsCmd);
+        // TODO re-add, maybe have module-specific CLI configuration logic
+        // ONLY FOR SC 
+        // var inputsCmd = new Command("inputs", "Outputs input data in CSV format.");
+        // inputsCmd.AddOption(preservedOnlyOption);
+        // inputsCmd.SetHandler(async(preservedOnly) => {
+        //     Console.WriteLine(await manager.ReportInputs(preservedOnly: preservedOnly));
+        // },
+        // preservedOnlyOption);
+        // cmd.AddCommand(inputsCmd);
 
-        var mappingsCmd = new Command("mappings", "Outputs mappings data in CSV format.");
-        mappingsCmd.AddOption(preservedOnlyOption);
-        mappingsCmd.SetHandler(async(preservedOnly) => {
-            Console.WriteLine(await manager.ReportMappings(preservedOnly: preservedOnly));
-        },
-        preservedOnlyOption);
-        cmd.AddCommand(mappingsCmd);
+        // var mappingsCmd = new Command("mappings", "Outputs mappings data in CSV format.");
+        // mappingsCmd.AddOption(preservedOnlyOption);
+        // mappingsCmd.SetHandler(async(preservedOnly) => {
+        //     Console.WriteLine(await manager.ReportMappings(preservedOnly: preservedOnly));
+        // },
+        // preservedOnlyOption);
+        // cmd.AddCommand(mappingsCmd);
 
         return cmd;
     }
@@ -216,16 +218,4 @@ class Program
     // {
     //     // TODO implement
     // }
-
-    private static void AddEliteDangerousCommands(IControlManager manager, RootCommand root, Option<bool> debugOption)
-    {
-        // var ed = new Command("ed", "Manage Elite: Dangerous mappings");
-        // ed.AddCommand(BuildImportCommand(manager, debugOption));
-        // ed.AddCommand(BuildEditCommand(manager));
-        // ed.AddCommand(BuildEditSCCommand(manager));
-        // ed.AddCommand(BuildExportCommand(manager, debugOption));
-        // ed.AddCommand(BuildBackupCommand(manager, debugOption));
-        // ed.AddCommand(BuildRestoreCommand(manager, debugOption));
-        // root.AddCommand(ed);
-    }
 }

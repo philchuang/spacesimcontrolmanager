@@ -5,6 +5,7 @@ namespace SSCM.Core;
 public interface IPlatform
 {
     public DateTime UtcNow { get; }
+    public string WorkingDir { get; }
     public string ProgramFilesDir { get; }
     public string UserDocumentsDir { get; }
 
@@ -13,9 +14,10 @@ public interface IPlatform
 
 public class Platform : IPlatform
 {
-    public DateTime UtcNow { get { return DateTime.UtcNow; } }
-    public string ProgramFilesDir { get { return Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles); } }
-    public string UserDocumentsDir { get { return System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments); } }
+    public DateTime UtcNow => DateTime.UtcNow;
+    public string WorkingDir => Directory.GetCurrentDirectory();
+    public string ProgramFilesDir => Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+    public string UserDocumentsDir => Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
     
     public void Open(string path)
     {

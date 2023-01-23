@@ -2,6 +2,9 @@ namespace SSCM.Elite;
 
 public class EDMapping
 {
+    [Newtonsoft.Json.JsonIgnore]
+    public string Id => $"{Group}-{Name}";
+
     public string Group { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public EDBinding? Primary { get; set; }

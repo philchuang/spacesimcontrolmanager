@@ -15,8 +15,6 @@ public interface IControlManager
     Task ExportPreview();
     Task ExportApply();
     Task<string> Report(bool preservedOnly = false);
-    Task<string> ReportInputs(bool preservedOnly = false);
-    Task<string> ReportMappings(bool preservedOnly = false);
     void Backup();
     void Restore();
     void Open();
@@ -132,20 +130,6 @@ public abstract class ControlManagerBase<TData> : IControlManager
         var reporter = this.CreateReporter();
         var data = await this.MappingDataRepository.Load();
         return reporter.Report(data ?? this.MappingDataRepository.CreateNew(), preservedOnly);
-    }
-
-    public async Task<string> ReportInputs(bool preservedOnly = false)
-    {
-        var reporter = this.CreateReporter();
-        var data = await this.MappingDataRepository.Load();
-        return reporter.ReportInputs(data ?? this.MappingDataRepository.CreateNew(), preservedOnly);
-    }
-
-    public async Task<string> ReportMappings(bool preservedOnly = false)
-    {
-        var reporter = this.CreateReporter();
-        var data = await this.MappingDataRepository.Load();
-        return reporter.ReportMappings(data ?? this.MappingDataRepository.CreateNew(), preservedOnly);
     }
 
     public void Backup()

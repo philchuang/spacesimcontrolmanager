@@ -7,7 +7,7 @@ namespace SSCM.Elite;
 public class EDControlManager : ControlManagerBase<EDMappingData>
 {
     protected override string GameConfigPath => _folders.GameConfigPath;
-    protected override string MappingDataSavePath => _folders.EliteDataDir;
+    protected override string MappingDataSavePath => Path.Combine(_folders.EliteDataDir, "edmappings.json");
 
     public override string CommandAlias => "ed";
     public override string GameType => "Elite: Dangerous";

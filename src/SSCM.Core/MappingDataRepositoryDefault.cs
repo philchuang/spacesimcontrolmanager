@@ -33,8 +33,17 @@ public class MappingDataRepositoryDefault<TData> : IMappingDataRepository<TData>
             saveFilePath = this.MappingDataSavePath;
         }
 
-        var serializer = new DataSerializer<TData>(saveFilePath);
-        return await serializer.Read();
+        try
+        {
+            var serializer = new DataSerializer<TData>(saveFilePath);
+            return await serializer.Read();
+        }
+        catch (Exception ex)
+        {
+            WarningOutput($"Exception occurred while loading [{saveFilePath}]: {ex.Message}.");
+            DebugOutput(ex.ToString());
+            return null;
+        }
     }
 
     public async Task Save(TData data, string? saveFilePath = null)

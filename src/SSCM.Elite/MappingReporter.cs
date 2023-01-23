@@ -5,8 +5,8 @@ namespace SSCM.Elite;
 
 public class MappingReporter : IMappingReporter<EDMappingData>
 {
-    private const string INPUT_HEADER = @"Id,Type,Name,Preserve,SettingNames";
-    private const string MAPPING_HEADER = @"Group,Action,Preserve,InputType,Binding,Options";
+    private const string MAPPING_HEADER = @"Group,Name,Preserve,Type,Binding,Settings";
+    private const string SETTING_HEADER = @"Group,Name,Preserve,Value";
 
     public MappingReporter()
     {
@@ -16,27 +16,58 @@ public class MappingReporter : IMappingReporter<EDMappingData>
     {
         var sb = new StringBuilder();
 
-        throw new NotImplementedException();
+        ReportMappings(data, preservedOnly, sb);
+        ReportSettings(data, preservedOnly, sb);
 
         return sb.ToString();
     }
 
-    public string ReportInputs(EDMappingData data, bool preservedOnly)
+    private static void ReportMappings(EDMappingData data, bool preservedOnly, StringBuilder sb)
     {
-        var sb = new StringBuilder();
-        throw new NotImplementedException();
-        return sb.ToString();
+        if (!data.Mappings.Any()) return;
+        
+        if (sb.Length > 0)
+        {
+            sb.AppendLine("\n");
+        }
+
+        sb.AppendLine(MAPPING_HEADER);
+
+        foreach (var m in data.Mappings
+            .Where(m => 
+                !preservedOnly || 
+                m.Primary?.Preserve == true || 
+                m.Secondary?.Preserve == true || 
+                m.Settings.Any(s => s.Preserve)))
+        {
+            if (m.Primary != null && (!preservedOnly || m.Primary.Preserve))
+            {
+                WriteBinding(m.Group, m.Name, nameof(m.Primary), m.Primary, m.Settings, sb);
+            }
+        }
     }
 
-    private static void ReportInputs(EDMappingData data, bool preservedOnly, StringBuilder sb)
+    private static void WriteBinding(string group, string name, string type, EDBinding binding, IList<EDMappingSetting> settings, StringBuilder sb)
     {
-        throw new NotImplementedException();
+        sb.AppendLine($"{group},{name},{binding.Preserve},{type},{binding},\"{string.Join(",", settings.Select(s => $"{s.Name}: {s.Value}"))}\"");
     }
 
-    public string ReportMappings(EDMappingData data, bool preservedOnly)
+    private static void ReportSettings(EDMappingData data, bool preservedOnly, StringBuilder sb)
     {
-        var sb = new StringBuilder();
-        throw new NotImplementedException();
-        return sb.ToString();
+        if (!data.Settings.Any()) return;
+        
+        if (sb.Length > 0)
+        {
+            sb.AppendLine("\n");
+        }
+
+        sb.AppendLine(SETTING_HEADER);
+        foreach (var s in data.Settings
+            .Where(s => 
+                !preservedOnly || 
+                s.Preserve))
+        {
+            sb.AppendLine($"{s.Group},{s.Name},{s.Preserve},{s.Value}");
+        }
     }
 }

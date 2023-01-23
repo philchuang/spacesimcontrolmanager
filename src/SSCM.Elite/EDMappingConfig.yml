@@ -1,0 +1,159 @@
+# Uses Regexes to determine which ED mappings belong to which groups
+
+GroupMappings:
+  Driving:
+  # wildcard
+  - ^.*Buggy.*$
+  # prefix
+  - ^Steer.+$
+  # exact
+  - ^DriveAssistDefault$
+  - ^DriveSpeedAxis$
+  - ^EnableMenuGroupsSRV$
+  - ^ToggleDriveAssist$
+
+  Camera:
+  # wildcard
+  - ^.*FreeCam.*$
+  # prefix
+  - ^Cam.+$
+  - ^FStop.+$
+  - ^(Pitch|Roll|Yaw)Camera.*$
+  - ^(Pitch|Roll|Yaw)CameraMouse$
+  # complex
+  - ^FixCamera.+Toggle$
+  # exact
+  - ^EnableCameraLockOn$
+  - ^QuitCamera$
+  - ^ToggleRotationLock$
+
+  HoloMe:
+  # prefix
+  - ^CommanderCreator.+$
+  - ^Store.+$
+
+  VoiceComm:
+  # exact
+  - ^CqcMuteButtonMode$
+  - ^MicrophoneMute$
+  - ^MuteButtonMode$
+
+  Walking:
+  # wildcard
+  - ^.*Humanoid.*$
+  # prefix
+  # complex
+  # exact
+  - ^EnableMenuGroupsOnFoot$
+
+  Flying:
+  # wildcard
+  - ^.*Thrust.*$
+  # prefix
+  - ^CycleFireGroup.+$
+  - ^ExplorationSAA.+$
+  - ^ExplorationFSS.+$
+  - ^FSS.+$
+  - ^Head(L|l)ook.+$
+  - ^MouseHeadlook.*$
+  - ^MouseTurret.+$
+  - ^MouseX.+$
+  - ^MouseY.+$
+  - ^PitchAxis.+$
+  - ^Radar.+$
+  - ^RollAxis.+$
+  - ^SetSpeed.+$
+  - ^SAA.+$
+  - ^Target.+$
+  - ^Throttle.+$
+  - ^YawAxis.+$
+  - ^YawToRoll.+$
+  # complex
+  - ^(Primary|Secondary)Fire$
+  - ^Cycle.+(Page|Panel)$
+  - ^Cycle.+Subsystem$
+  - ^Cycle.+Target.*$
+  - ^Focus.+(?!_(Buggy|Humanoid))$
+  - ^GalnetAudio_.+$
+  - ^Increase.+Power$
+  - ^MultiCrew.+$
+  - ^Order.+$
+  - ^Pitch.+Button.*$
+  - ^Roll.+Button.*$
+  - ^Yaw.+?Button.*$
+  # exact
+  - ^ChargeECM$
+  - ^CommsPanelFocusOptions$
+  - ^DeployHardpointsOnFire$
+  - ^DeployHardpointToggle$
+  - ^DeployHeatSink$
+  - ^DisableRotationCorrectToggle$
+  - ^EngineColourToggle$
+  - ^EjectAllCargo$
+  - ^ExplorationFSSEnter$
+  - ^FireChaffLauncher$
+  - ^GalaxyMap.+(?!_(Buggy|Humanoid))$
+  - ^HMDReset$
+  - ^Hyperspace$
+  - ^HyperSuperCombination$
+  - ^LandingGearToggle$
+  - ^MotionHeadlook$
+  - ^MouseReset$
+  - ^NightVisionToggle$
+  - ^OpenCodexGoToDiscovery$
+  - ^OpenOrders$
+  - ^OrbitLinesToggle$
+  - ^PhotoCameraToggle$
+  - ^PlayerHUDModeToggle$
+  - ^QuickCommsPanel$
+  - ^RadarRangeAxis$
+  - ^ResetPowerDistribution$
+  - ^SelectHighestThreat$
+  - ^SelectTarget$
+  - ^SelectTargetsTarget$
+  - ^ShipSpotLightToggle$
+  - ^Supercruise$
+  - ^SystemMapOpen$
+  - ^TargetNextRouteSystem$
+  - ^ToggleCargoScoop$
+  - ^ToggleFlightAssist$
+  - ^ToggleReverseThrottleInput$
+  - ^TriggerFieldNeutraliser$
+  - ^UIFocus(|Mode)$
+  - ^UseAlternateFlightValuesToggle$
+  - ^UseBoostJuice$
+  - ^UseShieldCell$
+  - ^WeaponColourToggle$
+  - ^WingNavLock$
+  - ^yawRotateHeadlook$
+
+  UI:
+  # prefix
+  - ^UI_.+$
+
+  TODO:
+  # prefix
+  - ^VanityCamera.+$
+  # exact
+  - ^BackwardKey$
+  - ^DecreaseSpeedButtonMax$ # driving?
+  - ^DecreaseSpeedButtonPartial$ # driving?
+  - ^EnableMenuGroups$
+  - ^EnableRumbleTrigger$
+  - ^ForwardKey$
+  - ^FriendsMenu$
+  - ^IncreaseSpeedButtonMax$ # driving?
+  - ^IncreaseSpeedButtonPartial$ # driving?
+  - ^MouseDeadzone$
+  - ^MouseDecayRate$
+  - ^MouseGUI$
+  - ^MouseLinearity$
+  - ^MouseSensitivity$
+  - ^Pause$
+  - ^RecallDismissShip$ # driving?
+  - ^ShowPGScoreSummaryInput$
+  - ^ToggleAdvanceMode$
+  - ^ToggleButtonUpInput$
+
+IgnoreList:
+- KeyboardLayout

@@ -14,7 +14,6 @@ public interface IEDFolders
 
 public class EDFolders : IEDFolders
 {
-    public const string BINDINGS_DIR = @"Roberts Space Industries\StarCitizen\LIVE\USER\Client\0\Profiles\default";
     public const string ED_DATA_DIR = "Elite";
 
     private static string[] BINDS = { "Custom.4.0.binds", "Custom.3.0.binds" };
@@ -39,11 +38,6 @@ public class EDFolders : IEDFolders
         this.EliteDataDir = this._config.GetValueOrNull(nameof(EDFolders), nameof(EliteDataDir)) ?? System.IO.Path.Combine(this._sscmFolders.DataDir, ED_DATA_DIR);
     }
 
-    /* bindings location:
-     * %LOCALAPPDATA%\Frontier Developments\Elite Dangerous\Options\Bindings\Custom.4.0.binds # Odyssey
-     * Custom.3.0.binds # Horizons
-     */
-    
     private string FindEliteBindingsDir()
     {
         var dirs = new[] { 

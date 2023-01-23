@@ -11,4 +11,14 @@
     <ProjectReference Include="..\SSCM.Core\SSCM.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="yamldotnet" Version="12.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="EDMappingConfig.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
