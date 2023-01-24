@@ -136,7 +136,7 @@ public class MappingReporter_Report_Tests
         data.Mappings.Add(mapping);
 
         // Act
-        var actual = this._reporter.Report(data, preservedOnly: true);
+        var actual = this._reporter.Report(data, preservedOnly: true, ReportingFormat.Csv);
 
         // Assert
         Assert2.EnumerableEquals(expected, actual.Split("\n").Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s)));    }

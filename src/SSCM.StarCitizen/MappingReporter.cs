@@ -5,6 +5,10 @@ namespace SSCM.StarCitizen;
 
 public class MappingReporter : IMappingReporter<SCMappingData>
 {
+    public event Action<string> StandardOutput = delegate {};
+    public event Action<string> WarningOutput = delegate {};
+    public event Action<string> DebugOutput = delegate {};
+
     private const string INPUT_HEADER = @"Id,Type,Name,Preserve,SettingNames";
     private const string MAPPING_HEADER = @"Group,Action,Preserve,InputType,Binding,Options";
 
@@ -12,8 +16,14 @@ public class MappingReporter : IMappingReporter<SCMappingData>
     {
     }
 
-    public string Report(SCMappingData data, bool preservedOnly)
+    public string Report(SCMappingData data, bool preservedOnly, ReportingFormat format)
     {
+        if (format != ReportingFormat.Csv)
+        {
+            WarningOutput($"Unable to output in format [{format}]!");
+            return string.Empty;
+        }
+
         var sb = new StringBuilder();
 
         ReportInputs(data, preservedOnly, sb);

@@ -14,7 +14,7 @@ public interface IControlManager
     Task Import(ImportMode mode);
     Task ExportPreview();
     Task ExportApply();
-    Task<string> Report(bool preservedOnly = false);
+    Task<string> Report(bool preservedOnly = false, ReportingFormat format = ReportingFormat.Csv);
     void Backup();
     void Restore();
     void Open();
@@ -125,11 +125,11 @@ public abstract class ControlManagerBase<TData> : IControlManager
         WriteLineStandard($"CONFIGURATION UPDATED: Changes applied to [{exporter.GameConfigPath}].");
     }
 
-    public async Task<string> Report(bool preservedOnly = false)
+    public async Task<string> Report(bool preservedOnly = false, ReportingFormat format = ReportingFormat.Csv)
     {
         var reporter = this.CreateReporter();
         var data = await this.MappingDataRepository.Load();
-        return reporter.Report(data ?? this.MappingDataRepository.CreateNew(), preservedOnly);
+        return reporter.Report(data ?? this.MappingDataRepository.CreateNew(), preservedOnly, format);
     }
 
     public void Backup()
