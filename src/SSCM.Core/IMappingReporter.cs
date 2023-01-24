@@ -8,11 +8,18 @@ public enum ReportingFormat
     Json
 }
 
+public class ReportingOptions
+{
+    public ReportingFormat Format { get; set; } = ReportingFormat.Csv;
+    
+    public bool PreservedOnly { get; set; }
+}
+
 public interface IMappingReporter<TData>
 {
     event Action<string> StandardOutput;
     event Action<string> WarningOutput;
     event Action<string> DebugOutput;
 
-    string Report(TData data, bool preservedOnly, ReportingFormat format);
+    string Report(TData data, ReportingOptions options);
 }

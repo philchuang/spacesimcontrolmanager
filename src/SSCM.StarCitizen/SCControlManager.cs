@@ -62,17 +62,17 @@ public class SCControlManager : ControlManagerBase<SCMappingData>
         return exporter;
     }
 
-    public async Task<string> ReportInputs(bool preservedOnly = false)
+    public async Task<string> ReportInputs(ReportingOptions options)
     {
         var reporter = this.CreateReporter();
         var data = await this.MappingDataRepository.Load();
-        return ((MappingReporter) reporter).ReportInputs(data ?? this.MappingDataRepository.CreateNew(), preservedOnly);
+        return ((MappingReporter) reporter).ReportInputs(data ?? this.MappingDataRepository.CreateNew(), options);
     }
 
-    public async Task<string> ReportMappings(bool preservedOnly = false)
+    public async Task<string> ReportMappings(ReportingOptions options)
     {
         var reporter = this.CreateReporter();
         var data = await this.MappingDataRepository.Load();
-        return ((MappingReporter) reporter).ReportMappings(data ?? this.MappingDataRepository.CreateNew(), preservedOnly);
+        return ((MappingReporter) reporter).ReportMappings(data ?? this.MappingDataRepository.CreateNew(), options);
     }
 }

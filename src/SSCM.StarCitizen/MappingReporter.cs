@@ -16,30 +16,30 @@ public class MappingReporter : IMappingReporter<SCMappingData>
     {
     }
 
-    public string Report(SCMappingData data, bool preservedOnly, ReportingFormat format)
+    public string Report(SCMappingData data, ReportingOptions options)
     {
-        if (format != ReportingFormat.Csv)
+        if (options.Format != ReportingFormat.Csv)
         {
-            WarningOutput($"Unable to output in format [{format}]!");
+            WarningOutput($"Unable to output in format [{options.Format}]!");
             return string.Empty;
         }
 
         var sb = new StringBuilder();
 
-        ReportInputs(data, preservedOnly, sb);
-        ReportMappings(data, preservedOnly, sb);
+        ReportInputs(data, options, sb);
+        ReportMappings(data, options, sb);
 
         return sb.ToString();
     }
 
-    public string ReportInputs(SCMappingData data, bool preservedOnly)
+    public string ReportInputs(SCMappingData data, ReportingOptions options)
     {
         var sb = new StringBuilder();
-        ReportInputs(data, preservedOnly, sb);
+        ReportInputs(data, options, sb);
         return sb.ToString();
     }
 
-    private static void ReportInputs(SCMappingData data, bool preservedOnly, StringBuilder sb)
+    private static void ReportInputs(SCMappingData data, ReportingOptions options, StringBuilder sb)
     {
         if (!data.Inputs.Any()) return;
         
@@ -50,7 +50,7 @@ public class MappingReporter : IMappingReporter<SCMappingData>
 
         sb.AppendLine(INPUT_HEADER);
 
-        foreach (var input in data.Inputs.Where(i => !preservedOnly || i.Preserve))
+        foreach (var input in data.Inputs.Where(i => !options.PreservedOnly || i.Preserve))
         {
             WriteInput(input, sb);
         }
@@ -63,14 +63,14 @@ public class MappingReporter : IMappingReporter<SCMappingData>
         sb.AppendLine();
     }
 
-    public string ReportMappings(SCMappingData data, bool preservedOnly)
+    public string ReportMappings(SCMappingData data, ReportingOptions options)
     {
         var sb = new StringBuilder();
-        ReportMappings(data, preservedOnly, sb);
+        ReportMappings(data, options, sb);
         return sb.ToString();
     }
 
-    private static void ReportMappings(SCMappingData data, bool preservedOnly, StringBuilder sb)
+    private static void ReportMappings(SCMappingData data, ReportingOptions options, StringBuilder sb)
     {
         if (!data.Mappings.Any()) return;
         
@@ -81,7 +81,7 @@ public class MappingReporter : IMappingReporter<SCMappingData>
 
         sb.AppendLine(MAPPING_HEADER);
 
-        foreach (var mapping in data.Mappings.Where(m => !preservedOnly || m.Preserve))
+        foreach (var mapping in data.Mappings.Where(m => !options.PreservedOnly || m.Preserve))
         {
             WriteMapping(mapping, sb);
         }

@@ -49,7 +49,7 @@ public class MappingReporter_Report_Tests
         expected.Add($"{input.Id},{input.Type},{input.Product},{input.Preserve},\"{string.Join(", ", input.Settings.Select(s => s.Name).OrderBy(s => s))}\"");
 
         // Act
-        var actual = this._reporter.ReportInputs(data, preservedOnly: false);
+        var actual = this._reporter.ReportInputs(data, new ReportingOptions { PreservedOnly = false });
 
         // Assert
         Assert2.EnumerableEquals(expected, actual.Split("\n").Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s)));
@@ -84,7 +84,7 @@ public class MappingReporter_Report_Tests
         expected.Add($"{mapping.ActionMap},{mapping.Action},{mapping.Preserve},{mapping.InputType},{mapping.Input},\"MultiTap: {mapping.MultiTap}\"");
 
         // Act
-        var actual = this._reporter.ReportMappings(data, preservedOnly: false);
+        var actual = this._reporter.ReportMappings(data, new ReportingOptions { PreservedOnly = false });
 
         // Assert
         Assert2.EnumerableEquals(expected, actual.Split("\n").Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s)));
@@ -136,8 +136,9 @@ public class MappingReporter_Report_Tests
         data.Mappings.Add(mapping);
 
         // Act
-        var actual = this._reporter.Report(data, preservedOnly: true, ReportingFormat.Csv);
+        var actual = this._reporter.Report(data, new ReportingOptions { PreservedOnly = true, Format = ReportingFormat.Csv });
 
         // Assert
-        Assert2.EnumerableEquals(expected, actual.Split("\n").Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s)));    }
+        Assert2.EnumerableEquals(expected, actual.Split("\n").Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s)));
+    }
 }

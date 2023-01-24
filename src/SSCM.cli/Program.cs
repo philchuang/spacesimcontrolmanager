@@ -137,8 +137,11 @@ class Program
         cmd.AddOption(mdOption);
         // cmd.AddOption(jsonOption); // unsure about this one
         cmd.SetHandler(async (preservedOnly, markdown, json) => {
-            var format = markdown ? ReportingFormat.Markdown : json ? ReportingFormat.Json : ReportingFormat.Csv;
-            Console.WriteLine(await manager.Report(preservedOnly: preservedOnly, format: format));
+            var options = new ReportingOptions {
+                Format = markdown ? ReportingFormat.Markdown : json ? ReportingFormat.Json : ReportingFormat.Csv,
+                PreservedOnly = preservedOnly,
+            };
+            Console.WriteLine(await manager.Report(options));
         },
         preservedOnlyOption, mdOption, jsonOption);
 
