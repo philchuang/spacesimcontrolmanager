@@ -18,12 +18,13 @@ public class MappingReporter : IMappingReporter<SCMappingData>
 
     public string Report(SCMappingData data, ReportingOptions options)
     {
-        if (options.Format != ReportingFormat.Csv)
-        {
-            WarningOutput($"Unable to output in format [{options.Format}]!");
-            return string.Empty;
-        }
+        if (options.Format == ReportingFormat.Csv) return ReportCsv(data, options);
+        else if (options.Format == ReportingFormat.Markdown) return ReportMarkdown(data, options);
+        else throw new ArgumentOutOfRangeException($"Unable to report in format [{options.Format.ToString()}]!");
+    }
 
+    private string ReportCsv(SCMappingData data, ReportingOptions options)
+    {
         var sb = new StringBuilder();
 
         ReportInputs(data, options, sb);
@@ -92,5 +93,52 @@ public class MappingReporter : IMappingReporter<SCMappingData>
         sb.Append($"{mapping.ActionMap},{mapping.Action},{mapping.Preserve},{mapping.InputType},{mapping.Input},");
         if (mapping.MultiTap != null) sb.Append($"\"MultiTap: {mapping.MultiTap}\"");
         sb.AppendLine();
+    }
+
+    private string ReportMarkdown(SCMappingData data, ReportingOptions options)
+    {
+        var sb = new StringBuilder();
+
+        sb.AppendLine($"# Star Citizen mappings from actionmaps.xml file");
+        sb.AppendLine();
+        if (options.PreservedOnly)
+        {
+            sb.AppendLine("Only mappings marked to preserve.");
+            sb.AppendLine();
+        }
+
+        sb.AppendLine("## Input Devices");
+        sb.AppendLine();
+        foreach (var input in data.Inputs)
+        {
+            if (options.PreservedOnly && !input.Preserve && input.Settings.All(s => !s.Preserve)) continue;
+
+            sb.AppendLine($"### {input.Type}-{input.Instance}: [{input.Product}]{(input.Preserve ? "*" : "")}");
+            foreach (var s in input.Settings)
+                sb.AppendLine($"{s.Name}{(s.Preserve ? "*" : "")} = {string.Join(",", s.Properties.Select(kvp => $"{kvp.Key}: {kvp.Value}"))}");
+            sb.AppendLine();
+        }
+
+        sb.AppendLine("## Mapping Groups");
+        sb.AppendLine();
+
+        var grouped = data.Mappings.GroupBy(m => m.ActionMap).OrderBy(g => g.Key);
+
+        foreach (var g in grouped)
+        {
+            sb.AppendLine($"## {g.Key}");
+            sb.AppendLine();
+
+            foreach (var mapping in g)
+            {
+                if (options.PreservedOnly && !mapping.Preserve) continue;
+                
+                sb.AppendLine($"{mapping.Action}{(mapping.Preserve ? "*" : "")} = {mapping.Input}{(mapping.MultiTap != null ? $" (multiTap {mapping.MultiTap.Value})" : "")}");
+            }
+
+            sb.AppendLine();
+        }
+
+        return sb.ToString();
     }
 }
