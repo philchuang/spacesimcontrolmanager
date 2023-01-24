@@ -192,6 +192,17 @@ public class MappingImporter : IMappingImporter<EDMappingData>
             ReadMappingChildren(childElement, mapping);
         }
 
+        // unpreserve settings if no bindings
+        if ((mapping.Primary == null || mapping.Primary.IsUnbound) && 
+            (mapping.Secondary == null || mapping.Secondary.IsUnbound) && 
+            mapping.Settings.Any())
+        {
+            foreach (var s in mapping.Settings)
+            {
+                s.Preserve = false;
+            }
+        }
+
         return mapping;
     }
 
