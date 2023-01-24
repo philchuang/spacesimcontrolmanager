@@ -122,6 +122,11 @@ class Program
             description: "Only report data marked for preservation"
         );
 
+        var headersOnlyOption = new Option<bool>(
+            aliases: new [] { "--names", "-n" },
+            description: "Only report mapping names, not values"
+        );
+
         var mdOption = new Option<bool>(
             aliases: new [] { "--markdown", "-m" },
             description: "Output in markdown format instead"
@@ -134,16 +139,18 @@ class Program
 
         var cmd = new Command("report", "Outputs saved input and mappings data in CSV format.");
         cmd.AddOption(preservedOnlyOption);
+        cmd.AddOption(headersOnlyOption);
         cmd.AddOption(mdOption);
         // cmd.AddOption(jsonOption); // unsure about this one
-        cmd.SetHandler(async (preservedOnly, markdown, json) => {
+        cmd.SetHandler(async (preservedOnly, headersOnly, markdown, json) => {
             var options = new ReportingOptions {
                 Format = markdown ? ReportingFormat.Markdown : json ? ReportingFormat.Json : ReportingFormat.Csv,
+                HeadersOnly = headersOnly,
                 PreservedOnly = preservedOnly,
             };
             Console.WriteLine(await manager.Report(options));
         },
-        preservedOnlyOption, mdOption, jsonOption);
+        preservedOnlyOption, headersOnlyOption, mdOption, jsonOption);
 
         // TODO re-add, maybe have module-specific CLI configuration logic
         // ONLY FOR SC 

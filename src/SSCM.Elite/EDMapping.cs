@@ -10,4 +10,6 @@ public class EDMapping
     public EDBinding? Primary { get; set; }
     public EDBinding? Secondary { get; set; }
     public IList<EDMappingSetting> Settings { get; set; } = new List<EDMappingSetting>();
+
+    public bool AnyPreserve => this.Primary?.Preserve == true || this.Secondary?.Preserve == true || this.Settings.Any(s => s.Preserve);
 }

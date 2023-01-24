@@ -38,24 +38,42 @@ FreeCamZoomOut
 MoveFreeCamBackwards
 MoveFreeCamDown
 MoveFreeCamDownAxis
+MoveFreeCamDownAxis.Deadzone
+MoveFreeCamDownAxis.Inverted
 MoveFreeCamForward
 MoveFreeCamLeft
 MoveFreeCamRight
 MoveFreeCamUp
 MoveFreeCamUpAxis
+MoveFreeCamUpAxis.Deadzone
+MoveFreeCamUpAxis.Inverted
 MoveFreeCamX
+MoveFreeCamX.Deadzone
+MoveFreeCamX.Inverted
 MoveFreeCamY
+MoveFreeCamY.Deadzone
+MoveFreeCamY.Inverted
 MoveFreeCamZ
+MoveFreeCamZ.Deadzone
+MoveFreeCamZ.Inverted
 PitchCamera
+PitchCamera.Deadzone
+PitchCamera.Inverted
 PitchCameraDown
 PitchCameraMouse
 PitchCameraUp
 RollCamera
+RollCamera.Deadzone
+RollCamera.Inverted
 RollCameraLeft
 RollCameraRight
+ThrottleRangeFreeCam
 ToggleFreeCam
 ToggleReverseThrottleInputFreeCam
+ToggleReverseThrottleInputFreeCam.ToggleOn
 YawCamera
+YawCamera.Deadzone
+YawCamera.Inverted
 YawCameraLeft
 YawCameraMouse
 YawCameraRight
@@ -63,6 +81,8 @@ YawCameraRight
 ## General-GalaxyMap
 
 CamPitchAxis
+CamPitchAxis.Deadzone
+CamPitchAxis.Inverted
 CamPitchDown
 CamPitchUp
 CamTranslateBackward
@@ -72,13 +92,24 @@ CamTranslateLeft
 CamTranslateRight
 CamTranslateUp
 CamTranslateXAxis
+CamTranslateXAxis.Deadzone
+CamTranslateXAxis.Inverted
 CamTranslateYAxis
+CamTranslateYAxis.Deadzone
+CamTranslateYAxis.Inverted
 CamTranslateZAxis
+CamTranslateZAxis.Deadzone
+CamTranslateZAxis.Inverted
 CamTranslateZHold
+CamTranslateZHold.ToggleOn
 CamYawAxis
+CamYawAxis.Deadzone
+CamYawAxis.Inverted
 CamYawLeft
 CamYawRight
 CamZoomAxis
+CamZoomAxis.Deadzone
+CamZoomAxis.Inverted
 CamZoomIn
 CamZoomOut
 GalaxyMapHome
@@ -88,6 +119,8 @@ GalaxyMapHome
 CommanderCreator_Redo
 CommanderCreator_Rotation
 CommanderCreator_Rotation_MouseToggle
+CommanderCreator_Rotation.Deadzone
+CommanderCreator_Rotation.Inverted
 CommanderCreator_Undo
 
 ## General-InterfaceMode
@@ -105,6 +138,7 @@ UI_Toggle
 UI_Up
 
 ## General-Playlist
+
 GalnetAudio_ClearQueue
 GalnetAudio_Play_Pause
 GalnetAudio_SkipBackward
@@ -116,31 +150,50 @@ StoreCamZoomIn
 StoreCamZoomOut
 StoreEnableRotation
 StorePitchCamera
+StorePitchCamera.Deadzone
+StorePitchCamera.Inverted
 StoreToggle
 StoreYawCamera
+StoreYawCamera.Deadzone
+StoreYawCamera.Inverted
 
 ## Ship-AlternateFlightControls
 
 LateralThrustAlternate
+LateralThrustAlternate.Deadzone
+LateralThrustAlternate.Inverted
 PitchAxisAlternate
+PitchAxisAlternate.Deadzone
+PitchAxisAlternate.Inverted
 RollAxisAlternate
+RollAxisAlternate.Deadzone
+RollAxisAlternate.Inverted
 UseAlternateFlightValuesToggle
+UseAlternateFlightValuesToggle.ToggleOn
 VerticalThrustAlternate
+VerticalThrustAlternate.Deadzone
+VerticalThrustAlternate.Inverted
 YawAxisAlternate
+YawAxisAlternate.Deadzone
+YawAxisAlternate.Inverted
 
 ## Ship-Cooling
 
 DeployHeatSink
 ToggleButtonUpInput
+ToggleButtonUpInput.ToggleOn
 
 ## Ship-DetailedSurfaceScanner
 
 ExplorationSAAChangeScannedAreaViewToggle
+ExplorationSAAChangeScannedAreaViewToggle.ToggleOn
 ExplorationSAAExitThirdPerson
 ExplorationSAANextGenus
 ExplorationSAAPreviousGenus
 ExplorationSAAShowHelp
 SAAThirdPersonFovAxisRaw
+SAAThirdPersonFovAxisRaw.Deadzone
+SAAThirdPersonFovAxisRaw.Inverted
 SAAThirdPersonFovInButton
 SAAThirdPersonFovOutButton
 SAAThirdPersonMouseSensitivity
@@ -149,9 +202,13 @@ SAAThirdPersonMouseXMode
 SAAThirdPersonMouseYDecay
 SAAThirdPersonMouseYMode
 SAAThirdPersonPitchAxisRaw
+SAAThirdPersonPitchAxisRaw.Deadzone
+SAAThirdPersonPitchAxisRaw.Inverted
 SAAThirdPersonPitchDownButton
 SAAThirdPersonPitchUpButton
 SAAThirdPersonYawAxisRaw
+SAAThirdPersonYawAxisRaw.Deadzone
+SAAThirdPersonYawAxisRaw.Inverted
 SAAThirdPersonYawLeftButton
 SAAThirdPersonYawRightButton
 
@@ -169,47 +226,70 @@ OrderRequestDock
 ## Ship-FlightLandingOverrides
 
 AheadThrust_Landing
+AheadThrust_Landing.Deadzone
+AheadThrust_Landing.Inverted
 BackwardThrustButton_Landing
 DownThrustButton_Landing
 ForwardThrustButton_Landing
 LateralThrust_Landing
+LateralThrust_Landing.Deadzone
+LateralThrust_Landing.Inverted
 LeftThrustButton_Landing
 PitchAxis_Landing
+PitchAxis_Landing.Deadzone
+PitchAxis_Landing.Inverted
 PitchDownButton_Landing
 PitchUpButton_Landing
 RightThrustButton_Landing
 RollAxis_Landing
+RollAxis_Landing.Deadzone
+RollAxis_Landing.Inverted
 RollLeftButton_Landing
 RollRightButton_Landing
 UpThrustButton_Landing
 VerticalThrust_Landing
+VerticalThrust_Landing.Deadzone
+VerticalThrust_Landing.Inverted
 YawAxis_Landing
+YawAxis_Landing.Deadzone
+YawAxis_Landing.Inverted
 YawLeftButton_Landing
 YawRightButton_Landing
+YawToRollMode_Landing
 
 ## Ship-FlightMiscellaneous
 
 DisableRotationCorrectToggle
+DisableRotationCorrectToggle.ToggleOn
 Hyperspace
 HyperSuperCombination
 OrbitLinesToggle
 Supercruise
 ToggleFlightAssist
+ToggleFlightAssist.ToggleOn
 UseBoostJuice
 
 ## Ship-FlightRotation
 
 PitchAxisRaw
+PitchAxisRaw.Deadzone
+PitchAxisRaw.Inverted
 PitchDownButton
 PitchUpButton
 RollAxisRaw
+RollAxisRaw.Deadzone
+RollAxisRaw.Inverted
 RollLeftButton
 RollRightButton
 YawAxisRaw
+YawAxisRaw.Deadzone
+YawAxisRaw.Inverted
 YawLeftButton
 YawRightButton
 YawToRollButton
+YawToRollButton.ToggleOn
 YawToRollMode
+YawToRollMode_FAOff
 YawToRollSensitivity
 
 ## Ship-FlightThrottle
@@ -226,27 +306,41 @@ SetSpeedMinus50
 SetSpeedMinus75
 SetSpeedZero
 ThrottleAxis
+ThrottleAxis.Deadzone
+ThrottleAxis.Inverted
 ThrottleIncrement
+ThrottleRange
 ToggleReverseThrottleInput
+ToggleReverseThrottleInput.ToggleOn
 
 ## Ship-FlightThrust
 
 AheadThrust
+AheadThrust.Deadzone
+AheadThrust.Inverted
 BackwardThrustButton
 DownThrustButton
 ForwardThrustButton
 LateralThrustRaw
+LateralThrustRaw.Deadzone
+LateralThrustRaw.Inverted
 LeftThrustButton
 RightThrustButton
 UpThrustButton
 VerticalThrustRaw
+VerticalThrustRaw.Deadzone
+VerticalThrustRaw.Inverted
 
 ## Ship-FullSpectrumSystemScanner
 
 ExplorationFSSCameraPitch
+ExplorationFSSCameraPitch.Deadzone
+ExplorationFSSCameraPitch.Inverted
 ExplorationFSSCameraPitchDecreaseButton
 ExplorationFSSCameraPitchIncreaseButton
 ExplorationFSSCameraYaw
+ExplorationFSSCameraYaw.Deadzone
+ExplorationFSSCameraYaw.Inverted
 ExplorationFSSCameraYawDecreaseButton
 ExplorationFSSCameraYawIncreaseButton
 ExplorationFSSDiscoveryScan
@@ -254,9 +348,13 @@ ExplorationFSSMiniZoomIn
 ExplorationFSSMiniZoomOut
 ExplorationFSSQuit
 ExplorationFSSRadioTuningAbsoluteX
+ExplorationFSSRadioTuningAbsoluteX.Deadzone
+ExplorationFSSRadioTuningAbsoluteX.Inverted
 ExplorationFSSRadioTuningX_Decrease
 ExplorationFSSRadioTuningX_Increase
 ExplorationFSSRadioTuningX_Raw
+ExplorationFSSRadioTuningX_Raw.Deadzone
+ExplorationFSSRadioTuningX_Raw.Inverted
 ExplorationFSSShowHelp
 ExplorationFSSTarget
 ExplorationFSSZoomIn
@@ -277,6 +375,8 @@ HeadlookIncrement
 HeadlookMode
 HeadlookMotionSensitivity
 HeadLookPitchAxisRaw
+HeadLookPitchAxisRaw.Deadzone
+HeadLookPitchAxisRaw.Inverted
 HeadLookPitchDown
 HeadLookPitchUp
 HeadLookReset
@@ -284,6 +384,8 @@ HeadlookResetOnToggle
 HeadlookSensitivity
 HeadlookSmoothing
 HeadLookYawAxis
+HeadLookYawAxis.Deadzone
+HeadLookYawAxis.Inverted
 HeadLookYawLeft
 HeadLookYawRight
 MouseHeadlook
@@ -304,20 +406,25 @@ IncreaseSystemsPower
 IncreaseWeaponsPower
 LandingGearToggle
 MicrophoneMute
+MicrophoneMute.ToggleOn
 MuteButtonMode
 NightVisionToggle
 RadarDecreaseRange
 RadarIncreaseRange
 RadarRangeAxis
+RadarRangeAxis.Deadzone
+RadarRangeAxis.Inverted
 ResetPowerDistribution
 ShipSpotLightToggle
 ToggleCargoScoop
+ToggleCargoScoop.ToggleOn
 TriggerFieldNeutraliser
 UseShieldCell
 WeaponColourToggle
 
 ## Ship-ModeSwitches
 
+CommsPanelFocusOptions
 EnableCameraLockOn
 ExplorationFSSEnter
 FocusCommsPanel
@@ -328,11 +435,16 @@ FocusRightPanel
 FriendsMenu
 GalaxyMapOpen
 HeadLookToggle
+HeadLookToggle.ToggleOn
+LeftPanelFocusOptions
 OpenCodexGoToDiscovery
 Pause
 PlayerHUDModeToggle
 QuickCommsPanel
+RightPanelFocusOptions
+RolePanelFocusOptions
 ShowPGScoreSummaryInput
+ShowPGScoreSummaryInput.ToggleOn
 SystemMapOpen
 UIFocus
 UIFocusMode
@@ -359,6 +471,8 @@ MultiCrewPrimaryUtilityFire
 MultiCrewSecondaryFire
 MultiCrewSecondaryUtilityFire
 MultiCrewThirdPersonFovAxisRaw
+MultiCrewThirdPersonFovAxisRaw.Deadzone
+MultiCrewThirdPersonFovAxisRaw.Inverted
 MultiCrewThirdPersonFovInButton
 MultiCrewThirdPersonFovOutButton
 MultiCrewThirdPersonMouseSensitivity
@@ -367,9 +481,13 @@ MultiCrewThirdPersonMouseXMode
 MultiCrewThirdPersonMouseYDecay
 MultiCrewThirdPersonMouseYMode
 MultiCrewThirdPersonPitchAxisRaw
+MultiCrewThirdPersonPitchAxisRaw.Deadzone
+MultiCrewThirdPersonPitchAxisRaw.Inverted
 MultiCrewThirdPersonPitchDownButton
 MultiCrewThirdPersonPitchUpButton
 MultiCrewThirdPersonYawAxisRaw
+MultiCrewThirdPersonYawAxisRaw.Deadzone
+MultiCrewThirdPersonYawAxisRaw.Inverted
 MultiCrewThirdPersonYawLeftButton
 MultiCrewThirdPersonYawRightButton
 MultiCrewToggleMode
@@ -403,37 +521,57 @@ SecondaryFire
 ## SRV-DriveThrottle
 
 BuggyThrottleIncrement
+BuggyThrottleRange
 BuggyToggleReverseThrottleInput
+BuggyToggleReverseThrottleInput.ToggleOn
 DecreaseSpeedButtonMax
 DecreaseSpeedButtonPartial
+DecreaseSpeedButtonPartial.Deadzone
+DecreaseSpeedButtonPartial.Inverted
 DriveSpeedAxis
+DriveSpeedAxis.Deadzone
+DriveSpeedAxis.Inverted
 IncreaseSpeedButtonMax
 IncreaseSpeedButtonPartial
+IncreaseSpeedButtonPartial.Deadzone
+IncreaseSpeedButtonPartial.Inverted
 
 ## SRV-Driving
 
 AutoBreakBuggyButton
+AutoBreakBuggyButton.ToggleOn
 BuggyCycleFireGroupNext
 BuggyCycleFireGroupPrevious
 BuggyPitchAxis
+BuggyPitchAxis.Deadzone
+BuggyPitchAxis.Inverted
 BuggyPitchDownButton
 BuggyPitchUpButton
 BuggyPrimaryFireButton
 BuggyRollAxisRaw
+BuggyRollAxisRaw.Deadzone
+BuggyRollAxisRaw.Inverted
 BuggyRollLeftButton
 BuggyRollRightButton
 BuggySecondaryFireButton
 DriveAssistDefault
 HeadlightsBuggyButton
 MouseBuggyRollingXDecay
+MouseBuggyRollingXMode
 MouseBuggySteeringXDecay
+MouseBuggySteeringXMode
 MouseBuggyYDecay
+MouseBuggyYMode
 SteeringAxis
+SteeringAxis.Deadzone
+SteeringAxis.Inverted
 SteerLeftButton
 SteerRightButton
 ToggleBuggyTurretButton
 ToggleDriveAssist
+ToggleDriveAssist.ToggleOn
 VerticalThrustersButton
+VerticalThrustersButton.ToggleOn
 
 ## SRV-DrivingMiscellaneous
 
@@ -445,6 +583,7 @@ IncreaseWeaponsPower_Buggy
 RecallDismissShip
 ResetPowerDistribution_Buggy
 ToggleCargoScoop_Buggy
+ToggleCargoScoop_Buggy.ToggleOn
 
 ## SRV-DrivingModeSwitches
 
@@ -454,6 +593,7 @@ FocusRadarPanel_Buggy
 FocusRightPanel_Buggy
 GalaxyMapOpen_Buggy
 HeadLookToggle_Buggy
+HeadLookToggle_Buggy.ToggleOn
 OpenCodexGoToDiscovery_Buggy
 PlayerHUDModeToggle_Buggy
 QuickCommsPanel_Buggy
@@ -470,9 +610,13 @@ BuggyTurretMouseDeadzone
 BuggyTurretMouseLinearity
 BuggyTurretMouseSensitivity
 BuggyTurretPitchAxisRaw
+BuggyTurretPitchAxisRaw.Deadzone
+BuggyTurretPitchAxisRaw.Inverted
 BuggyTurretPitchDownButton
 BuggyTurretPitchUpButton
 BuggyTurretYawAxisRaw
+BuggyTurretYawAxisRaw.Deadzone
+BuggyTurretYawAxisRaw.Inverted
 BuggyTurretYawLeftButton
 BuggyTurretYawRightButton
 
@@ -487,6 +631,7 @@ HumanoidBattery
 HumanoidClearAuthorityLevel
 HumanoidConflictContextualUIButton
 HumanoidCrouchButton
+HumanoidCrouchButton.ToggleOn
 HumanoidEmoteSlot1
 HumanoidEmoteSlot2
 HumanoidEmoteSlot3
@@ -496,23 +641,33 @@ HumanoidEmoteSlot6
 HumanoidEmoteSlot7
 HumanoidEmoteSlot8
 HumanoidEmoteWheelButton
+HumanoidEmoteWheelButton.ToggleOn
 HumanoidForwardAxis
+HumanoidForwardAxis.Deadzone
+HumanoidForwardAxis.Inverted
 HumanoidForwardButton
 HumanoidHealthPack
 HumanoidHideWeaponButton
 HumanoidItemWheel_AcceptMouseInput
 HumanoidItemWheelButton
 HumanoidItemWheelButton_XAxis
+HumanoidItemWheelButton_XAxis.Deadzone
+HumanoidItemWheelButton_XAxis.Inverted
 HumanoidItemWheelButton_XLeft
 HumanoidItemWheelButton_XRight
 HumanoidItemWheelButton_YAxis
+HumanoidItemWheelButton_YAxis.Deadzone
+HumanoidItemWheelButton_YAxis.Inverted
 HumanoidItemWheelButton_YDown
 HumanoidItemWheelButton_YUp
+HumanoidItemWheelButton.ToggleOn
 HumanoidJumpButton
 HumanoidMeleeButton
 HumanoidOpenAccessPanelButton
 HumanoidPing
 HumanoidPitchAxis
+HumanoidPitchAxis.Deadzone
+HumanoidPitchAxis.Inverted
 HumanoidPitchDownButton
 HumanoidPitchSensitivity
 HumanoidPitchUpButton
@@ -520,6 +675,8 @@ HumanoidPrimaryFireButton
 HumanoidPrimaryInteractButton
 HumanoidReloadButton
 HumanoidRotateAxis
+HumanoidRotateAxis.Deadzone
+HumanoidRotateAxis.Inverted
 HumanoidRotateLeftButton
 HumanoidRotateRightButton
 HumanoidRotateSensitivity
@@ -535,7 +692,10 @@ HumanoidSelectSecondaryWeaponButton
 HumanoidSelectShieldGrenade
 HumanoidSelectUtilityWeaponButton
 HumanoidSprintButton
+HumanoidSprintButton.ToggleOn
 HumanoidStrafeAxis
+HumanoidStrafeAxis.Deadzone
+HumanoidStrafeAxis.Inverted
 HumanoidStrafeLeftButton
 HumanoidStrafeRightButton
 HumanoidSwitchToCompAnalyser
@@ -550,7 +710,9 @@ HumanoidToggleShieldsButton
 HumanoidToggleToolModeButton
 HumanoidUtilityWheelCycleMode
 HumanoidWalkButton
+HumanoidWalkButton.ToggleOn
 HumanoidZoomButton
+HumanoidZoomButton.ToggleOn
 MotionHeadlook
 MouseHumanoidSensitivity
 MouseHumanoidXMode

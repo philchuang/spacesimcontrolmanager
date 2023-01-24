@@ -22,7 +22,84 @@ public class MappingReporter : IMappingReporter<EDMappingData>
         else if (options.Format == ReportingFormat.Markdown) return ReportMarkdown(data, options);
         else throw new ArgumentOutOfRangeException($"Unable to report in format [{options.Format.ToString()}]!");
     }
+    private static string ReportCsv(EDMappingData data, ReportingOptions options)
+    {
+        var sb = new StringBuilder();
 
+        ReportMappings(data, options, sb);
+        ReportSettings(data, options, sb);
+
+        return sb.ToString();
+    }
+
+    private static void ReportMappings(EDMappingData data, ReportingOptions options, StringBuilder sb)
+    {
+        if (!data.Mappings.Any()) return;
+        
+        if (sb.Length > 0)
+        {
+            sb.AppendLine("\n");
+        }
+
+        sb.AppendLine(MAPPING_HEADER);
+
+        foreach (var m in data.Mappings
+            .Where(m => 
+                !options.PreservedOnly || 
+                m.Primary?.Preserve == true || 
+                m.Secondary?.Preserve == true || 
+                m.Settings.Any(s => s.Preserve)))
+        {
+            if (options.HeadersOnly)
+            {
+                sb.AppendLine($"{m.Group},{m.Name},{m.AnyPreserve},,");
+            }
+            else
+            {
+                if (m.Primary != null && (!options.PreservedOnly || m.Primary.Preserve))
+                {
+                    WriteBinding(m.Group, m.Name, nameof(m.Primary), m.Primary, m.Settings, sb);
+                }
+                if (m.Secondary != null && (!options.PreservedOnly || m.Secondary.Preserve))
+                {
+                    WriteBinding(m.Group, m.Name, nameof(m.Secondary), m.Secondary, m.Settings, sb);
+                }
+            }
+        }
+    }
+
+    private static void WriteBinding(string group, string name, string type, EDBinding binding, IList<EDMappingSetting> settings, StringBuilder sb)
+    {
+        sb.AppendLine($"{group},{name},{binding.Preserve},{type},{binding},\"{string.Join(",", settings.Select(s => $"{s.Name}: {s.Value}"))}\"");
+    }
+
+    private static void ReportSettings(EDMappingData data, ReportingOptions options, StringBuilder sb)
+    {
+        if (!data.Settings.Any()) return;
+        
+        if (sb.Length > 0)
+        {
+            sb.AppendLine("\n");
+        }
+
+        sb.AppendLine(SETTING_HEADER);
+        foreach (var s in data.Settings
+            .Where(s => 
+                !options.PreservedOnly || 
+                s.Preserve))
+        {
+            if (options.HeadersOnly)
+            {
+                sb.AppendLine($"{s.Group},{s.Name},{s.Preserve},");
+            }
+            else
+            {
+                sb.AppendLine($"{s.Group},{s.Name},{s.Preserve},{s.Value}");
+            }
+        }
+    }
+
+ 
     private static SortedDictionary<string, SortedDictionary<string, object>> CreateReportingMap(EDMappingData data, ReportingOptions options)
     {
         var allGroupNames = data.Mappings.Select(m => m.Group).Concat(data.Settings.Select(s => s.Group)).Distinct().ToList();
@@ -56,70 +133,7 @@ public class MappingReporter : IMappingReporter<EDMappingData>
         return reportingMap;
     }
 
-    private static string ReportCsv(EDMappingData data, ReportingOptions options)
-    {
-        var sb = new StringBuilder();
-
-        ReportMappings(data, options, sb);
-        ReportSettings(data, options, sb);
-
-        return sb.ToString();
-    }
-
-    private static void ReportMappings(EDMappingData data, ReportingOptions options, StringBuilder sb)
-    {
-        if (!data.Mappings.Any()) return;
-        
-        if (sb.Length > 0)
-        {
-            sb.AppendLine("\n");
-        }
-
-        sb.AppendLine(MAPPING_HEADER);
-
-        foreach (var m in data.Mappings
-            .Where(m => 
-                !options.PreservedOnly || 
-                m.Primary?.Preserve == true || 
-                m.Secondary?.Preserve == true || 
-                m.Settings.Any(s => s.Preserve)))
-        {
-            if (m.Primary != null && (!options.PreservedOnly || m.Primary.Preserve))
-            {
-                WriteBinding(m.Group, m.Name, nameof(m.Primary), m.Primary, m.Settings, sb);
-            }
-            if (m.Secondary != null && (!options.PreservedOnly || m.Secondary.Preserve))
-            {
-                WriteBinding(m.Group, m.Name, nameof(m.Secondary), m.Secondary, m.Settings, sb);
-            }
-        }
-    }
-
-    private static void WriteBinding(string group, string name, string type, EDBinding binding, IList<EDMappingSetting> settings, StringBuilder sb)
-    {
-        sb.AppendLine($"{group},{name},{binding.Preserve},{type},{binding},\"{string.Join(",", settings.Select(s => $"{s.Name}: {s.Value}"))}\"");
-    }
-
-    private static void ReportSettings(EDMappingData data, ReportingOptions options, StringBuilder sb)
-    {
-        if (!data.Settings.Any()) return;
-        
-        if (sb.Length > 0)
-        {
-            sb.AppendLine("\n");
-        }
-
-        sb.AppendLine(SETTING_HEADER);
-        foreach (var s in data.Settings
-            .Where(s => 
-                !options.PreservedOnly || 
-                s.Preserve))
-        {
-            sb.AppendLine($"{s.Group},{s.Name},{s.Preserve},{s.Value}");
-        }
-    }
-
-    private static string ReportMarkdown(EDMappingData data, ReportingOptions options)
+   private static string ReportMarkdown(EDMappingData data, ReportingOptions options)
     {
         var reportingMap = CreateReportingMap(data, options);
 
@@ -147,13 +161,23 @@ public class MappingReporter : IMappingReporter<EDMappingData>
             {
                 if (item.Value is EDMapping m)
                 {
-                    outputBinding(item.Key, nameof(m.Primary), m.Primary);
-                    outputBinding(item.Key, nameof(m.Secondary), m.Secondary);
+                    if (options.HeadersOnly)
+                    {
+                        sb.AppendLine($"{item.Key}{(m.AnyPreserve ? "*" : "")}");
+                    }
+                    else
+                    {
+                        outputBinding(item.Key, nameof(m.Primary), m.Primary);
+                        outputBinding(item.Key, nameof(m.Secondary), m.Secondary);
+                    }
                 }
                 else if (item.Value is EDMappingSetting s)
                 {
                     if (!options.PreservedOnly || s.Preserve)
-                        sb.AppendLine($"{item.Key}{(s.Preserve ? "*" : "")} = {s.Value}");
+                        sb.Append($"{item.Key}{(s.Preserve ? "*" : "")}");
+                    if (!options.HeadersOnly)
+                        sb.Append($" = {s.Value}");
+                    sb.AppendLine();
                 }
             }
 

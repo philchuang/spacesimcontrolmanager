@@ -154,8 +154,7 @@ public class MappingImporter : IMappingImporter<EDMappingData>
         var value = settingElement.GetAttribute("Value");
         if (string.IsNullOrWhiteSpace(value))
         {
-            DebugOutput($"Skipped setting <{name}> because empty value.");
-            return null;
+            DebugOutput($"Setting <{name}> has empty value.");
         }
 
         DebugOutput($"Captured setting [{group}-{name}] = [{value}].");

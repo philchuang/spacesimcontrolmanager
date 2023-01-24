@@ -11,6 +11,8 @@ public enum ReportingFormat
 public class ReportingOptions
 {
     public ReportingFormat Format { get; set; } = ReportingFormat.Csv;
+
+    public bool HeadersOnly { get; set; }
     
     public bool PreservedOnly { get; set; }
 }

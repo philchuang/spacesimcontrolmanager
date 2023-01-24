@@ -109,7 +109,7 @@ public class MappingReporter : IMappingReporter<SCMappingData>
 
         sb.AppendLine("## Input Devices");
         sb.AppendLine();
-        foreach (var input in data.Inputs)
+        foreach (var input in data.Inputs.OrderBy(i => i.Type).ThenBy(i => i.Instance))
         {
             if (options.PreservedOnly && !input.Preserve && input.Settings.All(s => !s.Preserve)) continue;
 
@@ -129,7 +129,7 @@ public class MappingReporter : IMappingReporter<SCMappingData>
             sb.AppendLine($"## {g.Key}");
             sb.AppendLine();
 
-            foreach (var mapping in g)
+            foreach (var mapping in g.OrderBy(m => m.Action))
             {
                 if (options.PreservedOnly && !mapping.Preserve) continue;
                 
