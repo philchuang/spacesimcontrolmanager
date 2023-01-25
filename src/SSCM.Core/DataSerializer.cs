@@ -20,6 +20,7 @@ public class DataSerializer<TData>
 
     public async Task Write(TData data)
     {
+        new FileInfo(this.SavePath).Directory!.Create();
         using (var fs = File.Open(this.SavePath, FileMode.Create))
         using (var sw = new StreamWriter(fs))
         {

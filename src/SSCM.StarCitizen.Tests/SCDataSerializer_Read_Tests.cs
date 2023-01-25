@@ -1,31 +1,23 @@
-﻿using Newtonsoft.Json;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using SSCM.Core;
-using SSCM.StarCitizen;
+using SSCM.Tests;
+using static SSCM.Tests.Extensions;
 
 namespace SSCM.StarCitizen.Tests;
 
 [TestFixture]
-public class DataSerializer_Write_Tests
+public class SCDataSerializer_Read_Tests : DataSerializer_Read_Tests<SCMappingData>
 {
-    private readonly DataSerializer<SCMappingData> _serializer;
-    private SCMappingData? _data;
+    protected override string SourceFilePath => Samples.GetPartialMappingsJsonPath();
 
-    private static string GetTestJsonPath()
+    public SCDataSerializer_Read_Tests()
     {
-        return new System.IO.FileInfo(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), Constants.SSCM_SCMAPPINGS_JSON_NAME)).FullName;
     }
 
-    public DataSerializer_Write_Tests()
-    {
-        _serializer = new DataSerializer<SCMappingData>(GetTestJsonPath()) { Formatting = Formatting.None };
-    }
-
-    [OneTimeSetUp]
-    public async Task Init()
+    protected override SCMappingData CreateDataForRead()
     {
         // matches data from mappings.3.17.4.sample.json
-        this._data = new SCMappingData
+        var expected = new SCMappingData
         {
             ReadTime = DateTime.Parse("2022-12-22T05:42:36.1532351Z").ToUniversalTime(),
             Inputs = new SCInputDevice[] {
@@ -46,18 +38,8 @@ public class DataSerializer_Write_Tests
                 new SCMapping { ActionMap = "spaceship_targeting", Action = "v_target_unlock_selected", Input = "js1_button16", InputType = "joystick", MultiTap = 2, Preserve = true },
             },
         };
-
-        await this._serializer.Write(this._data);
+        return expected;
     }
 
-    [Test]
-    public async Task Write_MatchesSampleJson()
-    {
-        var expectedStrRead = await System.IO.File.ReadAllTextAsync(Samples.GetPartialMappingsJsonPath());
-        var expectedData = JsonConvert.DeserializeObject<SCMappingData>(expectedStrRead);
-        var expectedStrWrite = JsonConvert.SerializeObject(expectedData);
-        var actualStrRead = await System.IO.File.ReadAllTextAsync(GetTestJsonPath());
-
-        Assert.AreEqual(expectedStrWrite, actualStrRead);
-    }
+    protected override void AssertAreEqual(SCMappingData? expected, SCMappingData? actual) => AssertSscm.AreEqual(expected, actual);
 }
