@@ -17,4 +17,9 @@
     <ProjectReference Include="..\SSCM.Elite\SSCM.Elite.csproj" />
     <ProjectReference Include="..\SSCM.Testbase\SSCM.Testbase.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\edmappings_1.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

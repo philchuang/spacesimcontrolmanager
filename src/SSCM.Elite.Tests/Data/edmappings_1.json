@@ -1,0 +1,89 @@
+{
+    "ReadTime": "2022-12-22T05:42:36.1532351Z",
+    "Mappings": [
+        {
+            "Group": "Ship-FlightRotation",
+            "Name": "PitchAxisRaw",
+            "Primary": {
+                "Key": {
+                    "Device": "231D0200",
+                    "Key": "Joy_YAxis"
+                },
+                "Modifiers": [],
+                "Preserve": true
+            },
+            "Secondary": {
+                "Key": {
+                    "Device": "{NoDevice}",
+                    "Key": ""
+                },
+                "Modifiers": [],
+                "Preserve": false
+            },
+            "Settings": [
+                {
+                    "Group": "Ship-FlightRotation-PitchAxisRaw",
+                    "Name": "Deadzone",
+                    "Value": "0.00000000",
+                    "Preserve": true
+                },
+                {
+                    "Group": "Ship-FlightRotation-PitchAxisRaw",
+                    "Name": "Inverted",
+                    "Value": "1",
+                    "Preserve": true
+                }
+            ]
+        },
+        {
+            "Group": "Ship-FlightThrottle",
+            "Name": "BackwardKey",
+            "Primary": {
+                "Key": {
+                    "Device": "Keyboard",
+                    "Key": "Key_S"
+                },
+                "Modifiers": [],
+                "Preserve": true
+            },
+            "Secondary": {
+                "Key": {
+                    "Device": "231D3205",
+                    "Key": "Joy_POV1Down"
+                },
+                "Modifiers": [],
+                "Preserve": true
+            },
+            "Settings": []
+        },
+        {
+            "Group": "Ship-FlightThrottle",
+            "Name": "SetSpeed75",
+            "Primary": {
+                "Key": {
+                    "Device": "{NoDevice}",
+                    "Key": ""
+                },
+                "Modifiers": [],
+                "Preserve": false
+            },
+            "Secondary": {
+                "Key": {
+                    "Device": "231D3205",
+                    "Key": "Joy_POV1Right"
+                },
+                "Modifiers": [],
+                "Preserve": true
+            },
+            "Settings": []
+        }
+    ],
+    "Settings": [
+        {
+            "Group": "Ship-FullSpectrumSystemScanner",
+            "Name": "FSSMouseLinearity",
+            "Value": "1.00000000",
+            "Preserve": true
+        }
+    ]
+}

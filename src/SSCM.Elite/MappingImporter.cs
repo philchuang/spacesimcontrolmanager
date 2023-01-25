@@ -191,6 +191,10 @@ public class MappingImporter : IMappingImporter<EDMappingData>
             ReadMappingChildren(childElement, mapping);
         }
 
+        // sort settings
+        if (mapping.Settings.Any())
+            mapping.Settings = mapping.Settings.OrderBy(s => s.Name).ToList();
+
         // unpreserve settings if no bindings
         if ((mapping.Primary == null || mapping.Primary.IsUnbound) && 
             (mapping.Secondary == null || mapping.Secondary.IsUnbound) && 
