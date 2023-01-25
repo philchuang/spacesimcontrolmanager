@@ -21,7 +21,7 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 
     private void Assert()
     {
-        AssertSscm.AreEqual(this._expected, this._result);
+        AssertSC.AreEqual(this._expected, this._result);
     }
 
     [Test]

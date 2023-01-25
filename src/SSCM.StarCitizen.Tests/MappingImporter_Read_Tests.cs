@@ -66,7 +66,7 @@ public class MappingImporter_Read_Tests
                 new SCInputDeviceSetting { Name = "flight_move_strafe_longitudinal", Parent = "joystick-2- VKBsim Gladiator EVO OT  L SEM   {3205231D-0000-0000-0000-504944564944}", Preserve = true, Properties = new Dictionary<string, string> { { "invert", "1" } } },
             } },
         };
-        Assert2.EnumerableEquals(expected, _data.Inputs, AssertSscm.AreEqual);
+        Assert2.EnumerableEquals(expected, _data.Inputs, AssertSC.AreEqual);
     }
 
     [Test]
@@ -88,6 +88,6 @@ public class MappingImporter_Read_Tests
         var expected = mappings.ToDictionary(m => $"{m.ActionMap}-{m.Action}-{m.InputType}");
         var actual = this._data.Mappings.ToDictionary(m => $"{m.ActionMap}-{m.Action}-{m.InputType}");
 
-        Assert2.DictionaryEquals(expected, actual, true, AssertSscm.AreEqual);
+        Assert2.DictionaryEquals(expected, actual, true, AssertSC.AreEqual);
     }
 }

@@ -4,7 +4,7 @@ using SSCM.Tests;
 
 namespace SSCM.StarCitizen.Tests;
 
-public static class AssertSscm
+public static class AssertSC
 {
     public static void AreEqual(SCMappingData? expected, SCMappingData? actual)
     {

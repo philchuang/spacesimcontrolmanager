@@ -41,5 +41,5 @@ public class SCDataSerializer_Read_Tests : DataSerializer_Read_Tests<SCMappingDa
         return expected;
     }
 
-    protected override void AssertAreEqual(SCMappingData? expected, SCMappingData? actual) => AssertSscm.AreEqual(expected, actual);
+    protected override void AssertAreEqual(SCMappingData? expected, SCMappingData? actual) => AssertSC.AreEqual(expected, actual);
 }

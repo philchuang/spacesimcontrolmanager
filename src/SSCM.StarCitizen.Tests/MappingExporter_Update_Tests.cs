@@ -8,7 +8,6 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
-using static SSCM.StarCitizen.Extensions;
 using static SSCM.Tests.Extensions;
 
 namespace SSCM.StarCitizen.Tests;
