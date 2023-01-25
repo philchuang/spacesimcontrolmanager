@@ -162,7 +162,7 @@ public class MappingImporter : IMappingImporter<EDMappingData>
             Group = group,
             Name = name,
             Value = value,
-            Preserve = true,
+            Preserve = !string.Equals(EDMappingConfig.UNKNOWN_GROUP, group, StringComparison.OrdinalIgnoreCase),
         };
     }
 

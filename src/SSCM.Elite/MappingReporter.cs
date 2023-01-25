@@ -174,10 +174,12 @@ public class MappingReporter : IMappingReporter<EDMappingData>
                 else if (item.Value is EDMappingSetting s)
                 {
                     if (!options.PreservedOnly || s.Preserve)
+                    {
                         sb.Append($"{item.Key}{(s.Preserve ? "*" : "")}");
-                    if (!options.HeadersOnly)
-                        sb.Append($" = {s.Value}");
-                    sb.AppendLine();
+                        if (!options.HeadersOnly)
+                            sb.Append($" = {s.Value}");
+                        sb.AppendLine();
+                    }
                 }
             }
 

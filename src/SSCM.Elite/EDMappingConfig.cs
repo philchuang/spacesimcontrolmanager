@@ -4,6 +4,8 @@ namespace SSCM.Elite;
 
 public class EDMappingConfig
 {
+    public const string UNKNOWN_GROUP = "TBD";
+
     public Dictionary<string, List<string>> GroupMappings { get; set; } = new Dictionary<string, List<string>>();
     public List<string> IgnoreList { get; set; } = new List<string>();
 
@@ -42,7 +44,7 @@ public class EDMappingConfig
     public IList<string> GetGroupsForMapping(string mapping)
     {
         var matches = this.GroupRegexes.Where(t => t.Item1.IsMatch(mapping)).Select(t => t.Item2).Distinct().ToList();
-        return matches.Any() ? matches : new string[] { "TBD" };
+        return matches.Any() ? matches : new string[] { UNKNOWN_GROUP };
     }
 
     public bool IsIgnored(string mapping)
