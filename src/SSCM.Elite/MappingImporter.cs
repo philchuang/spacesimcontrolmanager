@@ -85,7 +85,7 @@ public class MappingImporter : IMappingImporter<EDMappingData>
     {
         foreach (var e in rootElement.Elements())
         {
-            if (this.Config.IgnoreList.Contains(e.Name.LocalName))
+            if (this.Config.IsIgnored(e.Name.LocalName))
             {
                 DebugOutput($"Skipped [{e.Name.LocalName}].");
                 continue;

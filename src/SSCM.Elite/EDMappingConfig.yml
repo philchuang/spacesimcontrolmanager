@@ -20,14 +20,13 @@ GroupMappings:
   - ^ToggleAdvanceMode$
   - ^ToggleRotationLock$
   - ^VanityCamera.+$
-  # Relative Mouse Y-Axis?
 
   General-FreeCamera:
   - ^.*FreeCam.*$
   - ^(Pitch|Yaw)Camera(Mouse)?$
   - ^PitchCamera(Down|Up)$
   - ^(Roll|Yaw)Camera(Left|Right)?$
-  
+
   General-HoloMe:
   - ^CommanderCreator.+$
 
@@ -182,6 +181,7 @@ GroupMappings:
 
   SRV-DrivingTurretControls:
   - ^BuggyTurret.+$
+  - ^MouseTurret(X|Y)(Decay|Mode)$
 
   SRV-DriveThrottle:
   - ^(De|In)creaseSpeedButton(Max|Partial)$
@@ -207,5 +207,48 @@ GroupMappings:
   - ^SystemMapOpen_Buggy$
   - ^UIFocus_Buggy$
 
+  OnFoot-OnFoot:
+  - ^Humanoid(Backward|Forward)Button$
+  - ^Humanoid(Crouch|Jump|Sprint|Walk)Button$
+  - ^Humanoid(Prim|Second)aryInteractButton$
+  - ^HumanoidBattery$
+  - ^HumanoidClearAuthorityLevel$
+  - ^HumanoidEmoteWheelButton$
+  - ^HumanoidForwardAxis$
+  - ^HumanoidHealthPack$
+  - ^HumanoidHideWeaponButton$
+  - ^HumanoidItemWheel.+$
+  - ^HumanoidMeleeButton$
+  - ^HumanoidPitch.+$
+  - ^HumanoidPrimaryFireButton$
+  - ^HumanoidReloadButton$
+  - ^HumanoidRotate.+$
+  - ^HumanoidSelect.+Button$
+  - ^HumanoidSelect.+Grenade$
+  - ^HumanoidStrafe.+$
+  - ^HumanoidSwitch.+$
+  - ^HumanoidThrowGrenadeButton$
+  - ^HumanoidToggle.+Button$
+  - ^HumanoidUtilityWheelCycleMode$
+  - ^HumanoidZoomButton$
+  - ^MouseHumanoid.+$
+
+  OnFoot-OnFootModeSwitches:
+  - ^.*(?<!PhotoCameraToggle)_Humanoid$
+  - ^HumanoidOpenAccessPanelButton$
+  - ^HumanoidConflictContextualUIButton$
+  
+  OnFoot-OnFootMiscellaneous:
+  - ^EnableMenuGroupsOnFoot$
+
+  OnFoot-OnFootEmotes:
+  - ^HumanoidEmoteSlot\d$
+
+  Unknown:
+  - ^EnableRumbleTrigger$
+  - ^HumanoidPing$
+  - ^MotionHeadlook$
+  - ^yawRotateHeadlook$
+
 IgnoreList:
-- KeyboardLayout
+- ^KeyboardLayout$

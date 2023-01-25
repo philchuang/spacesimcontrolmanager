@@ -7,15 +7,19 @@ public class EDMappingConfig
     public Dictionary<string, List<string>> GroupMappings { get; set; } = new Dictionary<string, List<string>>();
     public List<string> IgnoreList { get; set; } = new List<string>();
 
-    private readonly Lazy<IList<Tuple<Regex, string>>> _lazyRegexes;
-    private IList<Tuple<Regex, string>> Regexes => this._lazyRegexes.Value;
+    private readonly Lazy<IList<Tuple<Regex, string>>> _lazyGroupRegexes;
+    private IList<Tuple<Regex, string>> GroupRegexes => this._lazyGroupRegexes.Value;
+
+    private readonly Lazy<IList<Regex>> _lazyIgnoreRegexes;
+    private IList<Regex> IgnoreRegexes => this._lazyIgnoreRegexes.Value;
 
     public EDMappingConfig()
     {
-        this._lazyRegexes = new Lazy<IList<Tuple<Regex, string>>>(() => this.SetupRegexes().ToList());
+        this._lazyGroupRegexes = new Lazy<IList<Tuple<Regex, string>>>(() => this.SetupGroupRegexes().ToList());
+        this._lazyIgnoreRegexes = new Lazy<IList<Regex>>(() => this.SetupIgnoreRegexes().ToList());
     }
 
-    private IEnumerable<Tuple<Regex, string>> SetupRegexes()
+    private IEnumerable<Tuple<Regex, string>> SetupGroupRegexes()
     {
         foreach (var kvp in this.GroupMappings)
         {
@@ -27,10 +31,23 @@ public class EDMappingConfig
         }
     }
 
+    private IEnumerable<Regex> SetupIgnoreRegexes()
+    {
+        foreach (var s in this.IgnoreList)
+        {
+            yield return new Regex(s);
+        }
+    }
+
     public IList<string> GetGroupsForMapping(string mapping)
     {
-        var matches = this.Regexes.Where(t => t.Item1.IsMatch(mapping)).Select(t => t.Item2).Distinct().ToList();
+        var matches = this.GroupRegexes.Where(t => t.Item1.IsMatch(mapping)).Select(t => t.Item2).Distinct().ToList();
         return matches.Any() ? matches : new string[] { "TBD" };
+    }
+
+    public bool IsIgnored(string mapping)
+    {
+        return this.IgnoreRegexes.Any(r => r.IsMatch(mapping));
     }
 
     public static EDMappingConfig Load(string path)
