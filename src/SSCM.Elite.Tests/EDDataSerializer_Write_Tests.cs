@@ -16,7 +16,7 @@ public class EDDataSerializer_Write_Tests : DataSerializer_Write_Tests<EDMapping
     {
     }
 
-    protected override EDMappingData CreateDataForWrite()
+    internal static EDMappingData CreateTestData()
     {
         return new EDMappingData
         {
@@ -39,10 +39,9 @@ public class EDDataSerializer_Write_Tests : DataSerializer_Write_Tests<EDMapping
         };
     }
 
-    protected override Task<string> GetExpectedJson() => File.ReadAllTextAsync(Path.Combine(Directory.GetCurrentDirectory(), "Data", "edmappings_1.json"));
+    protected override EDMappingData CreateDataForWrite() => CreateTestData();
 
-    [OneTimeSetUp]
-    protected override Task Init() => base.Init();
+    protected override Task<string> GetExpectedJson() => File.ReadAllTextAsync(Path.Combine(Directory.GetCurrentDirectory(), "Data", "edmappings_1.json"));
 
     [Test]
     public override Task Write_MatchesSampleJson() => base.Write_MatchesSampleJson();

@@ -22,7 +22,7 @@ public abstract class DataSerializer_Write_Tests<TData>
     protected abstract Task<string> GetExpectedJson();
 
     [OneTimeSetUp]
-    protected virtual async Task Init()
+    public virtual async Task Init()
     {
         this._data = this.CreateDataForWrite();
 

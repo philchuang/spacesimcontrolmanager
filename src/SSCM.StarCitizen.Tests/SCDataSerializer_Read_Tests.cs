@@ -42,4 +42,14 @@ public class SCDataSerializer_Read_Tests : DataSerializer_Read_Tests<SCMappingDa
     }
 
     protected override void AssertAreEqual(SCMappingData? expected, SCMappingData? actual) => AssertSC.AreEqual(expected, actual);
+
+    [Test]
+    public override Task Read_MatchesSampleData() => base.Read_MatchesSampleData();
+
+    [Test]
+    public override Task Handles_Malformed_MappingsFile() => base.Handles_Malformed_MappingsFile();
+
+
+    [Test]
+    public override Task Handles_NotFound_MappingsFile() => base.Handles_NotFound_MappingsFile();
 }

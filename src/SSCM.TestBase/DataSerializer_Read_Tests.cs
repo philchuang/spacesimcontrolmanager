@@ -19,7 +19,7 @@ public abstract class DataSerializer_Read_Tests<TData>
     }
 
     [SetUp]
-    public void Init()
+    public virtual void Init()
     {
         System.IO.Directory.CreateDirectory(new FileInfo(this.TestDataPath).DirectoryName);
         System.IO.File.Copy(this.SourceFilePath, this.TestDataPath, true);
@@ -27,7 +27,7 @@ public abstract class DataSerializer_Read_Tests<TData>
     }
 
     [TearDown]
-    protected void Cleanup()
+    public virtual void Cleanup()
     {
         System.IO.Directory.Delete(new FileInfo(this.TestDataPath).DirectoryName, true);
     }
@@ -36,8 +36,7 @@ public abstract class DataSerializer_Read_Tests<TData>
 
     protected abstract void AssertAreEqual(TData? expected, TData? actual);
 
-    [Test]
-    public async Task Read_MatchesSampleData()
+    public virtual async Task Read_MatchesSampleData()
     {
         // matches data from mappings.3.17.4.sample.json
         var expected = this.CreateDataForRead();
@@ -46,8 +45,7 @@ public abstract class DataSerializer_Read_Tests<TData>
         AssertAreEqual(expected, actual);
     }
 
-    [Test]
-    public async Task Handles_Malformed_MappingsFile()
+    public virtual async Task Handles_Malformed_MappingsFile()
     {
         // Arrange
         await System.IO.File.WriteAllTextAsync(this.TestDataPath, RandomString());
@@ -57,8 +55,7 @@ public abstract class DataSerializer_Read_Tests<TData>
         Assert.IsTrue(ex.Message.StartsWith("Could not read SSCM mapping data file at"));
     }
 
-    [Test]
-    public async Task Handles_NotFound_MappingsFile()
+    public virtual async Task Handles_NotFound_MappingsFile()
     {
         // Arrange
         System.IO.File.Delete(this.TestDataPath);

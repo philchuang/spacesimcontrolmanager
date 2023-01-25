@@ -39,9 +39,6 @@ public class SCDataSerializer_Write_Tests : DataSerializer_Write_Tests<SCMapping
 
     protected override Task<string> GetExpectedJson() => System.IO.File.ReadAllTextAsync(Samples.GetPartialMappingsJsonPath());
 
-    [OneTimeSetUp]
-    protected override Task Init() => base.Init();
-
     [Test]
     public override Task Write_MatchesSampleJson() => base.Write_MatchesSampleJson();
 }
