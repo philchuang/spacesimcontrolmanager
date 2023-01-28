@@ -31,9 +31,10 @@ public class MappingExporter : IMappingExporter<EDMappingData>
         }
 
         // make backup
-        var backup = Path.Combine(this._folders.EliteDataDir, $"{Path.GetFileName(this.GameConfigPath)}.{this._platform.UtcNow.ToLocalTime().ToString("yyyyMMddHHmmss")}.bak");
-        File.Copy(this.GameConfigPath, backup);
-        return backup;
+        Directory.CreateDirectory(this._folders.EliteDataDir);
+        var backupPath = Path.Combine(this._folders.EliteDataDir, $"{Path.GetFileName(this.GameConfigPath)}.{this._platform.UtcNow.ToLocalTime().ToString("yyyyMMddHHmmss")}.bak");
+        File.Copy(this.GameConfigPath, backupPath);
+        return backupPath;
     }
 
     public string RestoreLatest()

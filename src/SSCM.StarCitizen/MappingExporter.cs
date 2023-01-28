@@ -28,21 +28,22 @@ public class MappingExporter : IMappingExporter<SCMappingData>
 
     public string Backup()
     {
-        if (!System.IO.File.Exists(this.GameConfigPath))
+        if (!File.Exists(this.GameConfigPath))
         {
             throw new FileNotFoundException($"Could not find the Star Citizen mappings file at [{this.GameConfigPath}]!");
         }
 
         // make backup of actionmaps.xml
-        var actionmapsxmlBackup = System.IO.Path.Combine(this._folders.ScDataDir, $"actionmaps.xml.{this._platform.UtcNow.ToLocalTime().ToString("yyyyMMddHHmmss")}.bak");
-        System.IO.File.Copy(this.GameConfigPath, actionmapsxmlBackup);
-        return actionmapsxmlBackup;
+        Directory.CreateDirectory(this._folders.ScDataDir);
+        var backupPath = Path.Combine(this._folders.ScDataDir, $"actionmaps.xml.{this._platform.UtcNow.ToLocalTime().ToString("yyyyMMddHHmmss")}.bak");
+        File.Copy(this.GameConfigPath, backupPath);
+        return backupPath;
     }
 
     public string RestoreLatest()
     {
         // find all files matching pattern, sort ordinally
-        var backups = System.IO.Directory.GetFiles(this._folders.ScDataDir, "actionmaps.xml.*.bak");
+        var backups = Directory.GetFiles(this._folders.ScDataDir, "actionmaps.xml.*.bak");
         var latest = backups.OrderBy(s => s).LastOrDefault();
         if (latest == null)
         {
@@ -50,7 +51,7 @@ public class MappingExporter : IMappingExporter<SCMappingData>
         }
 
         // copy latest file to actionmaps.xml
-        System.IO.File.Copy(latest, this.GameConfigPath, true);
+        File.Copy(latest, this.GameConfigPath, true);
 
         return latest;
     }

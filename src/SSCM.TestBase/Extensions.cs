@@ -1,4 +1,6 @@
 using System.Text;
+using System.Xml;
+using System.Xml.Linq;
 using Newtonsoft.Json;
 
 namespace SSCM.Tests;
@@ -26,5 +28,16 @@ public static class Extensions
             sb.Append(ALPHANUMERIC[_rnd.Next(ALPHANUMERIC.Length)]);
         }
         return sb.ToString();
+    }
+
+    public static async Task WriteToAsync(this XDocument self, string path)
+    {
+        System.IO.Directory.CreateDirectory(new FileInfo(path).DirectoryName);
+        using (var fs = new FileStream(path, FileMode.Create))
+        using (var xw = XmlWriter.Create(fs, new XmlWriterSettings { Async = true, Indent = true }))
+        {
+            var ct = new CancellationToken();
+            await self.WriteToAsync(xw, ct);
+        }
     }
 }
