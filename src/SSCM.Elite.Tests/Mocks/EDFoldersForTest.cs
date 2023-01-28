@@ -1,17 +1,12 @@
-using SSCM.Elite;
-
-namespace SSCM.StarCitizen.Tests.Mocks;
+namespace SSCM.Elite.Tests.Mocks;
 
 public class EDFoldersForTest : IEDFolders
 {
-    public string GameConfigDir { get; private set; }
-    public string GameConfigPath { get; private set; }
-    public string EliteDataDir { get; private set; }
+    public string GameConfigDir { get; set; } = string.Empty;
+    public string GameConfigPath { get; set; } = string.Empty;
+    public string EliteDataDir { get; set; } = string.Empty;
 
-    public EDFoldersForTest(string? gameConfigDir = null, string? gameConfigPath = null, string? eliteDataDir = null)
+    public EDFoldersForTest()
     {
-        this.GameConfigDir = gameConfigDir ?? string.Empty;
-        this.GameConfigPath = gameConfigPath ?? string.Empty;
-        this.EliteDataDir = eliteDataDir ?? string.Empty;
     }
 }

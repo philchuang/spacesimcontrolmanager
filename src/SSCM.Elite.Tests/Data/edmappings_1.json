@@ -4,7 +4,7 @@
         {
             "Group": "Ship-FlightRotation",
             "Name": "PitchAxisRaw",
-            "Primary": {
+            "Binding": {
                 "Key": {
                     "Device": "231D0200",
                     "Key": "Joy_YAxis"
@@ -12,20 +12,14 @@
                 "Modifiers": [],
                 "Preserve": true
             },
-            "Secondary": {
-                "Key": {
-                    "Device": "{NoDevice}",
-                    "Key": ""
-                },
-                "Modifiers": [],
-                "Preserve": false
-            },
+            "Primary": null,
+            "Secondary": null,
             "Settings": [
                 {
                     "Group": "Ship-FlightRotation-PitchAxisRaw",
                     "Name": "Deadzone",
                     "Value": "0.00000000",
-                    "Preserve": true
+                    "Preserve": false
                 },
                 {
                     "Group": "Ship-FlightRotation-PitchAxisRaw",
@@ -38,6 +32,7 @@
         {
             "Group": "Ship-FlightThrottle",
             "Name": "BackwardKey",
+            "Binding": null,
             "Primary": {
                 "Key": {
                     "Device": "Keyboard",
@@ -59,6 +54,7 @@
         {
             "Group": "Ship-FlightThrottle",
             "Name": "SetSpeed75",
+            "Binding": null,
             "Primary": {
                 "Key": {
                     "Device": "{NoDevice}",

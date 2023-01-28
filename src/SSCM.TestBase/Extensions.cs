@@ -10,7 +10,7 @@ public static class Extensions
         if (self == null) throw new ArgumentNullException(nameof(self));
         var json = JsonConvert.SerializeObject(self);
         var clone = JsonConvert.DeserializeObject<T>(json);
-        return clone;
+        return clone!;
     }
 
     private static Random _rnd = new Random();

@@ -31,7 +31,7 @@ public class MappingImporter : IMappingImporter<EDMappingData>
     {
         if (!System.IO.File.Exists(this.GameConfigPath))
         {
-            throw new FileNotFoundException($"Could not find the Star Citizen mappings file at [{this.GameConfigPath}]!");
+            throw new FileNotFoundException($"Could not find the Elite: Dangerous mappings file at [{this.GameConfigPath}]!");
         }
 
         this._data = new EDMappingData { ReadTime = this._platform.UtcNow };
@@ -191,18 +191,30 @@ public class MappingImporter : IMappingImporter<EDMappingData>
             ReadMappingChildren(childElement, mapping);
         }
 
-        // sort settings
         if (mapping.Settings.Any())
+        {
+            // sort settings
             mapping.Settings = mapping.Settings.OrderBy(s => s.Name).ToList();
 
-        // unpreserve settings if no bindings
-        if ((mapping.Primary == null || mapping.Primary.IsUnbound) && 
-            (mapping.Secondary == null || mapping.Secondary.IsUnbound) && 
-            mapping.Settings.Any())
-        {
+            var nobindings = 
+                (mapping.Binding == null || mapping.Binding.IsUnbound) && 
+                (mapping.Primary == null || mapping.Primary.IsUnbound) && 
+                (mapping.Secondary == null || mapping.Secondary.IsUnbound);
+
             foreach (var s in mapping.Settings)
             {
-                s.Preserve = false;
+                // unpreserve settings if no bindings
+                if (nobindings)
+                {
+                    s.Preserve = false;
+                }
+                // unpreserve default settings
+                else if (
+                    (string.Equals("Deadzone", s.Name, StringComparison.OrdinalIgnoreCase) && decimal.TryParse(s.Value, out var d) && d == 0) ||
+                    (string.Equals("Inverted", s.Name, StringComparison.OrdinalIgnoreCase) && "0".Equals(s.Value)))
+                {
+                    s.Preserve = false;
+                }
             }
         }
 
@@ -214,22 +226,19 @@ public class MappingImporter : IMappingImporter<EDMappingData>
         var elementName = childElement.Name.LocalName;
 
         if (string.Equals("Binding", elementName, StringComparison.OrdinalIgnoreCase) || 
-            string.Equals("Primary", elementName, StringComparison.OrdinalIgnoreCase))
+            string.Equals("Primary", elementName, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals("Secondary", elementName, StringComparison.OrdinalIgnoreCase))
         {
-            mapping.Primary = ReadBindingElement(childElement, $"{mapping.Name}-{elementName}");
-            if (mapping.Primary != null)
+            var binding = ReadBindingElement(childElement, $"{mapping.Name}-{elementName}");
+            if (binding != null)
             {
-                DebugOutput($"Captured Primary binding [{mapping.Primary.Key.Id}].");
-            }
-            return;
-        }
-
-        if (string.Equals("Secondary", elementName, StringComparison.OrdinalIgnoreCase))
-        {
-            mapping.Secondary = ReadBindingElement(childElement, $"{mapping.Name}-{elementName}");
-            if (mapping.Secondary != null)
-            {
-                DebugOutput($"Captured Secondary binding [{mapping.Secondary.Key.Id}].");
+                switch (elementName)
+                {
+                    case "Binding": mapping.Binding = binding; break;
+                    case "Primary": mapping.Primary = binding; break;
+                    case "Secondary": mapping.Secondary = binding; break;
+                };
+                DebugOutput($"Captured {elementName} binding [{binding}].");
             }
             return;
         }

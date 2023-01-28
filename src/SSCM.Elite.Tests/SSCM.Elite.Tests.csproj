@@ -18,7 +18,16 @@
     <ProjectReference Include="..\SSCM.Testbase\SSCM.Testbase.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Data\edmappings_0.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Data\edmappings_1.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\custom40binds_0.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\custom40binds_1.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

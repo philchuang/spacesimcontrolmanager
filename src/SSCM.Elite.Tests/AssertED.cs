@@ -52,6 +52,7 @@ public static class AssertED
 
         Assert.AreEqual(expected.Group, actual.Group, nameof(expected.Group));
         Assert.AreEqual(expected.Name, actual.Name, nameof(expected.Name));
+        AreEqual(expected.Binding, actual.Binding);
         AreEqual(expected.Primary, actual.Primary);
         AreEqual(expected.Secondary, actual.Secondary);
         Assert2.EnumerableEquals(expected.Settings, actual.Settings, AreEqual);

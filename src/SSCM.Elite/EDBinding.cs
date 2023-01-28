@@ -2,7 +2,7 @@ namespace SSCM.Elite;
 
 public class EDBinding
 {
-    public static EDBinding EMPTY() => new EDBinding {
+    public static EDBinding UNBOUND() => new EDBinding {
         Key = new EDBindingKey("{NoDevice}", ""),
         Preserve = false,
     };
@@ -16,6 +16,13 @@ public class EDBinding
 
     public EDBinding()
     {
+    }
+
+    public EDBinding(string device, string key, IList<EDBindingKey>? modifiers = null, bool preserve = true)
+    {
+        this.Key = new EDBindingKey(device, key);
+        this.Modifiers = modifiers ?? this.Modifiers;
+        this.Preserve = preserve;
     }
 
     public EDBinding(EDBindingKey key, IList<EDBindingKey>? modifiers = null, bool preserve = true)

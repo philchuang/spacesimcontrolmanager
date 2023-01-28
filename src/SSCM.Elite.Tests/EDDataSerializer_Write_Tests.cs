@@ -23,15 +23,15 @@ public class EDDataSerializer_Write_Tests : DataSerializer_Write_Tests<EDMapping
             ReadTime = DateTime.Parse("2022-12-22T05:42:36.1532351Z").ToUniversalTime(),
             Mappings = {
                 // primary + settings
-                new EDMapping { Group = "Ship-FlightRotation", Name = "PitchAxisRaw", Primary = new EDBinding(new EDBindingKey(JOY1, "Joy_YAxis")), Settings = { 
-                    new EDMappingSetting("Ship-FlightRotation-PitchAxisRaw", "Deadzone", "0.00000000"),
-                    new EDMappingSetting("Ship-FlightRotation-PitchAxisRaw", "Inverted", "1"),
+                new EDMapping { Group = "Ship-FlightRotation", Name = "PitchAxisRaw", Binding = new EDBinding(JOY1, "Joy_YAxis", preserve: true), Settings = { 
+                    new EDMappingSetting("Ship-FlightRotation-PitchAxisRaw", "Deadzone", "0.00000000", false),
+                    new EDMappingSetting("Ship-FlightRotation-PitchAxisRaw", "Inverted", "1", true),
                     }
                 },
                 // primary + secondary
-                new EDMapping { Group = "Ship-FlightThrottle", Name = "BackwardKey", Primary = new EDBinding(new EDBindingKey(KB, "Key_S")), Secondary = new EDBinding(new EDBindingKey(JOY2, "Joy_POV1Down")) },
+                new EDMapping { Group = "Ship-FlightThrottle", Name = "BackwardKey", Primary = new EDBinding(KB, "Key_S", preserve: true), Secondary = new EDBinding(new EDBindingKey(JOY2, "Joy_POV1Down")) },
                 // secondary
-                new EDMapping { Group = "Ship-FlightThrottle", Name = "SetSpeed75", Secondary = new EDBinding(new EDBindingKey(JOY2, "Joy_POV1Right")) },
+                new EDMapping { Group = "Ship-FlightThrottle", Name = "SetSpeed75", Primary = EDBinding.UNBOUND(), Secondary = new EDBinding(JOY2, "Joy_POV1Right", preserve: true) },
             },
             Settings = {
                 new EDMappingSetting { Group = "Ship-FullSpectrumSystemScanner", Name = "FSSMouseLinearity", Value = "1.00000000", Preserve = true }
