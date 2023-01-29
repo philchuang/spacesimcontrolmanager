@@ -103,7 +103,11 @@ public class MappingExporter_Update_Tests : TestBase
             Mappings = {
                 new EDMapping("Ship-Cooling", "ToggleButtonUpInput") {
                     Primary = new EDBinding("Keyboard", "Key_V"), 
-                    Secondary = new EDBinding("231D3205", "Joy_15", new[] { new EDBindingKey("231D3205", "Joy_1"), new EDBindingKey("231D3205", "Joy_2") }) },
+                    Secondary = new EDBinding("231D3205", "Joy_15", new[] { new EDBindingKey("231D3205", "Joy_1"), new EDBindingKey("231D3205", "Joy_2") }),
+                    Settings = {
+                        new EDMappingSetting("Ship-Cooling-ToggleButtonUpInput", "ToggleOn", "1"),
+                    }
+                },
                 new EDMapping("Ship-Weapons", "CycleFireGroupPrevious") { 
                     Primary = EDBinding.UNBOUND(), 
                     Secondary = new EDBinding("231D0200", "Joy_22") },
@@ -202,7 +206,33 @@ public class MappingExporter_Update_Tests : TestBase
         Assert.AreEqual(mapping.Secondary.ToString(), GetBindingValue(overwrittenSecondaryBindingElement));
     }
 
-    // TODO test complete mapping created from scratch
+    [Test]
+    public async Task Update_creates_mapping()
+    {
+        // Arrange
+        // use default mapping data
+        this.Arrange_Default_MappingData(false);
+        // choose a mapping to preserve
+        var mapping = this._source.Mappings.Single(m => m.Id == "Ship-Cooling-ToggleButtonUpInput");
+        mapping.Primary.Preserve = true;
+        mapping.Secondary.Preserve = true;
+        mapping.Settings[0].Preserve = true;
+        // completely remove the mapping from the xml
+        var element = GetElementForMapping(this._inputXml, mapping);
+        element.Remove();
+
+        // Act
+        var changed = await this.Act();
+
+        // Assert
+        Assert.IsTrue(changed, nameof(changed));
+        this.AssertBasics();
+
+        var createdMappingElement = GetElementForMapping(this._outputXml, mapping);
+        Assert.NotNull(createdMappingElement, nameof(createdMappingElement));
+        AssertED.AreEqual(createdMappingElement, mapping);
+    }
+    
     // TODO test ignore mapping change (not preserved)
     // TODO test overwriting setting
     // TODO test creating setting

@@ -92,7 +92,9 @@ public class MappingExporter : IMappingExporter<EDMappingData>
         var changed = false;
         foreach (var m in mappings.Where(m => m.AnyPreserve))
         {
-            changed |= ApplyMapping(m);
+            var result = ApplyMapping(m);
+            if (result) this.StandardOutput($"Updated mapping [{m.Name}].");
+            changed |= result;
         }
         return changed;
     }
@@ -108,7 +110,8 @@ public class MappingExporter : IMappingExporter<EDMappingData>
 
         foreach (var s in mapping.Settings.Where(s => s.Preserve))
         {
-            changed |= ApplySetting(xe.GetOrCreate(s.Name), s);
+            var result = ApplySetting(xe.GetOrCreate(s.Name), s);
+            if (result) this.StandardOutput($"Updated {s.Id} to {s.Value}.");
         }
         return changed;
     }
@@ -159,7 +162,7 @@ public class MappingExporter : IMappingExporter<EDMappingData>
         {
             return false;
         }
-
+        
         settingElement.SetAttributeValue("Value", setting.Value);
         return true;
     }
@@ -170,7 +173,9 @@ public class MappingExporter : IMappingExporter<EDMappingData>
         foreach (var s in settings.Where(s => s.Preserve))
         {
             var xe = this._xml.GetOrCreateMapping(s.Name);
-            changed |= ApplySetting(xe, s);
+            var result = ApplySetting(xe, s);
+            if (result) this.StandardOutput($"Updated {s.Id} to {s.Value}.");
+            changed |= result;
         }
         return changed;
    }

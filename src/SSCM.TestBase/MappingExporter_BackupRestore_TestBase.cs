@@ -48,7 +48,6 @@ public abstract class MappingExporter_BackupRestore_TestBase<TData> : TestBase
         Assert.True(File.Exists(actual));
     }
 
-
     public virtual async Task RestoreLatest_Overwrites_GameConfig()
     {
         await this.CreateDummyGameConfig();
@@ -84,4 +83,6 @@ public abstract class MappingExporter_BackupRestore_TestBase<TData> : TestBase
 
         Assert.AreEqual(lastContents, await File.ReadAllTextAsync(lastBackupPath));
     }
+
+    // TODO test gameconfig doesn't exist
 }

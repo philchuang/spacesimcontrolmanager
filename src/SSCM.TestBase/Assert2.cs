@@ -44,7 +44,7 @@ public static class Assert2
         }
     }
 
-    public static void DictionaryEquals<K,V>(IDictionary<K, V> expected, IDictionary<K, V> actual, bool expectedOnly = false, Action<V, V>? equate = null)
+    public static void DictionaryEquals<K,V1,V2>(IDictionary<K, V1> expected, IDictionary<K, V2> actual, bool expectedOnly = false, Action<V1, V2>? assert = null)
     {
         if (expected == null && actual == null) return;
 
@@ -55,7 +55,7 @@ public static class Assert2
         if (expected == null) return;
         if (actual == null) return;
 
-        equate = equate ?? ((e, a) => Assert.AreEqual(e, a));
+        assert = assert ?? ((e, a) => Assert.AreEqual(e, a));
 
         HashSet<K> actualKeys = new HashSet<K> (actual.Keys);
         K lastKey;
@@ -69,7 +69,7 @@ public static class Assert2
                 // silly unreachable code to get rid of warnings
                 if (aValue == null) continue;
 
-                equate(kvp.Value, aValue);
+                assert(kvp.Value, aValue);
                 actualKeys.Remove(kvp.Key);
             }
             catch (AssertionException ae)

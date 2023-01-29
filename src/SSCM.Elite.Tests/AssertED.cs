@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using NUnit.Framework;
 using SSCM.Core;
 using SSCM.Tests;
@@ -87,5 +88,88 @@ public static class AssertED
 
         Assert.AreEqual(expected.Device, actual.Device, nameof(expected.Device));
         Assert.AreEqual(expected.Key, actual.Key, nameof(expected.Key));
+    }
+
+    public static void AreEqual(XElement? mappingElement, EDMapping? mapping)
+    {
+        if (mappingElement == null && mapping == null) return;
+
+        Assert.NotNull(mappingElement, nameof(mappingElement));
+        Assert.NotNull(mapping, nameof(mapping));
+        
+        var elements = mappingElement!.Elements().ToList();
+
+        if (mapping!.Binding != null)
+        {
+            var bindingElement = elements.SingleOrDefault(e => string.Equals(nameof(mapping.Binding), e.Name.LocalName));
+            Assert.NotNull(bindingElement, nameof(bindingElement));
+            AreEqual(bindingElement, mapping.Binding);
+            elements.Remove(bindingElement!);
+        }
+        else
+        {
+            var primaryElement = elements.SingleOrDefault(e => string.Equals(nameof(mapping.Primary), e.Name.LocalName));
+            Assert.NotNull(primaryElement, nameof(primaryElement));
+            AreEqual(primaryElement, mapping.Primary);
+            elements.Remove(primaryElement!);
+            
+            var secondaryElement = elements.SingleOrDefault(e => string.Equals(nameof(mapping.Secondary), e.Name.LocalName));
+            Assert.NotNull(secondaryElement, nameof(secondaryElement));
+            AreEqual(secondaryElement, mapping.Secondary);
+            elements.Remove(secondaryElement!);
+        }
+
+        if (elements.Count == 0 && mapping.Settings.Count == 0) return;
+
+        Assert.AreEqual(mapping.Settings.Count, elements.Count);
+
+        var settingElementsMap = elements.ToDictionary(e => e.Name.LocalName);
+        var settingsMap = mapping.Settings.ToDictionary(s => s.Name);
+
+        Assert2.DictionaryEquals(settingElementsMap, settingsMap, false, (e, s) => AreEqual(e, s));
+    }
+
+    public static void AreEqual(XElement? bindingElement, EDBinding? binding)
+    {
+        if (bindingElement == null && binding == null) return;
+
+        Assert.NotNull(bindingElement, nameof(bindingElement));
+        Assert.NotNull(binding, nameof(binding));
+
+        AreEqual(bindingElement, binding!.Key);
+
+        var modifierElements = bindingElement!.Elements().Where(e => string.Equals("Modifier", e.Name.LocalName)).ToList();
+        Assert.AreEqual(modifierElements.Count, binding.Modifiers.Count);
+
+        for (var i = 0; i < modifierElements.Count; i++)
+        {
+            AreEqual(modifierElements[i], binding.Modifiers[i]);
+        }
+    }
+
+    public static void AreEqual(XElement? bindingElement, EDBindingKey bindingKey)
+    {
+        if (bindingElement == null && bindingKey == null) return;
+
+        Assert.NotNull(bindingElement, nameof(bindingElement));
+        Assert.NotNull(bindingKey, nameof(bindingKey));
+
+        var device = bindingElement!.GetAttribute("Device");
+        var key = bindingElement!.GetAttribute("Key");
+
+        Assert.AreEqual(bindingKey.Device, device);
+        Assert.AreEqual(bindingKey.Key, key);
+    }
+
+    public static void AreEqual(XElement? settingElement, EDMappingSetting setting)
+    {
+        if (settingElement == null && setting == null) return;
+
+        Assert.NotNull(settingElement, nameof(settingElement));
+        Assert.NotNull(setting, nameof(setting));
+
+        var value = settingElement.GetAttribute("Value");
+
+        Assert.AreEqual(setting.Value, value);
     }
 }
