@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSCM.Elite", "SSCM.Elite\SS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSCM.Elite.Tests", "SSCM.Elite.Tests\SSCM.Elite.Tests.csproj", "{9A4B2265-8CB4-4532-A9AE-4A83C153FED1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSCM.TestBase", "SSCM.TestBase\SSCM.TestBase.csproj", "{C3F0F7B4-BB47-4459-AA91-77FAB6AB4692}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,9 @@ Global
 		{CDD2F6EE-5582-4BE2-ADF1-5A7FC9F03343}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CDD2F6EE-5582-4BE2-ADF1-5A7FC9F03343}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CDD2F6EE-5582-4BE2-ADF1-5A7FC9F03343}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C3F0F7B4-BB47-4459-AA91-77FAB6AB4692}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3F0F7B4-BB47-4459-AA91-77FAB6AB4692}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C3F0F7B4-BB47-4459-AA91-77FAB6AB4692}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3F0F7B4-BB47-4459-AA91-77FAB6AB4692}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
