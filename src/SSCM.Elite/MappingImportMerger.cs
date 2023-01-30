@@ -31,7 +31,68 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
 
     public EDMappingData Merge(EDMappingData current, EDMappingData updated)
     {
-        throw new NotImplementedException();
+        this.CalculateDiffs(current, updated);
+
+        if (!this.Result.CanMerge) return current;
+
+        foreach (var action in this.Result.MergeActions)
+        {
+            if (action.Value is EDMapping mapping)
+            { // whole mapping added/removed
+                if (action.Mode == MappingMergeActionMode.Add)
+                {
+                    current.Mappings.Add(mapping);
+                }
+                else if (action.Mode == MappingMergeActionMode.Remove)
+                {
+                    var toRemove = current.Mappings.Single(m => m.Name == mapping.Name);
+                    current.Mappings.Remove(toRemove);
+                }
+            }
+            else if (action.Value is EDMappingSetting setting)
+            { // mapping setting or setting added/removed/changed
+                var split = setting.Group.Split(".");
+                var list = split.Length switch {
+                    2 => current.Mappings.Single(m => m.Name == split[1]).Settings,
+                    1 => current.Settings,
+                    _ => throw new FormatException($"Unable to parse setting group [{setting.Group}]"),
+                };
+                if (action.Mode == MappingMergeActionMode.Add)
+                {
+                    list.Add(setting);
+                }
+                else if (action.Mode == MappingMergeActionMode.Remove)
+                {
+                    var toRemove = list.Single(s => s.Name == setting.Name);
+                    list.Remove(toRemove);
+                }
+                else if (action.Mode == MappingMergeActionMode.Replace)
+                {
+                    var toRemove = list.Single(s => s.Name == setting.Name);
+                    var idx = list.IndexOf(toRemove);
+                    list.Insert(idx, setting);
+                    list.RemoveAt(idx + 1);
+                }
+            }
+            else if (action.Value is ValueTuple<EDMapping, string> tuple)
+            { // mapping binding changed
+                var currentMapping = current.Mappings.Single(m => m.Name == tuple.Item1.Name);
+                if (tuple.Item2 == nameof(EDMapping.Binding))
+                {
+                    currentMapping.Binding = tuple.Item1.Binding;
+                }
+                else if (tuple.Item2 == nameof(EDMapping.Primary))
+                {
+                    currentMapping.Primary = tuple.Item1.Primary;
+                }
+                else if (tuple.Item2 == nameof(EDMapping.Secondary))
+                {
+                    currentMapping.Secondary = tuple.Item1.Secondary;
+                }
+            }
+        }
+
+        return current;
     }
 
     private void CalculateDiffs(EDMappingData current, EDMappingData updated)

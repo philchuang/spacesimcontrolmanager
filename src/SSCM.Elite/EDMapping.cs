@@ -14,7 +14,7 @@ public class EDMapping
     public EDBinding? Secondary { get; set; } = null;
     public IList<EDMappingSetting> Settings { get; set; } = new List<EDMappingSetting>();
 
-    public EDMapping() { }
+    public EDMapping() {}
 
     public EDMapping(string group, string name)
     {
