@@ -77,11 +77,18 @@ public class MappingExporter_Update_Tests : TestBase
         return xd.XPathSelectElements($"/Root/{mapping.Name}/{type}").SingleOrDefault();
     }
 
-    private void RandomizeBindingValue(XElement binding)
+    private XElement? GetElementForSetting(XDocument xd, EDMappingSetting setting)
     {
-        binding.SetAttributeValue("Device", RandomString());
-        binding.SetAttributeValue("Key", RandomString());
-        binding.Elements().Where(e => string.Equals("Modifier", e.Name.LocalName, StringComparison.OrdinalIgnoreCase)).ToList().ForEach(RandomizeBindingValue);
+        return xd.XPathSelectElements($"/Root/{setting.Name}").SingleOrDefault();
+    }
+
+    private (string device, string key) RandomizeBindingValue(XElement binding)
+    {
+        var (device, key) = (RandomString(), RandomString());
+        binding.SetAttributeValue("Device", device);
+        binding.SetAttributeValue("Key", key);
+        binding.Elements().Where(e => string.Equals("Modifier", e.Name.LocalName, StringComparison.OrdinalIgnoreCase)).ToList().ForEach(e => RandomizeBindingValue(e));
+        return (device, key);
     }
 
     private string GetBindingValue(XElement binding)
@@ -99,6 +106,7 @@ public class MappingExporter_Update_Tests : TestBase
     {
         this._source = new EDMappingData {
             Settings = {
+                new EDMappingSetting("Ship-MouseControls", "MouseXMode", "Bindings_MouseRoll")
             },
             Mappings = {
                 new EDMapping("Ship-Cooling", "ToggleButtonUpInput") {
@@ -168,6 +176,43 @@ public class MappingExporter_Update_Tests : TestBase
     }
     
     [Test]
+    public async Task Update_ignores_binding_change()
+    {
+        // Arrange
+        // use default mapping data
+        this.Arrange_Default_MappingData(false);
+        // ensure the nothing is preserved
+        var mapping = this._source.Mappings.Single(m => m.Id == "Ship-FlightRotation-PitchAxisRaw");
+        mapping.Binding.Preserve = false;
+        mapping.Settings.ToList().ForEach(s => s.Preserve = false);
+        // get the binding in the xml and make sure it's different
+        var bindingElement = this.GetElementForBinding(this._inputXml, mapping, nameof(mapping.Binding));
+        RandomizeBindingValue(bindingElement);
+        var inputBindingValue = GetBindingValue(bindingElement);
+        // get the setting in the xml and make sure it's different
+        var settingElement = bindingElement.Parent.Element(mapping.Settings[0].Name);
+        var inputSettingValue = RandomString();
+        settingElement.SetAttributeValue("Value", inputSettingValue);
+
+        // Act
+        var changed = await this.Act();
+
+        // Assert
+        Assert.IsFalse(changed, nameof(changed));
+        this.AssertBasics();
+
+        var outputBindingElement = this.GetElementForBinding(this._outputXml, mapping, "Binding");
+        Assert.NotNull(outputBindingElement, nameof(outputBindingElement));
+        Assert.AreEqual(inputBindingValue, GetBindingValue(outputBindingElement));
+        Assert.AreNotEqual(mapping.Binding.ToString(), GetBindingValue(outputBindingElement));
+        
+        var outputSettingElement = outputBindingElement.Parent.Element(mapping.Settings[0].Name);
+        Assert.NotNull(outputSettingElement, nameof(outputSettingElement));
+        Assert.AreEqual(inputSettingValue, outputSettingElement.GetAttribute("Value"));
+        Assert.AreNotEqual(mapping.Settings[0].Value, outputSettingElement.GetAttribute("Value"));
+    }
+    
+    [Test]
     public async Task Update_creates_and_overwrites_bindings()
     {
         // NOTE tests creation, overwriting
@@ -233,8 +278,88 @@ public class MappingExporter_Update_Tests : TestBase
         AssertED.AreEqual(createdMappingElement, mapping);
     }
     
-    // TODO test ignore mapping change (not preserved)
-    // TODO test overwriting setting
-    // TODO test creating setting
-    // TODO test ignoring setting
+    [Test]
+    public async Task Update_overwrites_setting()
+    {
+        // Arrange
+        // use default mapping data
+        this.Arrange_Default_MappingData(false);
+        // preserve the setting
+        var setting = this._source.Settings.First();
+        setting.Preserve = true;
+        // get the setting in the xml and make sure it's different
+        var settingElement = this.GetElementForSetting(this._inputXml, setting);
+        settingElement.SetAttributeValue("Value", RandomString());
+        var inputSettingValue = settingElement.GetAttribute("Value");
+
+        // Act
+        var changed = await this.Act();
+
+        // Assert
+        Assert.IsTrue(changed, nameof(changed));
+        this.AssertBasics();
+
+        var outputSettingElement = this.GetElementForSetting(this._outputXml, setting);
+        Assert.NotNull(outputSettingElement, nameof(outputSettingElement));
+        var outputSettingValue = outputSettingElement.GetAttribute("Value");
+        Assert.AreNotEqual(inputSettingValue, outputSettingValue);
+        Assert.AreEqual(setting.Value, outputSettingValue);
+    }
+    
+    [Test]
+    public async Task Update_ignores_setting_change()
+    {
+        // Arrange
+        // use default mapping data
+        this.Arrange_Default_MappingData(false);
+        // preserve the setting
+        var setting = this._source.Settings.First();
+        setting.Preserve = false;
+        // get the setting in the xml and make sure it's different
+        var settingElement = this.GetElementForSetting(this._inputXml, setting);
+        settingElement.SetAttributeValue("Value", RandomString());
+        var inputSettingValue = settingElement.GetAttribute("Value");
+
+        // Act
+        var changed = await this.Act();
+
+        // Assert
+        Assert.IsFalse(changed, nameof(changed));
+        this.AssertBasics();
+
+        var outputSettingElement = this.GetElementForSetting(this._outputXml, setting);
+        Assert.NotNull(outputSettingElement, nameof(outputSettingElement));
+        var outputSettingValue = outputSettingElement.GetAttribute("Value");
+        Assert.AreEqual(inputSettingValue, outputSettingValue);
+        Assert.AreNotEqual(setting.Value, outputSettingValue);
+    }
+    
+    [Test]
+    public async Task Update_creates_setting()
+    {
+        // Arrange
+        // use default mapping data
+        this.Arrange_Default_MappingData(false);
+        // preserve the setting and modify it
+        var setting = this._source.Settings.First();
+        setting.Value = RandomString();
+        setting.Preserve = true;
+        // get the setting in the xml and remove it
+        var settingElement = this.GetElementForSetting(this._inputXml, setting);
+        var inputSettingValue = settingElement.GetAttribute("Value");
+        settingElement.Remove();
+
+        // Act
+        var changed = await this.Act();
+
+        // Assert
+        Assert.IsTrue(changed, nameof(changed));
+        this.AssertBasics();
+
+        var outputSettingElement = this.GetElementForSetting(this._outputXml, setting);
+        Assert.NotNull(outputSettingElement, nameof(outputSettingElement));
+        var outputSettingValue = outputSettingElement.GetAttribute("Value");
+        Assert.AreNotEqual(inputSettingValue, outputSettingValue);
+        Assert.AreEqual(setting.Value, outputSettingValue);
+    }
 }
