@@ -46,12 +46,13 @@ public class MappingImporter : IMappingImporter<EDMappingData>
         }
 
         var bindingsCount = 0;
+        var mappingSettingsCount = 0;
         this._data.Mappings = this._data.Mappings.Where(m =>
         {
+            if (m.Binding != null) bindingsCount++;
             if (m.Primary != null) bindingsCount++;
             if (m.Secondary != null) bindingsCount++;
-            // // remove unbound mappings
-            // return m.Primary != null || m.Secondary != null;
+            mappingSettingsCount += m.Settings.Count;
             return true;
         }).ToList();
 
@@ -59,7 +60,7 @@ public class MappingImporter : IMappingImporter<EDMappingData>
         this._data.Mappings = this._data.Mappings.OrderBy(m => m.Group).ThenBy(m => m.Name).ToList();
         this._data.Settings = this._data.Settings.OrderBy(s => s.Group).ThenBy(s => s.Name).ToList();
 
-        this.StandardOutput($"Captured {this._data.Mappings.Count} mappings with {bindingsCount} bindings.");
+        this.StandardOutput($"Captured {this._data.Mappings.Count} mappings with {bindingsCount} bindings and {mappingSettingsCount} settings.");
         this.StandardOutput($"Captured {this._data.Settings.Count} settings.");
 
         return this._data;
