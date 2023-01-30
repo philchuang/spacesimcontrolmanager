@@ -117,7 +117,7 @@ public class MappingExporter_Update_Tests : TestBase
                     Primary = new EDBinding("Keyboard", "Key_V"), 
                     Secondary = new EDBinding("231D3205", "Joy_15", new[] { new EDBindingKey("231D3205", "Joy_1"), new EDBindingKey("231D3205", "Joy_2") }),
                     Settings = {
-                        new EDMappingSetting("Ship-Cooling-ToggleButtonUpInput", "ToggleOn", "1"),
+                        new EDMappingSetting("Ship-Cooling.ToggleButtonUpInput", "ToggleOn", "1"),
                     }
                 },
                 new EDMapping("Ship-Weapons", "CycleFireGroupPrevious") { 
@@ -129,8 +129,8 @@ public class MappingExporter_Update_Tests : TestBase
                 new EDMapping("Ship-FlightRotation", "PitchAxisRaw") { 
                     Binding = new EDBinding("231D0200", "Joy_YAxis"), 
                     Settings = { 
-                        new EDMappingSetting("Ship-FlightRotation-PitchAxisRaw", "Deadzone", "0.00000000"), 
-                        new EDMappingSetting("Ship-FlightRotation-PitchAxisRaw", "Inverted", "1") 
+                        new EDMappingSetting("Ship-FlightRotation.PitchAxisRaw", "Deadzone", "0.00000000"), 
+                        new EDMappingSetting("Ship-FlightRotation.PitchAxisRaw", "Inverted", "1") 
                     }
                 },
             }
@@ -149,7 +149,7 @@ public class MappingExporter_Update_Tests : TestBase
         // use default mapping data
         this.Arrange_Default_MappingData(false);
         // preserve the binding & setting
-        var mapping = this._source.Mappings.Single(m => m.Id == "Ship-FlightRotation-PitchAxisRaw");
+        var mapping = this._source.Mappings.Single(m => m.Id == "Ship-FlightRotation.PitchAxisRaw");
         mapping.Binding.Preserve = true;
         mapping.Settings[0].Preserve = true;
         // get the binding in the xml and make sure it's different
@@ -186,7 +186,7 @@ public class MappingExporter_Update_Tests : TestBase
         // use default mapping data
         this.Arrange_Default_MappingData(false);
         // ensure the nothing is preserved
-        var mapping = this._source.Mappings.Single(m => m.Id == "Ship-FlightRotation-PitchAxisRaw");
+        var mapping = this._source.Mappings.Single(m => m.Id == "Ship-FlightRotation.PitchAxisRaw");
         mapping.Binding.Preserve = false;
         mapping.Settings.ToList().ForEach(s => s.Preserve = false);
         // get the binding in the xml and make sure it's different
@@ -225,7 +225,7 @@ public class MappingExporter_Update_Tests : TestBase
         // use default mapping data
         this.Arrange_Default_MappingData(false);
         // preserve the both bindings for Ship-Weapons-CycleFireGroupPrevious
-        var mapping = this._source.Mappings.Single(m => m.Id == "Ship-Throttle-ForwardKey");
+        var mapping = this._source.Mappings.Single(m => m.Id == "Ship-Throttle.ForwardKey");
         mapping.Primary.Preserve = true;
         mapping.Secondary.Preserve = true;
         // get the Primary binding in the xml and remove it
@@ -262,7 +262,7 @@ public class MappingExporter_Update_Tests : TestBase
         // use default mapping data
         this.Arrange_Default_MappingData(false);
         // choose a mapping to preserve
-        var mapping = this._source.Mappings.Single(m => m.Id == "Ship-Cooling-ToggleButtonUpInput");
+        var mapping = this._source.Mappings.Single(m => m.Id == "Ship-Cooling.ToggleButtonUpInput");
         mapping.Primary.Preserve = true;
         mapping.Secondary.Preserve = true;
         mapping.Settings[0].Preserve = true;

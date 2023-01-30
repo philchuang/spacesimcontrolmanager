@@ -16,13 +16,13 @@
             "Secondary": null,
             "Settings": [
                 {
-                    "Group": "Ship-FlightRotation-PitchAxisRaw",
+                    "Group": "Ship-FlightRotation.PitchAxisRaw",
                     "Name": "Deadzone",
                     "Value": "0.00000000",
                     "Preserve": false
                 },
                 {
-                    "Group": "Ship-FlightRotation-PitchAxisRaw",
+                    "Group": "Ship-FlightRotation.PitchAxisRaw",
                     "Name": "Inverted",
                     "Value": "1",
                     "Preserve": true

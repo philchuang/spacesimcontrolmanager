@@ -681,13 +681,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "General-FreeCamera-MoveFreeCamDownAxis",
+            "Group": "General-FreeCamera.MoveFreeCamDownAxis",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "General-FreeCamera-MoveFreeCamDownAxis",
+            "Group": "General-FreeCamera.MoveFreeCamDownAxis",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -797,13 +797,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "General-FreeCamera-MoveFreeCamUpAxis",
+            "Group": "General-FreeCamera.MoveFreeCamUpAxis",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "General-FreeCamera-MoveFreeCamUpAxis",
+            "Group": "General-FreeCamera.MoveFreeCamUpAxis",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -825,13 +825,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "General-FreeCamera-MoveFreeCamX",
+            "Group": "General-FreeCamera.MoveFreeCamX",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "General-FreeCamera-MoveFreeCamX",
+            "Group": "General-FreeCamera.MoveFreeCamX",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -853,13 +853,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "General-FreeCamera-MoveFreeCamY",
+            "Group": "General-FreeCamera.MoveFreeCamY",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "General-FreeCamera-MoveFreeCamY",
+            "Group": "General-FreeCamera.MoveFreeCamY",
             "Name": "Inverted",
             "Value": "1",
             "Preserve": false
@@ -881,13 +881,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "General-FreeCamera-MoveFreeCamZ",
+            "Group": "General-FreeCamera.MoveFreeCamZ",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "General-FreeCamera-MoveFreeCamZ",
+            "Group": "General-FreeCamera.MoveFreeCamZ",
             "Name": "Inverted",
             "Value": "1",
             "Preserve": false
@@ -909,13 +909,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "General-FreeCamera-PitchCamera",
+            "Group": "General-FreeCamera.PitchCamera",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "General-FreeCamera-PitchCamera",
+            "Group": "General-FreeCamera.PitchCamera",
             "Name": "Inverted",
             "Value": "1",
             "Preserve": false
@@ -981,13 +981,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "General-FreeCamera-RollCamera",
+            "Group": "General-FreeCamera.RollCamera",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "General-FreeCamera-RollCamera",
+            "Group": "General-FreeCamera.RollCamera",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -1082,7 +1082,7 @@
         },
         "Settings": [
           {
-            "Group": "General-FreeCamera-ToggleReverseThrottleInputFreeCam",
+            "Group": "General-FreeCamera.ToggleReverseThrottleInputFreeCam",
             "Name": "ToggleOn",
             "Value": "0",
             "Preserve": false
@@ -1104,13 +1104,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "General-FreeCamera-YawCamera",
+            "Group": "General-FreeCamera.YawCamera",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "General-FreeCamera-YawCamera",
+            "Group": "General-FreeCamera.YawCamera",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -1176,13 +1176,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "General-GalaxyMap-CamPitchAxis",
+            "Group": "General-GalaxyMap.CamPitchAxis",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "General-GalaxyMap-CamPitchAxis",
+            "Group": "General-GalaxyMap.CamPitchAxis",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -1380,13 +1380,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "General-GalaxyMap-CamTranslateXAxis",
+            "Group": "General-GalaxyMap.CamTranslateXAxis",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "General-GalaxyMap-CamTranslateXAxis",
+            "Group": "General-GalaxyMap.CamTranslateXAxis",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -1408,13 +1408,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "General-GalaxyMap-CamTranslateYAxis",
+            "Group": "General-GalaxyMap.CamTranslateYAxis",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "General-GalaxyMap-CamTranslateYAxis",
+            "Group": "General-GalaxyMap.CamTranslateYAxis",
             "Name": "Inverted",
             "Value": "1",
             "Preserve": false
@@ -1436,13 +1436,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "General-GalaxyMap-CamTranslateZAxis",
+            "Group": "General-GalaxyMap.CamTranslateZAxis",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "General-GalaxyMap-CamTranslateZAxis",
+            "Group": "General-GalaxyMap.CamTranslateZAxis",
             "Name": "Inverted",
             "Value": "1",
             "Preserve": false
@@ -1471,7 +1471,7 @@
         },
         "Settings": [
           {
-            "Group": "General-GalaxyMap-CamTranslateZHold",
+            "Group": "General-GalaxyMap.CamTranslateZHold",
             "Name": "ToggleOn",
             "Value": "0",
             "Preserve": false
@@ -1493,13 +1493,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "General-GalaxyMap-CamYawAxis",
+            "Group": "General-GalaxyMap.CamYawAxis",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "General-GalaxyMap-CamYawAxis",
+            "Group": "General-GalaxyMap.CamYawAxis",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -1565,13 +1565,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "General-GalaxyMap-CamZoomAxis",
+            "Group": "General-GalaxyMap.CamZoomAxis",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "General-GalaxyMap-CamZoomAxis",
+            "Group": "General-GalaxyMap.CamZoomAxis",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -1681,13 +1681,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "General-HoloMe-CommanderCreator_Rotation",
+            "Group": "General-HoloMe.CommanderCreator_Rotation",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "General-HoloMe-CommanderCreator_Rotation",
+            "Group": "General-HoloMe.CommanderCreator_Rotation",
             "Name": "Inverted",
             "Value": "1",
             "Preserve": false
@@ -2149,13 +2149,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "General-StoreCamera-StorePitchCamera",
+            "Group": "General-StoreCamera.StorePitchCamera",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "General-StoreCamera-StorePitchCamera",
+            "Group": "General-StoreCamera.StorePitchCamera",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -2199,13 +2199,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "General-StoreCamera-StoreYawCamera",
+            "Group": "General-StoreCamera.StoreYawCamera",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "General-StoreCamera-StoreYawCamera",
+            "Group": "General-StoreCamera.StoreYawCamera",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -2300,7 +2300,7 @@
         },
         "Settings": [
           {
-            "Group": "OnFoot-OnFoot-HumanoidCrouchButton",
+            "Group": "OnFoot-OnFoot.HumanoidCrouchButton",
             "Name": "ToggleOn",
             "Value": "1",
             "Preserve": true
@@ -2329,7 +2329,7 @@
         },
         "Settings": [
           {
-            "Group": "OnFoot-OnFoot-HumanoidEmoteWheelButton",
+            "Group": "OnFoot-OnFoot.HumanoidEmoteWheelButton",
             "Name": "ToggleOn",
             "Value": "0",
             "Preserve": true
@@ -2351,13 +2351,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "OnFoot-OnFoot-HumanoidForwardAxis",
+            "Group": "OnFoot-OnFoot.HumanoidForwardAxis",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "OnFoot-OnFoot-HumanoidForwardAxis",
+            "Group": "OnFoot-OnFoot.HumanoidForwardAxis",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -2452,7 +2452,7 @@
         },
         "Settings": [
           {
-            "Group": "OnFoot-OnFoot-HumanoidItemWheelButton",
+            "Group": "OnFoot-OnFoot.HumanoidItemWheelButton",
             "Name": "ToggleOn",
             "Value": "0",
             "Preserve": true
@@ -2474,13 +2474,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "OnFoot-OnFoot-HumanoidItemWheelButton_XAxis",
+            "Group": "OnFoot-OnFoot.HumanoidItemWheelButton_XAxis",
             "Name": "Deadzone",
             "Value": "0.40000001",
             "Preserve": false
           },
           {
-            "Group": "OnFoot-OnFoot-HumanoidItemWheelButton_XAxis",
+            "Group": "OnFoot-OnFoot.HumanoidItemWheelButton_XAxis",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -2546,13 +2546,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "OnFoot-OnFoot-HumanoidItemWheelButton_YAxis",
+            "Group": "OnFoot-OnFoot.HumanoidItemWheelButton_YAxis",
             "Name": "Deadzone",
             "Value": "0.40000001",
             "Preserve": false
           },
           {
-            "Group": "OnFoot-OnFoot-HumanoidItemWheelButton_YAxis",
+            "Group": "OnFoot-OnFoot.HumanoidItemWheelButton_YAxis",
             "Name": "Inverted",
             "Value": "1",
             "Preserve": false
@@ -2662,13 +2662,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "OnFoot-OnFoot-HumanoidPitchAxis",
+            "Group": "OnFoot-OnFoot.HumanoidPitchAxis",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "OnFoot-OnFoot-HumanoidPitchAxis",
+            "Group": "OnFoot-OnFoot.HumanoidPitchAxis",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -2800,13 +2800,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "OnFoot-OnFoot-HumanoidRotateAxis",
+            "Group": "OnFoot-OnFoot.HumanoidRotateAxis",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "OnFoot-OnFoot-HumanoidRotateAxis",
+            "Group": "OnFoot-OnFoot.HumanoidRotateAxis",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -3121,7 +3121,7 @@
         },
         "Settings": [
           {
-            "Group": "OnFoot-OnFoot-HumanoidSprintButton",
+            "Group": "OnFoot-OnFoot.HumanoidSprintButton",
             "Name": "ToggleOn",
             "Value": "1",
             "Preserve": true
@@ -3143,13 +3143,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "OnFoot-OnFoot-HumanoidStrafeAxis",
+            "Group": "OnFoot-OnFoot.HumanoidStrafeAxis",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "OnFoot-OnFoot-HumanoidStrafeAxis",
+            "Group": "OnFoot-OnFoot.HumanoidStrafeAxis",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -3464,7 +3464,7 @@
         },
         "Settings": [
           {
-            "Group": "OnFoot-OnFoot-HumanoidWalkButton",
+            "Group": "OnFoot-OnFoot.HumanoidWalkButton",
             "Name": "ToggleOn",
             "Value": "1",
             "Preserve": true
@@ -3493,7 +3493,7 @@
         },
         "Settings": [
           {
-            "Group": "OnFoot-OnFoot-HumanoidZoomButton",
+            "Group": "OnFoot-OnFoot.HumanoidZoomButton",
             "Name": "ToggleOn",
             "Value": "0",
             "Preserve": true
@@ -3828,13 +3828,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-AlternateFlightControls-LateralThrustAlternate",
+            "Group": "Ship-AlternateFlightControls.LateralThrustAlternate",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-AlternateFlightControls-LateralThrustAlternate",
+            "Group": "Ship-AlternateFlightControls.LateralThrustAlternate",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -3856,13 +3856,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-AlternateFlightControls-PitchAxisAlternate",
+            "Group": "Ship-AlternateFlightControls.PitchAxisAlternate",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-AlternateFlightControls-PitchAxisAlternate",
+            "Group": "Ship-AlternateFlightControls.PitchAxisAlternate",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -3884,13 +3884,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-AlternateFlightControls-RollAxisAlternate",
+            "Group": "Ship-AlternateFlightControls.RollAxisAlternate",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-AlternateFlightControls-RollAxisAlternate",
+            "Group": "Ship-AlternateFlightControls.RollAxisAlternate",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -3919,7 +3919,7 @@
         },
         "Settings": [
           {
-            "Group": "Ship-AlternateFlightControls-UseAlternateFlightValuesToggle",
+            "Group": "Ship-AlternateFlightControls.UseAlternateFlightValuesToggle",
             "Name": "ToggleOn",
             "Value": "1",
             "Preserve": false
@@ -3941,13 +3941,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-AlternateFlightControls-VerticalThrustAlternate",
+            "Group": "Ship-AlternateFlightControls.VerticalThrustAlternate",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-AlternateFlightControls-VerticalThrustAlternate",
+            "Group": "Ship-AlternateFlightControls.VerticalThrustAlternate",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -3969,13 +3969,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-AlternateFlightControls-YawAxisAlternate",
+            "Group": "Ship-AlternateFlightControls.YawAxisAlternate",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-AlternateFlightControls-YawAxisAlternate",
+            "Group": "Ship-AlternateFlightControls.YawAxisAlternate",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -4035,7 +4035,7 @@
         },
         "Settings": [
           {
-            "Group": "Ship-Cooling-ToggleButtonUpInput",
+            "Group": "Ship-Cooling.ToggleButtonUpInput",
             "Name": "ToggleOn",
             "Value": "1",
             "Preserve": true
@@ -4064,7 +4064,7 @@
         },
         "Settings": [
           {
-            "Group": "Ship-DetailedSurfaceScanner-ExplorationSAAChangeScannedAreaViewToggle",
+            "Group": "Ship-DetailedSurfaceScanner.ExplorationSAAChangeScannedAreaViewToggle",
             "Name": "ToggleOn",
             "Value": "0",
             "Preserve": true
@@ -4174,13 +4174,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-DetailedSurfaceScanner-SAAThirdPersonFovAxisRaw",
+            "Group": "Ship-DetailedSurfaceScanner.SAAThirdPersonFovAxisRaw",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-DetailedSurfaceScanner-SAAThirdPersonFovAxisRaw",
+            "Group": "Ship-DetailedSurfaceScanner.SAAThirdPersonFovAxisRaw",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -4246,13 +4246,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-DetailedSurfaceScanner-SAAThirdPersonPitchAxisRaw",
+            "Group": "Ship-DetailedSurfaceScanner.SAAThirdPersonPitchAxisRaw",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-DetailedSurfaceScanner-SAAThirdPersonPitchAxisRaw",
+            "Group": "Ship-DetailedSurfaceScanner.SAAThirdPersonPitchAxisRaw",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -4318,13 +4318,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-DetailedSurfaceScanner-SAAThirdPersonYawAxisRaw",
+            "Group": "Ship-DetailedSurfaceScanner.SAAThirdPersonYawAxisRaw",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-DetailedSurfaceScanner-SAAThirdPersonYawAxisRaw",
+            "Group": "Ship-DetailedSurfaceScanner.SAAThirdPersonYawAxisRaw",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -4576,13 +4576,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-FlightLandingOverrides-AheadThrust_Landing",
+            "Group": "Ship-FlightLandingOverrides.AheadThrust_Landing",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-FlightLandingOverrides-AheadThrust_Landing",
+            "Group": "Ship-FlightLandingOverrides.AheadThrust_Landing",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -4670,13 +4670,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-FlightLandingOverrides-LateralThrust_Landing",
+            "Group": "Ship-FlightLandingOverrides.LateralThrust_Landing",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-FlightLandingOverrides-LateralThrust_Landing",
+            "Group": "Ship-FlightLandingOverrides.LateralThrust_Landing",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -4720,13 +4720,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-FlightLandingOverrides-PitchAxis_Landing",
+            "Group": "Ship-FlightLandingOverrides.PitchAxis_Landing",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-FlightLandingOverrides-PitchAxis_Landing",
+            "Group": "Ship-FlightLandingOverrides.PitchAxis_Landing",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -4814,13 +4814,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-FlightLandingOverrides-RollAxis_Landing",
+            "Group": "Ship-FlightLandingOverrides.RollAxis_Landing",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-FlightLandingOverrides-RollAxis_Landing",
+            "Group": "Ship-FlightLandingOverrides.RollAxis_Landing",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -4908,13 +4908,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-FlightLandingOverrides-VerticalThrust_Landing",
+            "Group": "Ship-FlightLandingOverrides.VerticalThrust_Landing",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-FlightLandingOverrides-VerticalThrust_Landing",
+            "Group": "Ship-FlightLandingOverrides.VerticalThrust_Landing",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -4936,13 +4936,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-FlightLandingOverrides-YawAxis_Landing",
+            "Group": "Ship-FlightLandingOverrides.YawAxis_Landing",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-FlightLandingOverrides-YawAxis_Landing",
+            "Group": "Ship-FlightLandingOverrides.YawAxis_Landing",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -5015,7 +5015,7 @@
         },
         "Settings": [
           {
-            "Group": "Ship-FlightMiscellaneous-DisableRotationCorrectToggle",
+            "Group": "Ship-FlightMiscellaneous.DisableRotationCorrectToggle",
             "Name": "ToggleOn",
             "Value": "1",
             "Preserve": false
@@ -5132,7 +5132,7 @@
         },
         "Settings": [
           {
-            "Group": "Ship-FlightMiscellaneous-ToggleFlightAssist",
+            "Group": "Ship-FlightMiscellaneous.ToggleFlightAssist",
             "Name": "ToggleOn",
             "Value": "1",
             "Preserve": true
@@ -5176,13 +5176,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-FlightRotation-PitchAxisRaw",
+            "Group": "Ship-FlightRotation.PitchAxisRaw",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-FlightRotation-PitchAxisRaw",
+            "Group": "Ship-FlightRotation.PitchAxisRaw",
             "Name": "Inverted",
             "Value": "1",
             "Preserve": false
@@ -5248,13 +5248,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-FlightRotation-RollAxisRaw",
+            "Group": "Ship-FlightRotation.RollAxisRaw",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-FlightRotation-RollAxisRaw",
+            "Group": "Ship-FlightRotation.RollAxisRaw",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -5320,13 +5320,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-FlightRotation-YawAxisRaw",
+            "Group": "Ship-FlightRotation.YawAxisRaw",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-FlightRotation-YawAxisRaw",
+            "Group": "Ship-FlightRotation.YawAxisRaw",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -5399,7 +5399,7 @@
         },
         "Settings": [
           {
-            "Group": "Ship-FlightRotation-YawToRollButton",
+            "Group": "Ship-FlightRotation.YawToRollButton",
             "Name": "ToggleOn",
             "Value": "0",
             "Preserve": false
@@ -5663,13 +5663,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-FlightThrottle-ThrottleAxis",
+            "Group": "Ship-FlightThrottle.ThrottleAxis",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-FlightThrottle-ThrottleAxis",
+            "Group": "Ship-FlightThrottle.ThrottleAxis",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -5698,7 +5698,7 @@
         },
         "Settings": [
           {
-            "Group": "Ship-FlightThrottle-ToggleReverseThrottleInput",
+            "Group": "Ship-FlightThrottle.ToggleReverseThrottleInput",
             "Name": "ToggleOn",
             "Value": "0",
             "Preserve": false
@@ -5720,13 +5720,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-FlightThrust-AheadThrust",
+            "Group": "Ship-FlightThrust.AheadThrust",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-FlightThrust-AheadThrust",
+            "Group": "Ship-FlightThrust.AheadThrust",
             "Name": "Inverted",
             "Value": "1",
             "Preserve": false
@@ -5814,13 +5814,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-FlightThrust-LateralThrustRaw",
+            "Group": "Ship-FlightThrust.LateralThrustRaw",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-FlightThrust-LateralThrustRaw",
+            "Group": "Ship-FlightThrust.LateralThrustRaw",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -5908,13 +5908,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-FlightThrust-VerticalThrustRaw",
+            "Group": "Ship-FlightThrust.VerticalThrustRaw",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-FlightThrust-VerticalThrustRaw",
+            "Group": "Ship-FlightThrust.VerticalThrustRaw",
             "Name": "Inverted",
             "Value": "1",
             "Preserve": false
@@ -5936,13 +5936,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-FullSpectrumSystemScanner-ExplorationFSSCameraPitch",
+            "Group": "Ship-FullSpectrumSystemScanner.ExplorationFSSCameraPitch",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-FullSpectrumSystemScanner-ExplorationFSSCameraPitch",
+            "Group": "Ship-FullSpectrumSystemScanner.ExplorationFSSCameraPitch",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -6008,13 +6008,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-FullSpectrumSystemScanner-ExplorationFSSCameraYaw",
+            "Group": "Ship-FullSpectrumSystemScanner.ExplorationFSSCameraYaw",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-FullSpectrumSystemScanner-ExplorationFSSCameraYaw",
+            "Group": "Ship-FullSpectrumSystemScanner.ExplorationFSSCameraYaw",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -6168,13 +6168,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-FullSpectrumSystemScanner-ExplorationFSSRadioTuningAbsoluteX",
+            "Group": "Ship-FullSpectrumSystemScanner.ExplorationFSSRadioTuningAbsoluteX",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-FullSpectrumSystemScanner-ExplorationFSSRadioTuningAbsoluteX",
+            "Group": "Ship-FullSpectrumSystemScanner.ExplorationFSSRadioTuningAbsoluteX",
             "Name": "Inverted",
             "Value": "1",
             "Preserve": false
@@ -6240,13 +6240,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-FullSpectrumSystemScanner-ExplorationFSSRadioTuningX_Raw",
+            "Group": "Ship-FullSpectrumSystemScanner.ExplorationFSSRadioTuningX_Raw",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-FullSpectrumSystemScanner-ExplorationFSSRadioTuningX_Raw",
+            "Group": "Ship-FullSpectrumSystemScanner.ExplorationFSSRadioTuningX_Raw",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -6356,13 +6356,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-HeadlookMode-HeadLookPitchAxisRaw",
+            "Group": "Ship-HeadlookMode.HeadLookPitchAxisRaw",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-HeadlookMode-HeadLookPitchAxisRaw",
+            "Group": "Ship-HeadlookMode.HeadLookPitchAxisRaw",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -6450,13 +6450,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-HeadlookMode-HeadLookYawAxis",
+            "Group": "Ship-HeadlookMode.HeadLookYawAxis",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-HeadlookMode-HeadLookYawAxis",
+            "Group": "Ship-HeadlookMode.HeadLookYawAxis",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -6732,7 +6732,7 @@
         },
         "Settings": [
           {
-            "Group": "Ship-Miscellaneous-MicrophoneMute",
+            "Group": "Ship-Miscellaneous.MicrophoneMute",
             "Name": "ToggleOn",
             "Value": "0",
             "Preserve": true
@@ -6825,13 +6825,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-Miscellaneous-RadarRangeAxis",
+            "Group": "Ship-Miscellaneous.RadarRangeAxis",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-Miscellaneous-RadarRangeAxis",
+            "Group": "Ship-Miscellaneous.RadarRangeAxis",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -6909,7 +6909,7 @@
         },
         "Settings": [
           {
-            "Group": "Ship-Miscellaneous-ToggleCargoScoop",
+            "Group": "Ship-Miscellaneous.ToggleCargoScoop",
             "Name": "ToggleOn",
             "Value": "1",
             "Preserve": true
@@ -7163,7 +7163,7 @@
         },
         "Settings": [
           {
-            "Group": "Ship-ModeSwitches-HeadLookToggle",
+            "Group": "Ship-ModeSwitches.HeadLookToggle",
             "Name": "ToggleOn",
             "Value": "1",
             "Preserve": true
@@ -7285,7 +7285,7 @@
         },
         "Settings": [
           {
-            "Group": "Ship-ModeSwitches-ShowPGScoreSummaryInput",
+            "Group": "Ship-ModeSwitches.ShowPGScoreSummaryInput",
             "Name": "ToggleOn",
             "Value": "0",
             "Preserve": true
@@ -7510,13 +7510,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-MultiCrew-MultiCrewThirdPersonFovAxisRaw",
+            "Group": "Ship-MultiCrew.MultiCrewThirdPersonFovAxisRaw",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-MultiCrew-MultiCrewThirdPersonFovAxisRaw",
+            "Group": "Ship-MultiCrew.MultiCrewThirdPersonFovAxisRaw",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -7582,13 +7582,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-MultiCrew-MultiCrewThirdPersonPitchAxisRaw",
+            "Group": "Ship-MultiCrew.MultiCrewThirdPersonPitchAxisRaw",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-MultiCrew-MultiCrewThirdPersonPitchAxisRaw",
+            "Group": "Ship-MultiCrew.MultiCrewThirdPersonPitchAxisRaw",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -7654,13 +7654,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "Ship-MultiCrew-MultiCrewThirdPersonYawAxisRaw",
+            "Group": "Ship-MultiCrew.MultiCrewThirdPersonYawAxisRaw",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "Ship-MultiCrew-MultiCrewThirdPersonYawAxisRaw",
+            "Group": "Ship-MultiCrew.MultiCrewThirdPersonYawAxisRaw",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -8193,7 +8193,7 @@
         },
         "Settings": [
           {
-            "Group": "SRV-DriveThrottle-BuggyToggleReverseThrottleInput",
+            "Group": "SRV-DriveThrottle.BuggyToggleReverseThrottleInput",
             "Name": "ToggleOn",
             "Value": "0",
             "Preserve": false
@@ -8237,13 +8237,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "SRV-DriveThrottle-DecreaseSpeedButtonPartial",
+            "Group": "SRV-DriveThrottle.DecreaseSpeedButtonPartial",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "SRV-DriveThrottle-DecreaseSpeedButtonPartial",
+            "Group": "SRV-DriveThrottle.DecreaseSpeedButtonPartial",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -8265,13 +8265,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "SRV-DriveThrottle-DriveSpeedAxis",
+            "Group": "SRV-DriveThrottle.DriveSpeedAxis",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "SRV-DriveThrottle-DriveSpeedAxis",
+            "Group": "SRV-DriveThrottle.DriveSpeedAxis",
             "Name": "Inverted",
             "Value": "1",
             "Preserve": false
@@ -8315,13 +8315,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "SRV-DriveThrottle-IncreaseSpeedButtonPartial",
+            "Group": "SRV-DriveThrottle.IncreaseSpeedButtonPartial",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "SRV-DriveThrottle-IncreaseSpeedButtonPartial",
+            "Group": "SRV-DriveThrottle.IncreaseSpeedButtonPartial",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -8350,7 +8350,7 @@
         },
         "Settings": [
           {
-            "Group": "SRV-Driving-AutoBreakBuggyButton",
+            "Group": "SRV-Driving.AutoBreakBuggyButton",
             "Name": "ToggleOn",
             "Value": "1",
             "Preserve": true
@@ -8416,13 +8416,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "SRV-Driving-BuggyPitchAxis",
+            "Group": "SRV-Driving.BuggyPitchAxis",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "SRV-Driving-BuggyPitchAxis",
+            "Group": "SRV-Driving.BuggyPitchAxis",
             "Name": "Inverted",
             "Value": "1",
             "Preserve": false
@@ -8510,13 +8510,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "SRV-Driving-BuggyRollAxisRaw",
+            "Group": "SRV-Driving.BuggyRollAxisRaw",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "SRV-Driving-BuggyRollAxisRaw",
+            "Group": "SRV-Driving.BuggyRollAxisRaw",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -8626,13 +8626,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "SRV-Driving-SteeringAxis",
+            "Group": "SRV-Driving.SteeringAxis",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "SRV-Driving-SteeringAxis",
+            "Group": "SRV-Driving.SteeringAxis",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -8727,7 +8727,7 @@
         },
         "Settings": [
           {
-            "Group": "SRV-Driving-ToggleDriveAssist",
+            "Group": "SRV-Driving.ToggleDriveAssist",
             "Name": "ToggleOn",
             "Value": "0",
             "Preserve": true
@@ -8756,7 +8756,7 @@
         },
         "Settings": [
           {
-            "Group": "SRV-Driving-VerticalThrustersButton",
+            "Group": "SRV-Driving.VerticalThrustersButton",
             "Name": "ToggleOn",
             "Value": "0",
             "Preserve": true
@@ -8922,7 +8922,7 @@
         },
         "Settings": [
           {
-            "Group": "SRV-DrivingMiscellaneous-ToggleCargoScoop_Buggy",
+            "Group": "SRV-DrivingMiscellaneous.ToggleCargoScoop_Buggy",
             "Name": "ToggleOn",
             "Value": "1",
             "Preserve": true
@@ -9066,7 +9066,7 @@
         },
         "Settings": [
           {
-            "Group": "SRV-DrivingModeSwitches-HeadLookToggle_Buggy",
+            "Group": "SRV-DrivingModeSwitches.HeadLookToggle_Buggy",
             "Name": "ToggleOn",
             "Value": "1",
             "Preserve": true
@@ -9230,13 +9230,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "SRV-DrivingTurretControls-BuggyTurretPitchAxisRaw",
+            "Group": "SRV-DrivingTurretControls.BuggyTurretPitchAxisRaw",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "SRV-DrivingTurretControls-BuggyTurretPitchAxisRaw",
+            "Group": "SRV-DrivingTurretControls.BuggyTurretPitchAxisRaw",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false
@@ -9302,13 +9302,13 @@
         "Secondary": null,
         "Settings": [
           {
-            "Group": "SRV-DrivingTurretControls-BuggyTurretYawAxisRaw",
+            "Group": "SRV-DrivingTurretControls.BuggyTurretYawAxisRaw",
             "Name": "Deadzone",
             "Value": "0.00000000",
             "Preserve": false
           },
           {
-            "Group": "SRV-DrivingTurretControls-BuggyTurretYawAxisRaw",
+            "Group": "SRV-DrivingTurretControls.BuggyTurretYawAxisRaw",
             "Name": "Inverted",
             "Value": "0",
             "Preserve": false

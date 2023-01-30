@@ -24,8 +24,8 @@ public class EDDataSerializer_Write_Tests : DataSerializer_Write_Tests<EDMapping
             Mappings = {
                 // primary + settings
                 new EDMapping { Group = "Ship-FlightRotation", Name = "PitchAxisRaw", Binding = new EDBinding(JOY1, "Joy_YAxis", preserve: true), Settings = { 
-                    new EDMappingSetting("Ship-FlightRotation-PitchAxisRaw", "Deadzone", "0.00000000", false),
-                    new EDMappingSetting("Ship-FlightRotation-PitchAxisRaw", "Inverted", "1", true),
+                    new EDMappingSetting("Ship-FlightRotation.PitchAxisRaw", "Deadzone", "0.00000000", false),
+                    new EDMappingSetting("Ship-FlightRotation.PitchAxisRaw", "Inverted", "1", true),
                     }
                 },
                 // primary + secondary
