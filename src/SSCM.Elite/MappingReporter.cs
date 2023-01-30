@@ -43,9 +43,17 @@ public class MappingReporter : IMappingReporter<EDMappingData>
 
         sb.AppendLine(MAPPING_HEADER);
 
+        var helper = (EDMapping m, EDBinding? b, string type, bool preservedOnly) => {
+            if (b != null && (!preservedOnly || b.Preserve))
+                {
+                    WriteBinding(m.Group, m.Name, type, b, m.Settings, sb);
+                }
+        };
+
         foreach (var m in data.Mappings
             .Where(m => 
                 !options.PreservedOnly || 
+                m.Binding?.Preserve == true || 
                 m.Primary?.Preserve == true || 
                 m.Secondary?.Preserve == true || 
                 m.Settings.Any(s => s.Preserve)))
@@ -56,14 +64,9 @@ public class MappingReporter : IMappingReporter<EDMappingData>
             }
             else
             {
-                if (m.Primary != null && (!options.PreservedOnly || m.Primary.Preserve))
-                {
-                    WriteBinding(m.Group, m.Name, nameof(m.Primary), m.Primary, m.Settings, sb);
-                }
-                if (m.Secondary != null && (!options.PreservedOnly || m.Secondary.Preserve))
-                {
-                    WriteBinding(m.Group, m.Name, nameof(m.Secondary), m.Secondary, m.Settings, sb);
-                }
+                helper(m, m.Binding, nameof(m.Binding), options.PreservedOnly);
+                helper(m, m.Primary, nameof(m.Binding), options.PreservedOnly);
+                helper(m, m.Secondary, nameof(m.Binding), options.PreservedOnly);
             }
         }
     }
@@ -167,6 +170,7 @@ public class MappingReporter : IMappingReporter<EDMappingData>
                     }
                     else
                     {
+                        outputBinding(item.Key, nameof(m.Binding), m.Binding);
                         outputBinding(item.Key, nameof(m.Primary), m.Primary);
                         outputBinding(item.Key, nameof(m.Secondary), m.Secondary);
                     }

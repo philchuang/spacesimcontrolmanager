@@ -5,7 +5,7 @@ namespace SSCM.Tests;
 
 public static class AssertSscm
 {
-    public static void AreEqual(MappingMergeAction? expected, MappingMergeAction? actual)
+    public static void AreEqual(MappingMergeAction? expected, MappingMergeAction? actual, Action<object, object>? asserter = null)
     {
         if (expected == null && actual == null) return;
 
@@ -17,6 +17,13 @@ public static class AssertSscm
         if (actual == null) return;
 
         Assert.AreEqual(expected.Mode, actual.Mode, nameof(expected.Mode));
-        Assert.AreSame(expected.Value, actual.Value, nameof(expected.Value));
+        if (asserter != null)
+        {
+            asserter(expected.Value, actual.Value);            
+        }
+        else
+        {
+            Assert.AreSame(expected.Value, actual.Value, nameof(expected.Value));
+        }
     }
 }

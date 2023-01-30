@@ -168,7 +168,7 @@ public static class AssertED
         Assert.NotNull(settingElement, nameof(settingElement));
         Assert.NotNull(setting, nameof(setting));
 
-        var value = settingElement.GetAttribute("Value");
+        var value = settingElement!.GetAttribute("Value");
 
         Assert.AreEqual(setting.Value, value);
     }
