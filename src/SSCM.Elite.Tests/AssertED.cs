@@ -9,7 +9,7 @@ public static class AssertED
 {
     public static void AreEqual(EDMappingData? expected, EDMappingData? actual)
     {
-        if (expected == null && actual == null) return;
+        if (ReferenceEquals(expected, actual)) return;
 
         Assert.NotNull(expected);
         Assert.NotNull(actual);
@@ -25,7 +25,7 @@ public static class AssertED
 
     public static void AreEqual(EDMappingSetting? expected, EDMappingSetting? actual)
     {
-        if (expected == null && actual == null) return;
+        if (ReferenceEquals(expected, actual)) return;
 
         Assert.NotNull(expected);
         Assert.NotNull(actual);
@@ -42,7 +42,7 @@ public static class AssertED
 
     public static void AreEqual(EDMapping? expected, EDMapping? actual)
     {
-        if (expected == null && actual == null) return;
+        if (ReferenceEquals(expected, actual)) return;
 
         Assert.NotNull(expected);
         Assert.NotNull(actual);
@@ -61,7 +61,7 @@ public static class AssertED
 
     public static void AreEqual(EDBinding? expected, EDBinding? actual)
     {
-        if (expected == null && actual == null) return;
+        if (ReferenceEquals(expected, actual)) return;
 
         Assert.NotNull(expected);
         Assert.NotNull(actual);
@@ -77,7 +77,7 @@ public static class AssertED
 
     public static void AreEqual(EDBindingKey? expected, EDBindingKey? actual)
     {
-        if (expected == null && actual == null) return;
+        if (ReferenceEquals(expected, actual)) return;
 
         Assert.NotNull(expected);
         Assert.NotNull(actual);

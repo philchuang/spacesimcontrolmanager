@@ -102,7 +102,7 @@ public class MappingExporter_Update_Tests : TestBase
         );
     }
 
-    private string GetBindingKeyValue(XElement bindingElement) => $"{bindingElement!.GetAttribute("Device")}-{bindingElement!.GetAttribute("Key")}";
+    private string GetBindingKeyValue(XElement bindingElement) => $"{bindingElement.GetAttribute("Device")}-{bindingElement.GetAttribute("Key")}";
 
     #endregion
     

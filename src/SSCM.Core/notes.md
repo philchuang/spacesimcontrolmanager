@@ -4,23 +4,34 @@
 
 ### ACTIONS
 
-- import: load data from actionmaps.xml into scmappings.json
-- merge: merge data from actionmaps.xml into scmappings.json
-- export: update target with data from scmappings.json
+- import: load data from game config into sscm data
+- merge: merge data from game config into sscm data
+- export: update game config with data from sscm data
 
 ### DATA MODEL
 
 - source: collection of captured values and whether or not they should be preserved
-- target: game-specific configuration, actionmaps.xml for SC
+- target: game-specific configuration, actionmaps.xml for SC, custom.4.0.binds for ED
+
+### Star Citizen
+
 - input (joysticks, etc.) :: &lt;options>
 - input setting :: children of &lt;options>
-- mapping (bindings) :: &lt;action>
+- mapping group :: &lt;actionMap>
+- mapping :: &lt;action>
+- binding :: &lt;rebind>
+
+### Elite Dangerous
+
+- mapping group - determined by EDMappingConfig.yml
+- mapping :: any element with &lt;Binding>, &lt;Primary>, or &lt;Secondary>
+- binding :: &lt;Binding>, &lt;Primary>, or &lt;Secondary>
+- mapping setting :: any child element of a mapping that is not &lt;Binding>, &lt;Primary>, or &lt;Secondary> and has a @Value attribute
+- setting :: any element that is not a mapping and has a @Value attribute
 
 ### UNIT TESTS
 
-- original vs updated
-- testdata + testxml
+- current vs updated
+- original vs final
 
 ## TODOs
-
-### add support for Elite Dangerous

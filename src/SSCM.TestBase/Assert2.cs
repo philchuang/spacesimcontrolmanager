@@ -12,7 +12,7 @@ public static class Assert2
 
     public static void EnumerableEquals<T>(IEnumerable<T> expected, IEnumerable<T> actual, Action<T, T>? equate = null)
     {
-        if (expected == null && actual == null) return;
+        if (ReferenceEquals(expected, actual)) return;
 
         Assert.NotNull(expected);
         Assert.NotNull(actual);
@@ -46,7 +46,7 @@ public static class Assert2
 
     public static void DictionaryEquals<K,V1,V2>(IDictionary<K, V1> expected, IDictionary<K, V2> actual, bool expectedOnly = false, Action<V1, V2>? assert = null)
     {
-        if (expected == null && actual == null) return;
+        if (ReferenceEquals(expected, actual)) return;
 
         Assert.NotNull(expected);
         Assert.NotNull(actual);

@@ -16,6 +16,7 @@ namespace SSCM.StarCitizen.Tests;
 #pragma warning disable CS8602
 #pragma warning disable CS8604
 #pragma warning disable CS8619
+#pragma warning disable CS8629
 
 [TestFixture]
 public class MappingExporter_Update_Tests : TestBase

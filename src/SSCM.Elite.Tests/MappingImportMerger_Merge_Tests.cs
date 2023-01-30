@@ -5,6 +5,8 @@ using static SSCM.Tests.Extensions;
 
 namespace SSCM.Elite.Tests;
 
+#pragma warning disable CS8602
+
 [TestFixture]
 public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 {
@@ -41,10 +43,10 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 
         // Assert
         // check addedMapping is not in original
-        var originalMapping = this._original!.Mappings.SingleOrDefault(m => m.Name == addedMapping.Name);
+        var originalMapping = this._original.Mappings.SingleOrDefault(m => m.Name == addedMapping.Name);
         Assert.IsNull(originalMapping, nameof(originalMapping));
         // check addedMapping is in final
-        var finalMapping = this._current!.Mappings.SingleOrDefault(m => m.Name == addedMapping.Name);
+        var finalMapping = this._current.Mappings.SingleOrDefault(m => m.Name == addedMapping.Name);
         Assert.NotNull(finalMapping, nameof(finalMapping));
         AssertED.AreEqual(addedMapping, finalMapping);
     }
@@ -60,10 +62,10 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 
         // Assert
         // check removedMapping is in original
-        var originalMapping = this._original!.Mappings.SingleOrDefault(m => m.Name == removedMapping.Name);
+        var originalMapping = this._original.Mappings.SingleOrDefault(m => m.Name == removedMapping.Name);
         Assert.IsNotNull(originalMapping, nameof(originalMapping));
         // check removedMapping is not in final
-        var finalMapping = this._current!.Mappings.SingleOrDefault(m => m.Name == removedMapping.Name);
+        var finalMapping = this._current.Mappings.SingleOrDefault(m => m.Name == removedMapping.Name);
         Assert.IsNull(finalMapping, nameof(finalMapping));
     }
 
@@ -78,10 +80,10 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 
         // Assert
         // check removedMapping is in original
-        var originalMapping = this._original!.Mappings.SingleOrDefault(m => m.Name == removedMapping.Name);
+        var originalMapping = this._original.Mappings.SingleOrDefault(m => m.Name == removedMapping.Name);
         Assert.IsNotNull(originalMapping, nameof(originalMapping));
         // check removedMapping is still in final
-        var finalMapping = this._current!.Mappings.SingleOrDefault(m => m.Name == removedMapping.Name);
+        var finalMapping = this._current.Mappings.SingleOrDefault(m => m.Name == removedMapping.Name);
         Assert.IsNotNull(finalMapping, nameof(finalMapping));
         AssertED.AreEqual(originalMapping, finalMapping);
     }
@@ -100,12 +102,12 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 
         // Assert
         // check original mapping exists
-        var originalMapping = this._original!.Mappings.SingleOrDefault(m => m.Name == current.Name);
+        var originalMapping = this._original.Mappings.SingleOrDefault(m => m.Name == current.Name);
         Assert.IsNotNull(originalMapping, nameof(originalMapping));
         // check current mapping is updated
-        var finalMapping = this._current!.Mappings.SingleOrDefault(m => m.Name == current.Name);
+        var finalMapping = this._current.Mappings.SingleOrDefault(m => m.Name == current.Name);
         Assert.IsNotNull(finalMapping, nameof(finalMapping));
-        Assert.Throws<AssertionException>(() => AssertED.AreEqual(originalMapping!.GetBinding(type), finalMapping!.GetBinding(type)));
+        Assert.Throws<AssertionException>(() => AssertED.AreEqual(originalMapping.GetBinding(type), finalMapping.GetBinding(type)));
     }
     
     [Test]
@@ -122,12 +124,12 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 
         // Assert
         // check original mapping exists
-        var originalMapping = this._original!.Mappings.SingleOrDefault(m => m.Name == current.Name);
+        var originalMapping = this._original.Mappings.SingleOrDefault(m => m.Name == current.Name);
         Assert.IsNotNull(originalMapping, nameof(originalMapping));
         // check current mapping is not changed
-        var finalMapping = this._current!.Mappings.SingleOrDefault(m => m.Name == current.Name);
+        var finalMapping = this._current.Mappings.SingleOrDefault(m => m.Name == current.Name);
         Assert.IsNotNull(finalMapping, nameof(finalMapping));
-        AssertED.AreEqual(originalMapping!.GetBinding(type), finalMapping!.GetBinding(type));
+        AssertED.AreEqual(originalMapping.GetBinding(type), finalMapping.GetBinding(type));
     }
 
     [Test]
@@ -141,13 +143,13 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 
         // Assert
         // check original mapping exists
-        var originalMapping = this._original!.Mappings.SingleOrDefault(m => m.Name == current.Name);
+        var originalMapping = this._original.Mappings.SingleOrDefault(m => m.Name == current.Name);
         Assert.IsNotNull(originalMapping, nameof(originalMapping));
         // check current mapping is updated
-        var finalMapping = this._current!.Mappings.SingleOrDefault(m => m.Name == current.Name);
+        var finalMapping = this._current.Mappings.SingleOrDefault(m => m.Name == current.Name);
         Assert.IsNotNull(finalMapping, nameof(finalMapping));
-        Assert.Throws<AssertionException>(() => AssertED.AreEqual(originalMapping!.Primary, finalMapping!.Primary));
-        Assert.Throws<AssertionException>(() => AssertED.AreEqual(originalMapping!.Secondary, finalMapping!.Secondary));
+        Assert.Throws<AssertionException>(() => AssertED.AreEqual(originalMapping.Primary, finalMapping.Primary));
+        Assert.Throws<AssertionException>(() => AssertED.AreEqual(originalMapping.Secondary, finalMapping.Secondary));
     }
 
     [Test]
@@ -161,13 +163,13 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 
         // Assert
         // check addedSetting is not in original
-        var originalMapping = this._original!.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
+        var originalMapping = this._original.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
         Assert.IsNotNull(originalMapping, nameof(originalMapping));
-        var originalSetting = originalMapping!.Settings.SingleOrDefault(s => s.Name == addedSetting.Name);
+        var originalSetting = originalMapping.Settings.SingleOrDefault(s => s.Name == addedSetting.Name);
         Assert.IsNull(originalSetting, nameof(originalSetting));
         // check addedSetting is in final
-        var finalMapping = this._current!.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
-        var finalSetting = finalMapping!.Settings.SingleOrDefault(s => s.Name == addedSetting.Name);
+        var finalMapping = this._current.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
+        var finalSetting = finalMapping.Settings.SingleOrDefault(s => s.Name == addedSetting.Name);
         Assert.NotNull(finalSetting, nameof(finalSetting));
         AssertED.AreEqual(addedSetting, finalSetting);
     }
@@ -183,14 +185,14 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 
         // Assert
         // check removedSetting is in original
-        var originalMapping = this._original!.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
+        var originalMapping = this._original.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
         Assert.IsNotNull(originalMapping, nameof(originalMapping));
-        var originalSetting = originalMapping!.Settings.SingleOrDefault(s => s.Name == removedSetting.Name);
+        var originalSetting = originalMapping.Settings.SingleOrDefault(s => s.Name == removedSetting.Name);
         Assert.IsNotNull(originalSetting, nameof(originalSetting));
         // check removedSetting is not in final
-        var finalMapping = this._current!.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
+        var finalMapping = this._current.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
         Assert.IsNotNull(finalMapping, nameof(finalMapping));
-        var finalSetting = finalMapping!.Settings.SingleOrDefault(s => s.Name == removedSetting.Name);
+        var finalSetting = finalMapping.Settings.SingleOrDefault(s => s.Name == removedSetting.Name);
         Assert.IsNull(finalSetting, nameof(finalSetting));
     }
 
@@ -205,14 +207,14 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 
         // Assert
         // check removedSetting is in original
-        var originalMapping = this._original!.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
+        var originalMapping = this._original.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
         Assert.IsNotNull(originalMapping, nameof(originalMapping));
-        var originalSetting = originalMapping!.Settings.SingleOrDefault(s => s.Name == removedSetting.Name);
+        var originalSetting = originalMapping.Settings.SingleOrDefault(s => s.Name == removedSetting.Name);
         Assert.IsNotNull(originalSetting, nameof(originalSetting));
         // check removedSetting is in final
-        var finalMapping = this._current!.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
+        var finalMapping = this._current.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
         Assert.IsNotNull(finalMapping, nameof(finalMapping));
-        var finalSetting = finalMapping!.Settings.SingleOrDefault(s => s.Name == removedSetting.Name);
+        var finalSetting = finalMapping.Settings.SingleOrDefault(s => s.Name == removedSetting.Name);
         Assert.IsNotNull(finalSetting, nameof(finalSetting));
         AssertED.AreEqual(originalSetting, finalSetting);
     }
@@ -229,17 +231,17 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 
         // Assert
         // get original setting
-        var originalMapping = this._original!.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
+        var originalMapping = this._original.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
         Assert.IsNotNull(originalMapping, nameof(originalMapping));
-        var originalSetting = originalMapping!.Settings.SingleOrDefault(s => s.Name == updatedSetting.Name);
+        var originalSetting = originalMapping.Settings.SingleOrDefault(s => s.Name == updatedSetting.Name);
         Assert.IsNotNull(originalSetting, nameof(originalSetting));
         // get final setting
-        var finalMapping = this._current!.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
+        var finalMapping = this._current.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
         Assert.IsNotNull(finalMapping, nameof(finalMapping));
-        var finalSetting = finalMapping!.Settings.SingleOrDefault(s => s.Name == updatedSetting.Name);
+        var finalSetting = finalMapping.Settings.SingleOrDefault(s => s.Name == updatedSetting.Name);
         Assert.IsNotNull(finalSetting, nameof(finalSetting));
         // assert different from original
-        Assert.AreNotEqual(originalSetting!.Value, finalSetting!.Value);
+        Assert.AreNotEqual(originalSetting.Value, finalSetting.Value);
         // assert same as updated
         Assert.AreEqual(updatedSetting.Value, finalSetting.Value);
     }
@@ -255,17 +257,17 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 
         // Assert
         // get original setting
-        var originalMapping = this._original!.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
+        var originalMapping = this._original.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
         Assert.IsNotNull(originalMapping, nameof(originalMapping));
-        var originalSetting = originalMapping!.Settings.SingleOrDefault(s => s.Name == updatedSetting.Name);
+        var originalSetting = originalMapping.Settings.SingleOrDefault(s => s.Name == updatedSetting.Name);
         Assert.IsNotNull(originalSetting, nameof(originalSetting));
         // get final setting
-        var finalMapping = this._current!.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
+        var finalMapping = this._current.Mappings.SingleOrDefault(m => m.Name == mapping.Name);
         Assert.IsNotNull(finalMapping, nameof(finalMapping));
-        var finalSetting = finalMapping!.Settings.SingleOrDefault(s => s.Name == updatedSetting.Name);
+        var finalSetting = finalMapping.Settings.SingleOrDefault(s => s.Name == updatedSetting.Name);
         Assert.IsNotNull(finalSetting, nameof(finalSetting));
         // assert same as original
-        Assert.AreEqual(originalSetting!.Value, finalSetting!.Value);
+        Assert.AreEqual(originalSetting.Value, finalSetting.Value);
         // assert different from updated
         Assert.AreNotEqual(updatedSetting.Value, finalSetting.Value);
     }
@@ -281,10 +283,10 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 
         // Assert
         // check addedSetting is not in original
-        var originalSetting = this._original!.Settings.SingleOrDefault(s => s.Name == addedSetting.Name);
+        var originalSetting = this._original.Settings.SingleOrDefault(s => s.Name == addedSetting.Name);
         Assert.IsNull(originalSetting, nameof(originalSetting));
         // check addedSetting is in final
-        var finalSetting = this._current!.Settings.SingleOrDefault(s => s.Name == addedSetting.Name);
+        var finalSetting = this._current.Settings.SingleOrDefault(s => s.Name == addedSetting.Name);
         Assert.NotNull(finalSetting, nameof(finalSetting));
         AssertED.AreEqual(addedSetting, finalSetting);
     }
@@ -300,10 +302,10 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 
         // Assert
         // check removedSetting is in original
-        var originalSetting = this._original!.Settings.SingleOrDefault(s => s.Name == removedSetting.Name);
+        var originalSetting = this._original.Settings.SingleOrDefault(s => s.Name == removedSetting.Name);
         Assert.IsNotNull(originalSetting, nameof(originalSetting));
         // check removedSetting is not in final
-        var finalSetting = this._current!.Settings.SingleOrDefault(s => s.Name == removedSetting.Name);
+        var finalSetting = this._current.Settings.SingleOrDefault(s => s.Name == removedSetting.Name);
         Assert.IsNull(finalSetting, nameof(finalSetting));
     }
 
@@ -318,10 +320,10 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 
         // Assert
         // check removedSetting is in original
-        var originalSetting = this._original!.Settings.SingleOrDefault(s => s.Name == removedSetting.Name);
+        var originalSetting = this._original.Settings.SingleOrDefault(s => s.Name == removedSetting.Name);
         Assert.IsNotNull(originalSetting, nameof(originalSetting));
         // check removedSetting is in final
-        var finalSetting = this._current!.Settings.SingleOrDefault(s => s.Name == removedSetting.Name);
+        var finalSetting = this._current.Settings.SingleOrDefault(s => s.Name == removedSetting.Name);
         Assert.IsNotNull(finalSetting, nameof(finalSetting));
         AssertED.AreEqual(originalSetting, finalSetting);
     }
@@ -338,13 +340,13 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 
         // Assert
         // get original setting
-        var originalSetting = this._original!.Settings.SingleOrDefault(s => s.Name == updatedSetting.Name);
+        var originalSetting = this._original.Settings.SingleOrDefault(s => s.Name == updatedSetting.Name);
         Assert.IsNotNull(originalSetting, nameof(originalSetting));
         // get final setting
-        var finalSetting = this._current!.Settings.SingleOrDefault(s => s.Name == updatedSetting.Name);
+        var finalSetting = this._current.Settings.SingleOrDefault(s => s.Name == updatedSetting.Name);
         Assert.IsNotNull(finalSetting, nameof(finalSetting));
         // assert different from original
-        Assert.AreNotEqual(originalSetting!.Value, finalSetting!.Value);
+        Assert.AreNotEqual(originalSetting.Value, finalSetting.Value);
         // assert same as updated
         Assert.AreEqual(updatedSetting.Value, finalSetting.Value);
     }
@@ -360,13 +362,13 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
 
         // Assert
         // get original setting
-        var originalSetting = this._original!.Settings.SingleOrDefault(s => s.Name == updatedSetting.Name);
+        var originalSetting = this._original.Settings.SingleOrDefault(s => s.Name == updatedSetting.Name);
         Assert.IsNotNull(originalSetting, nameof(originalSetting));
         // get final setting
-        var finalSetting = this._current!.Settings.SingleOrDefault(s => s.Name == updatedSetting.Name);
+        var finalSetting = this._current.Settings.SingleOrDefault(s => s.Name == updatedSetting.Name);
         Assert.IsNotNull(finalSetting, nameof(finalSetting));
         // assert same as original
-        Assert.AreEqual(originalSetting!.Value, finalSetting!.Value);
+        Assert.AreEqual(originalSetting.Value, finalSetting.Value);
         // assert different from updated
         Assert.AreNotEqual(updatedSetting.Value, finalSetting.Value);
     }

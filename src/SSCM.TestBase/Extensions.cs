@@ -5,6 +5,8 @@ using Newtonsoft.Json;
 
 namespace SSCM.Tests;
 
+#pragma warning disable CS8604
+
 public static class Extensions
 {
     public static T JsonCopy<T>(this T self)

@@ -5,6 +5,8 @@ using SSCM.Tests.Mocks;
 
 namespace SSCM.Tests;
 
+#pragma warning disable CS8604
+
 [TestFixture]
 public abstract class MappingExporter_BackupRestore_TestBase<TData> : TestBase
 {

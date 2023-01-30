@@ -8,7 +8,7 @@ public static class AssertSC
 {
     public static void AreEqual(SCMappingData? expected, SCMappingData? actual)
     {
-        if (expected == null && actual == null) return;
+        if (ReferenceEquals(expected, actual)) return;
 
         Assert.NotNull(expected);
         Assert.NotNull(actual);
@@ -24,7 +24,7 @@ public static class AssertSC
 
     public static void AreEqual(SCInputDevice? expected, SCInputDevice? actual)
     {
-        if (expected == null && actual == null) return;
+        if (ReferenceEquals(expected, actual)) return;
 
         Assert.NotNull(expected);
         Assert.NotNull(actual);
@@ -41,7 +41,7 @@ public static class AssertSC
 
     public static void AreEqual(SCInputDeviceSetting? expected, SCInputDeviceSetting? actual)
     {
-        if (expected == null && actual == null) return;
+        if (ReferenceEquals(expected, actual)) return;
 
         Assert.NotNull(expected);
         Assert.NotNull(actual);
@@ -58,7 +58,7 @@ public static class AssertSC
 
     public static void AreEqual(SCMapping? expected, SCMapping? actual)
     {
-        if (expected == null && actual == null) return;
+        if (ReferenceEquals(expected, actual)) return;
 
         Assert.NotNull(expected);
         Assert.NotNull(actual);

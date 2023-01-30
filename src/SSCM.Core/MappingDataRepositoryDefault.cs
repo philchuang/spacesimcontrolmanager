@@ -20,7 +20,7 @@ public class MappingDataRepositoryDefault<TData> : IMappingDataRepository<TData>
     {
         this._platform = platform;
         this.MappingDataSavePath = mappingDataSavePath;
-        this._mappingDataSaveDir = new FileInfo(this.MappingDataSavePath).DirectoryName;
+        this._mappingDataSaveDir = new FileInfo(this.MappingDataSavePath)!.DirectoryName!;
         this.BackupFilenameFormat = backupFilenameFormat;
     }
 

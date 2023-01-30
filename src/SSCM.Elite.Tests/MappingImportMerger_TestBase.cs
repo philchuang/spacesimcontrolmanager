@@ -5,6 +5,8 @@ using static SSCM.Tests.Extensions;
 
 namespace SSCM.Elite.Tests;
 
+#pragma warning disable CS8602
+
 public abstract class MappingImportMerger_TestBase
 {
     protected readonly MappingImportMerger _merger;
@@ -68,8 +70,8 @@ public abstract class MappingImportMerger_TestBase
         var removed = this._updated.Mappings.Single(m => m.Id == "Ship-Throttle.ForwardKey");
         this._updated.Mappings.Remove(removed);
         var removedCurrent = this._current.Mappings.Single(m => m.Id == removed.Id);
-        removedCurrent.Primary!.Preserve = false;
-        removedCurrent.Secondary!.Preserve = false;
+        removedCurrent.Primary.Preserve = false;
+        removedCurrent.Secondary.Preserve = false;
         return removedCurrent;
     }
 
@@ -78,8 +80,8 @@ public abstract class MappingImportMerger_TestBase
         this.Detects_All_Unchanged_Arrange();
         var removed = this.Detects_Mapping_Removed_NotPreserved_Arrange();
         var removedCurrent = this._current.Mappings.Single(m => m.Id == removed.Id);
-        removedCurrent.Primary!.Preserve = true;
-        removedCurrent.Secondary!.Preserve = true;
+        removedCurrent.Primary.Preserve = true;
+        removedCurrent.Secondary.Preserve = true;
         return removedCurrent;
     }
 
@@ -92,9 +94,9 @@ public abstract class MappingImportMerger_TestBase
         var changed = this._updated.Mappings.Single(m => m.Id == mappingId);
         var current = this._current.Mappings.Single(m => m.Id == changed.Id);
         var changedBinding = changed.GetBinding(type);
-        changedBinding!.Key.Device = RandomString();
-        changedBinding!.Key.Key = RandomString();
-        current.GetBinding(type)!.Preserve = preserve;
+        changedBinding.Key.Device = RandomString();
+        changedBinding.Key.Key = RandomString();
+        current.GetBinding(type).Preserve = preserve;
         return (current, changed);
     }
 
@@ -111,12 +113,12 @@ public abstract class MappingImportMerger_TestBase
         this.Detects_All_Unchanged_Arrange();
         var changed = this._updated.Mappings.Single(m => m.Id == mappingId);
         var current = this._current.Mappings.Single(m => m.Id == changed.Id);
-        changed.Primary!.Key.Device = RandomString();
-        changed.Primary!.Key.Key = RandomString();
-        current.Primary!.Preserve = false;
-        changed.Secondary!.Key.Device = RandomString();
-        changed.Secondary!.Key.Key = RandomString();
-        current.Secondary!.Preserve = false;
+        changed.Primary.Key.Device = RandomString();
+        changed.Primary.Key.Key = RandomString();
+        current.Primary.Preserve = false;
+        changed.Secondary.Key.Device = RandomString();
+        changed.Secondary.Key.Key = RandomString();
+        current.Secondary.Preserve = false;
         return (current, changed);
     }
 

@@ -7,7 +7,7 @@ public static class AssertSscm
 {
     public static void AreEqual(MappingMergeAction? expected, MappingMergeAction? actual, Action<object, object>? asserter = null)
     {
-        if (expected == null && actual == null) return;
+        if (ReferenceEquals(expected, actual)) return;
 
         Assert.NotNull(expected);
         Assert.NotNull(actual);

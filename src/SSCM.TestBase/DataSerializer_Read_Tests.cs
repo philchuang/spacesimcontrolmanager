@@ -4,6 +4,9 @@ using static SSCM.Tests.Extensions;
 
 namespace SSCM.Tests;
 
+#pragma warning disable CS8602
+#pragma warning disable CS8604
+
 [TestFixture]
 public abstract class DataSerializer_Read_Tests<TData>
     where TData: class
