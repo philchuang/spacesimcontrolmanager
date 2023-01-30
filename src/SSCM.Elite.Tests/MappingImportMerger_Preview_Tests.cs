@@ -155,101 +155,100 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         Assert.IsFalse(this._merger.ResultED.MergeActions.Any());
     }
 
-    /*
     [Test]
-    public void Detects_MappingSetting_Added_NotPreserved()
+    public void Detects_MappingSetting_Added()
     {
-        Assert.Fail();
-    }
+        // Arrange
+        var added = this.Detects_MappingSetting_Added_Arrange();
 
-    [Test]
-    public void Detects_MappingSetting_Added_Preserved()
-    {
-        Assert.Fail();
+        // Act
+        var canMerge = this.Act();
+
+        // Assert
+        Assert.IsTrue(canMerge);
+        Assert.IsFalse(this._merger.ResultED.MappingDiffs.Any());
+        Assert.AreEqual(1, this._merger.ResultED.SettingDiffs.Added.Count);
+        AssertED.AreEqual(added, this._merger.ResultED.SettingDiffs.Added[0]);
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Removed.Any());
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Changed.Any());
+        Assert.IsTrue(this._merger.ResultED.HasDifferences);
+        Assert.IsTrue(this._merger.ResultED.CanMerge);
+        Assert.AreEqual(1, this._merger.ResultED.MergeActions.Count);
+        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, added), this._merger.ResultED.MergeActions[0]);
     }
 
     [Test]
     public void Detects_MappingSetting_Removed_NotPreserved()
     {
-        Assert.Fail();
+        // Arrange
+        var removed = this.Detects_MappingSetting_Removed_NotPreserved_Arrange();
+
+        // Act
+        var canMerge = this.Act();
+
+        // Assert
+        Assert.IsTrue(canMerge);
+        Assert.IsFalse(this._merger.ResultED.MappingDiffs.Any());
+        Assert.AreEqual(1, this._merger.ResultED.SettingDiffs.Removed.Count);
+        AssertED.AreEqual(removed, this._merger.ResultED.SettingDiffs.Removed[0]);
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Added.Any());
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Changed.Any());
+        Assert.IsTrue(this._merger.ResultED.HasDifferences);
+        Assert.IsTrue(this._merger.ResultED.CanMerge);
+        Assert.AreEqual(1, this._merger.ResultED.MergeActions.Count);
+        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, removed), this._merger.ResultED.MergeActions[0]);
     }
 
     [Test]
     public void Detects_MappingSetting_Removed_Preserved()
     {
-        Assert.Fail();
+        // Arrange
+        var removed = this.Detects_MappingSetting_Removed_Preserved_Arrange();
+
+        // Act
+        var canMerge = this.Act();
+
+        // Assert
+        Assert.IsFalse(canMerge);
+        Assert.IsFalse(this._merger.ResultED.MappingDiffs.Any());
+        Assert.AreEqual(1, this._merger.ResultED.SettingDiffs.Removed.Count);
+        AssertED.AreEqual(removed, this._merger.ResultED.SettingDiffs.Removed[0]);
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Added.Any());
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Changed.Any());
+        Assert.IsTrue(this._merger.ResultED.HasDifferences);
+        Assert.IsFalse(this._merger.ResultED.CanMerge);
+        Assert.IsFalse(this._merger.ResultED.MergeActions.Any());
     }
+
 
     [Test]
     public void Detects_MappingSetting_Changed_NotPreserved()
     {
-        Assert.Fail();
-    }
+        // Arrange
+        var (current, updated) = this.Detects_MappingSetting_Changed_NotPreserved_Arrange();
 
+        // Act
+        var canMerge = this.Act();
+
+        // Assert
+        Assert.IsTrue(canMerge);
+        Assert.IsFalse(this._merger.ResultED.MappingDiffs.Any());
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Added.Any());
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Removed.Any());
+        Assert.AreEqual(1, this._merger.ResultED.SettingDiffs.Changed.Count);
+        AssertED.AreEqual(current, this._merger.ResultED.SettingDiffs.Changed[0].Current);
+        AssertED.AreEqual(updated, this._merger.ResultED.SettingDiffs.Changed[0].Updated);
+        Assert.IsTrue(this._merger.ResultED.HasDifferences);
+        Assert.IsTrue(this._merger.ResultED.CanMerge);
+        Assert.AreEqual(1, this._merger.ResultED.MergeActions.Count);
+        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Replace, updated), this._merger.ResultED.MergeActions[0]);
+    }
+    
     [Test]
     public void Detects_MappingSetting_Changed_Preserved()
     {
-        Assert.Fail();
-    }
-
-    [Test]
-    public void Detects_Settings_Added()
-    {
         // Arrange
-        this.Detects_Settings_Added_Arrange();
-        var currentInput = this._current.Inputs[0];
-        var updatedInput = this._updated.Inputs[0];
-
-        // Act
-        var canMerge = this.Act();
-
-        // Assert
-        Assert.IsTrue(canMerge);
-        Assert.IsFalse(this._merger.ResultED.InputDiffs.Added.Any());
-        Assert.IsFalse(this._merger.ResultED.InputDiffs.Removed.Any());
-        Assert.AreEqual(1, this._merger.ResultED.InputDiffs.Changed.Count);
-        AssertED.AreEqual(currentInput, this._merger.ResultED.InputDiffs.Changed[0].Current);
-        AssertED.AreEqual(updatedInput, this._merger.ResultED.InputDiffs.Changed[0].Updated);
-        Assert.IsFalse(this._merger.ResultED.MappingDiffs.Any());
-        Assert.IsTrue(this._merger.ResultED.HasDifferences);
-        Assert.IsTrue(this._merger.ResultED.CanMerge);
-        Assert.AreEqual(1, this._merger.ResultED.MergeActions.Count);
-        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, updatedInput.Settings[0]), this._merger.ResultED.MergeActions[0]);
-    }
-
-    [Test]
-    public void Detects_Settings_Removed_NotPreserved()
-    {
-        // Arrange
-        this.Detects_Settings_Removed_NotPreserved_Arrange();
-        var currentInput = this._current.Inputs[0];
-        var updatedInput = this._updated.Inputs[0];
-
-        // Act
-        var canMerge = this.Act();
-
-        // Assert
-        Assert.IsTrue(canMerge);
-        Assert.IsFalse(this._merger.ResultED.InputDiffs.Added.Any());
-        Assert.IsFalse(this._merger.ResultED.InputDiffs.Removed.Any());
-        Assert.AreEqual(1, this._merger.ResultED.InputDiffs.Changed.Count);
-        AssertED.AreEqual(currentInput, this._merger.ResultED.InputDiffs.Changed[0].Current);
-        AssertED.AreEqual(updatedInput, this._merger.ResultED.InputDiffs.Changed[0].Updated);
-        Assert.IsFalse(this._merger.ResultED.MappingDiffs.Any());
-        Assert.IsTrue(this._merger.ResultED.HasDifferences);
-        Assert.IsTrue(this._merger.ResultED.CanMerge);
-        Assert.AreEqual(1, this._merger.ResultED.MergeActions.Count);
-        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, currentInput.Settings[0]), this._merger.ResultED.MergeActions[0]);
-    }
-
-    [Test]
-    public void Detects_Settings_Removed_Preserved()
-    {
-        // Arrange
-        this.Detects_Settings_Removed_NotPreserved_Arrange();
-        var currentInput = this._current.Inputs[0];
-        var updatedInput = this._updated.Inputs[0];
-        currentInput.Settings[0].Preserve = true;
+        var (current, updated) = this.Detects_MappingSetting_Changed_Preserved_Arrange();
 
         // Act
         var canMerge = this.Act();
@@ -257,115 +256,138 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         // Assert
         Assert.IsFalse(canMerge);
         Assert.IsTrue(this._merger.ResultED.HasDifferences);
-        Assert.IsFalse(this._merger.ResultED.InputDiffs.Added.Any());
-        Assert.IsFalse(this._merger.ResultED.InputDiffs.Removed.Any());
-        Assert.AreEqual(1, this._merger.ResultED.InputDiffs.Changed.Count);
-        AssertED.AreEqual(currentInput, this._merger.ResultED.InputDiffs.Changed[0].Current);
-        AssertED.AreEqual(updatedInput, this._merger.ResultED.InputDiffs.Changed[0].Updated);
         Assert.IsFalse(this._merger.ResultED.MappingDiffs.Any());
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Added.Any());
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Removed.Any());
+        Assert.AreEqual(1, this._merger.ResultED.SettingDiffs.Changed.Count);
+        AssertED.AreEqual(current, this._merger.ResultED.SettingDiffs.Changed[0].Current);
+        AssertED.AreEqual(updated, this._merger.ResultED.SettingDiffs.Changed[0].Updated);
         Assert.IsTrue(this._merger.ResultED.HasDifferences);
         Assert.IsFalse(this._merger.ResultED.CanMerge);
         Assert.IsFalse(this._merger.ResultED.MergeActions.Any());
     }
 
     [Test]
-    public void Detects_Settings_Changed_NotPreserved()
+    public void Detects_Setting_Added()
     {
         // Arrange
-        this.Detects_Settings_Changed_NotPreserved_Arrange();
-        var currentInput = this._current.Inputs[0];
-        var updatedInput = this._updated.Inputs[0];
-
-        // Act
-        var canMerge = this.Act();
-
-        // Arrange
-        Assert.IsTrue(canMerge);
-        Assert.IsFalse(this._merger.ResultED.InputDiffs.Added.Any());
-        Assert.IsFalse(this._merger.ResultED.InputDiffs.Removed.Any());
-        Assert.AreEqual(1, this._merger.ResultED.InputDiffs.Changed.Count);
-        AssertED.AreEqual(currentInput, this._merger.ResultED.InputDiffs.Changed[0].Current);
-        AssertED.AreEqual(updatedInput, this._merger.ResultED.InputDiffs.Changed[0].Updated);
-        Assert.IsFalse(this._merger.ResultED.MappingDiffs.Any());
-        Assert.IsTrue(this._merger.ResultED.HasDifferences);
-        Assert.IsTrue(this._merger.ResultED.CanMerge);
-        Assert.AreEqual(1, this._merger.ResultED.MergeActions.Count);
-        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Replace, updatedInput.Settings[0]), this._merger.ResultED.MergeActions[0]);
-    }
-
-    [Test]
-    public void Detects_Settings_Changed_Preserved()
-    {
-        // Arrange
-        this.Detects_Settings_Changed_NotPreserved_Arrange();
-        var currentInput = this._current.Inputs[0];
-        var updatedInput = this._updated.Inputs[0];
-        currentInput.Settings[0].Preserve = true;
-
-        // Act
-        var canMerge = this.Act();
-
-        // Arrange
-        Assert.IsFalse(canMerge);
-        Assert.IsTrue(this._merger.ResultED.HasDifferences);
-        Assert.IsFalse(this._merger.ResultED.InputDiffs.Added.Any());
-        Assert.IsFalse(this._merger.ResultED.InputDiffs.Removed.Any());
-        Assert.AreEqual(1, this._merger.ResultED.InputDiffs.Changed.Count);
-        AssertED.AreEqual(currentInput, this._merger.ResultED.InputDiffs.Changed[0].Current);
-        AssertED.AreEqual(updatedInput, this._merger.ResultED.InputDiffs.Changed[0].Updated);
-        Assert.IsFalse(this._merger.ResultED.MappingDiffs.Any());
-        Assert.IsTrue(this._merger.ResultED.HasDifferences);
-        Assert.IsFalse(this._merger.ResultED.CanMerge);
-        Assert.IsFalse(this._merger.ResultED.MergeActions.Any());
-    }
-
-    [Test]
-    public void Creates_Merge_Actions()
-    {
-        // Arrange
-        var (addedInput, removedInput, currentChangingInput, updatedChangingInput, 
-            addedSetting, removedSetting, updatedChangingSetting, 
-            addedMapping, removedMapping, removedMappingButPreserved, currentChangedMapping, updatedChangedMapping, currentChangedMappingButPreserved, updatedChangedMappingButPreserved) = this.Creates_Merge_Actions_Arrange();
+        var added = this.Detects_Setting_Added_Arrange();
 
         // Act
         var canMerge = this.Act();
 
         // Assert
         Assert.IsTrue(canMerge);
-
-        var mergeActionsIdx = -1;
-
-        Assert.AreEqual(1, this._merger.ResultED.InputDiffs.Added.Count);
-        AssertED.AreEqual(addedInput, this._merger.ResultED.InputDiffs.Added[0]);
-        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, addedInput), this._merger.ResultED.MergeActions[++mergeActionsIdx]);
-
-        Assert.AreEqual(1, this._merger.ResultED.InputDiffs.Removed.Count);
-        AssertED.AreEqual(removedInput, this._merger.ResultED.InputDiffs.Removed[0]);
-        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, removedInput), this._merger.ResultED.MergeActions[++mergeActionsIdx]);
-
-        Assert.AreEqual(2, this._merger.ResultED.InputDiffs.Changed.Count);
-        AssertED.AreEqual(currentChangingInput, this._merger.ResultED.InputDiffs.Changed[0].Current);
-        AssertED.AreEqual(updatedChangingInput, this._merger.ResultED.InputDiffs.Changed[0].Updated);
-        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, addedSetting), this._merger.ResultED.MergeActions[++mergeActionsIdx]);
-        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, removedSetting), this._merger.ResultED.MergeActions[++mergeActionsIdx]);
-        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Replace, updatedChangingSetting), this._merger.ResultED.MergeActions[++mergeActionsIdx]);
-
-        Assert.AreEqual(1, this._merger.ResultED.MappingDiffs.Added.Count);
-        AssertED.AreEqual(addedMapping, this._merger.ResultED.MappingDiffs.Added[0]);
-        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, addedMapping), this._merger.ResultED.MergeActions[++mergeActionsIdx]);
-
-        Assert.AreEqual(2, this._merger.ResultED.MappingDiffs.Removed.Count);
-        Assert2.DictionaryEquals(new[] { removedMapping, removedMappingButPreserved }.ToDictionary(m => $"{m.ActionMap}-{m.Action}"), this._merger.ResultED.MappingDiffs.Removed.ToDictionary(m => $"{m.ActionMap}-{m.Action}"), true, AssertED.AreEqual);
-        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, removedMapping), this._merger.ResultED.MergeActions[++mergeActionsIdx]);
-
-        Assert.AreEqual(2, this._merger.ResultED.MappingDiffs.Changed.Count);
-        AssertED.AreEqual(currentChangedMapping, this._merger.ResultED.MappingDiffs.Changed[0].Current);
-        AssertED.AreEqual(updatedChangedMapping, this._merger.ResultED.MappingDiffs.Changed[0].Updated);
-        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Replace, updatedChangedMapping), this._merger.ResultED.MergeActions[++mergeActionsIdx]);
-        AssertED.AreEqual(currentChangedMappingButPreserved, this._merger.ResultED.MappingDiffs.Changed[1].Current);
-        AssertED.AreEqual(updatedChangedMappingButPreserved, this._merger.ResultED.MappingDiffs.Changed[1].Updated);
-
-        Assert.AreEqual(mergeActionsIdx + 1, this._merger.ResultED.MergeActions.Count);
+        Assert.IsFalse(this._merger.ResultED.MappingDiffs.Any());
+        Assert.AreEqual(1, this._merger.ResultED.SettingDiffs.Added.Count);
+        AssertED.AreEqual(added, this._merger.ResultED.SettingDiffs.Added[0]);
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Removed.Any());
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Changed.Any());
+        Assert.IsTrue(this._merger.ResultED.HasDifferences);
+        Assert.IsTrue(this._merger.ResultED.CanMerge);
+        Assert.AreEqual(1, this._merger.ResultED.MergeActions.Count);
+        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, added), this._merger.ResultED.MergeActions[0]);
     }
-    */
+
+    [Test]
+    public void Detects_Setting_Removed_NotPreserved()
+    {
+        // Arrange
+        var removed = this.Detects_Setting_Removed_NotPreserved_Arrange();
+
+        // Act
+        var canMerge = this.Act();
+
+        // Assert
+        Assert.IsTrue(canMerge);
+        Assert.IsFalse(this._merger.ResultED.MappingDiffs.Any());
+        Assert.AreEqual(1, this._merger.ResultED.SettingDiffs.Removed.Count);
+        AssertED.AreEqual(removed, this._merger.ResultED.SettingDiffs.Removed[0]);
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Added.Any());
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Changed.Any());
+        Assert.IsTrue(this._merger.ResultED.HasDifferences);
+        Assert.IsTrue(this._merger.ResultED.CanMerge);
+        Assert.AreEqual(1, this._merger.ResultED.MergeActions.Count);
+        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, removed), this._merger.ResultED.MergeActions[0]);
+    }
+
+    [Test]
+    public void Detects_Setting_Removed_Preserved()
+    {
+        // Arrange
+        var removed = this.Detects_Setting_Removed_Preserved_Arrange();
+
+        // Act
+        var canMerge = this.Act();
+
+        // Assert
+        Assert.IsFalse(canMerge);
+        Assert.IsFalse(this._merger.ResultED.MappingDiffs.Any());
+        Assert.AreEqual(1, this._merger.ResultED.SettingDiffs.Removed.Count);
+        AssertED.AreEqual(removed, this._merger.ResultED.SettingDiffs.Removed[0]);
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Added.Any());
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Changed.Any());
+        Assert.IsTrue(this._merger.ResultED.HasDifferences);
+        Assert.IsFalse(this._merger.ResultED.CanMerge);
+        Assert.IsFalse(this._merger.ResultED.MergeActions.Any());
+    }
+
+
+    [Test]
+    public void Detects_Setting_Changed_NotPreserved()
+    {
+        // Arrange
+        var (current, updated) = this.Detects_Setting_Changed_NotPreserved_Arrange();
+
+        // Act
+        var canMerge = this.Act();
+
+        // Assert
+        Assert.IsTrue(canMerge);
+        Assert.IsFalse(this._merger.ResultED.MappingDiffs.Any());
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Added.Any());
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Removed.Any());
+        Assert.AreEqual(1, this._merger.ResultED.SettingDiffs.Changed.Count);
+        AssertED.AreEqual(current, this._merger.ResultED.SettingDiffs.Changed[0].Current);
+        AssertED.AreEqual(updated, this._merger.ResultED.SettingDiffs.Changed[0].Updated);
+        Assert.IsTrue(this._merger.ResultED.HasDifferences);
+        Assert.IsTrue(this._merger.ResultED.CanMerge);
+        Assert.AreEqual(1, this._merger.ResultED.MergeActions.Count);
+        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Replace, updated), this._merger.ResultED.MergeActions[0]);
+    }
+    
+    [Test]
+    public void Detects_Setting_Changed_Preserved()
+    {
+        // Arrange
+        var (current, updated) = this.Detects_Setting_Changed_Preserved_Arrange();
+
+        // Act
+        var canMerge = this.Act();
+
+        // Assert
+        Assert.IsFalse(canMerge);
+        Assert.IsTrue(this._merger.ResultED.HasDifferences);
+        Assert.IsFalse(this._merger.ResultED.MappingDiffs.Any());
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Added.Any());
+        Assert.IsFalse(this._merger.ResultED.SettingDiffs.Removed.Any());
+        Assert.AreEqual(1, this._merger.ResultED.SettingDiffs.Changed.Count);
+        AssertED.AreEqual(current, this._merger.ResultED.SettingDiffs.Changed[0].Current);
+        AssertED.AreEqual(updated, this._merger.ResultED.SettingDiffs.Changed[0].Updated);
+        Assert.IsTrue(this._merger.ResultED.HasDifferences);
+        Assert.IsFalse(this._merger.ResultED.CanMerge);
+        Assert.IsFalse(this._merger.ResultED.MergeActions.Any());
+    }
+
+    // [Test]
+    // public void Creates_Merge_Actions()
+    // {
+    //     // Arrange
+
+    //     // Act
+    //     var canMerge = this.Act();
+
+    //     // Assert
+    //     Assert.IsTrue(canMerge);
+    // }
 }

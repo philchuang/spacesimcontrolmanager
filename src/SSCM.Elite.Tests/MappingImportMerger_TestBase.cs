@@ -47,6 +47,10 @@ public abstract class MappingImportMerger_TestBase
                 },
             }
         };
+
+        this._current.Mappings.SelectMany(m => new[] { m.Binding, m.Primary, m.Secondary }).ToList().ForEach(m => { if (m != null) m.Preserve = false; });
+        this._current.Settings.Concat(this._current.Mappings.SelectMany(m => m.Settings)).ToList().ForEach(s => { s.Preserve = false; });
+
         this._updated = this._current.JsonCopy();
     }
 
@@ -96,4 +100,109 @@ public abstract class MappingImportMerger_TestBase
         changedCurrent.Primary!.Preserve = true;
         return (changedCurrent, changed);
     }
+
+    protected EDMappingSetting Detects_MappingSetting_Added_Arrange()
+    {
+        this.Detects_All_Unchanged_Arrange();
+        var mapping = this._updated.Mappings.Single(m => m.Id == "Ship-FlightRotation-PitchAxisRaw");
+        var addedSetting = new EDMappingSetting(mapping.Id, RandomString(), RandomString());
+        mapping.Settings.Add(addedSetting);
+        return addedSetting;
+    }
+
+    protected EDMappingSetting Detects_MappingSetting_Removed_NotPreserved_Arrange()
+    {
+        this.Detects_All_Unchanged_Arrange();
+        var currentMapping = this._current.Mappings.Single(m => m.Id == "Ship-FlightRotation-PitchAxisRaw");
+        var updatedMapping = this._updated.Mappings.Single(m => m.Id == "Ship-FlightRotation-PitchAxisRaw");
+        var currentSetting = currentMapping.Settings.Single(s => s.Name == "Deadzone");
+        currentSetting.Preserve = false;
+        var updatedSetting = updatedMapping.Settings.Single(s => s.Name == "Deadzone");
+        updatedMapping.Settings.Remove(updatedSetting);
+        return currentSetting;
+    }
+
+    protected EDMappingSetting Detects_MappingSetting_Removed_Preserved_Arrange()
+    {
+        this.Detects_All_Unchanged_Arrange();
+        var currentMapping = this._current.Mappings.Single(m => m.Id == "Ship-FlightRotation-PitchAxisRaw");
+        var updatedMapping = this._updated.Mappings.Single(m => m.Id == "Ship-FlightRotation-PitchAxisRaw");
+        var currentSetting = currentMapping.Settings.Single(s => s.Name == "Deadzone");
+        currentSetting.Preserve = true;
+        var updatedSetting = updatedMapping.Settings.Single(s => s.Name == "Deadzone");
+        updatedMapping.Settings.Remove(updatedSetting);
+        return currentSetting;
+    }
+
+    protected (EDMappingSetting, EDMappingSetting) Detects_MappingSetting_Changed_NotPreserved_Arrange()
+    {
+        this.Detects_All_Unchanged_Arrange();
+        var currentMapping = this._current.Mappings.Single(m => m.Id == "Ship-FlightRotation-PitchAxisRaw");
+        var updatedMapping = this._updated.Mappings.Single(m => m.Id == "Ship-FlightRotation-PitchAxisRaw");
+        var currentSetting = currentMapping.Settings.Single(s => s.Name == "Deadzone");
+        currentSetting.Preserve = false;
+        var updatedSetting = updatedMapping.Settings.Single(s => s.Name == "Deadzone");
+        updatedSetting.Value = RandomString();
+        return (currentSetting, updatedSetting);
+    }
+
+    protected (EDMappingSetting, EDMappingSetting) Detects_MappingSetting_Changed_Preserved_Arrange()
+    {
+        var (currentSetting, updatedSetting) = this.Detects_MappingSetting_Changed_NotPreserved_Arrange();
+        currentSetting.Preserve = true;
+        return (currentSetting, updatedSetting);
+    }
+
+    protected EDMappingSetting Detects_Setting_Added_Arrange()
+    {
+        this.Detects_All_Unchanged_Arrange();
+        var mapping = this._updated.Mappings.Single(m => m.Id == "Ship-FlightRotation-PitchAxisRaw");
+        var addedSetting = new EDMappingSetting(mapping.Id, RandomString(), RandomString());
+        mapping.Settings.Add(addedSetting);
+        return addedSetting;
+    }
+
+    protected EDMappingSetting Detects_Setting_Removed_NotPreserved_Arrange()
+    {
+        this.Detects_All_Unchanged_Arrange();
+        var currentSetting = this._current.Settings.Single(s => s.Id == "Ship-MouseControls-MouseXMode");
+        currentSetting.Preserve = false;
+        var updatedSetting = this._updated.Settings.Single(s => s.Id == "Ship-MouseControls-MouseXMode");
+        this._updated.Settings.Remove(updatedSetting);
+        return currentSetting;
+    }
+
+    protected EDMappingSetting Detects_Setting_Removed_Preserved_Arrange()
+    {
+        this.Detects_All_Unchanged_Arrange();
+        var currentSetting = this._current.Settings.Single(s => s.Id == "Ship-MouseControls-MouseXMode");
+        currentSetting.Preserve = true;
+        var updatedSetting = this._updated.Settings.Single(s => s.Id == "Ship-MouseControls-MouseXMode");
+        this._updated.Settings.Remove(updatedSetting);
+        return currentSetting;
+    }
+
+    protected (EDMappingSetting, EDMappingSetting) Detects_Setting_Changed_NotPreserved_Arrange()
+    {
+        this.Detects_All_Unchanged_Arrange();
+        var currentSetting = this._current.Settings.Single(s => s.Id == "Ship-MouseControls-MouseXMode");
+        currentSetting.Preserve = false;
+        var updatedSetting = this._updated.Settings.Single(s => s.Id == "Ship-MouseControls-MouseXMode");
+        updatedSetting.Value = RandomString();
+        return (currentSetting, updatedSetting);
+    }
+
+    protected (EDMappingSetting, EDMappingSetting) Detects_Setting_Changed_Preserved_Arrange()
+    {
+        var (currentSetting, updatedSetting) = this.Detects_Setting_Changed_NotPreserved_Arrange();
+        currentSetting.Preserve = true;
+        return (currentSetting, updatedSetting);
+    }
+
+    // protected void Creates_Merge_Actions_Arrange()
+    // {
+    //     this.Detects_All_Unchanged_Arrange();
+        
+    //     // some massive comprehensive test that i'm not going to do right now
+    // }
 }

@@ -136,6 +136,7 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
         var changedBindingHelper = (EDMapping mapping, EDBinding? current, EDBinding? updated, string type) =>
         {
             if (current == null || updated == null) return;
+            if (EquateBindings(current, updated)) return; // wasn't this binding
             if (!current.Preserve)
             {
                 this.StandardOutput($"MAPPING changed and will merge: [{mapping.Id}-{type}] {current} => {updated}");
