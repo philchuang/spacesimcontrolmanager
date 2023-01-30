@@ -33,7 +33,7 @@ public class MappingExporter_Update_Tests : TestBase
         this._folders = new SCFoldersForTest();
     }
 
-    private string GameConfigPath => new System.IO.FileInfo(System.IO.Path.Combine(base.TestTempDir, "actionmaps.xml")).FullName;
+    private string GameConfigPath => new FileInfo(Path.Combine(base.TestTempDir, "actionmaps.xml")).FullName;
 
     [SetUp]
     protected async Task Init()
@@ -68,6 +68,8 @@ public class MappingExporter_Update_Tests : TestBase
         Assert.NotNull(this._outputXml.XPathSelectElement("/ActionMaps/ActionProfiles[@profileName='default']"));
     }
 
+    #region Helper Methods
+
     private XElement? GetInputElement(XDocument xd, string type, int instance)
     {
         return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/options[@type='{type}' and @instance='{instance}']").SingleOrDefault();
@@ -82,6 +84,8 @@ public class MappingExporter_Update_Tests : TestBase
     {
         return xd.XPathSelectElements($"/ActionMaps/ActionProfiles[@profileName='default']/actionmap[@name='{mapping.ActionMap}']/action[@name='{mapping.Action}']/rebind[starts-with(@input, '{ActionMapsXmlHelper.GetOptionsTypeAbbv(mapping.InputType)}')]").SingleOrDefault();
     }
+
+    #endregion
 
     private void Arrange_Default_MappingData()
     {
@@ -214,7 +218,7 @@ public class MappingExporter_Update_Tests : TestBase
     }
 
     [Test]
-    public async Task Update_adds_actionmap_and_action()
+    public async Task Update_creates_actionmap_and_action()
     {
         // Arrange
         this.Arrange_Default_MappingData();
@@ -239,7 +243,7 @@ public class MappingExporter_Update_Tests : TestBase
     }
 
     [Test]
-    public async Task Update_adds_action()
+    public async Task Update_creates_action()
     {
         // Arrange
         this.Arrange_Default_MappingData();
@@ -395,7 +399,7 @@ public class MappingExporter_Update_Tests : TestBase
     }
 
     [Test]
-    public async Task Update_adds_input_setting()
+    public async Task Update_creates_input_setting()
     {
         // Arrange
         this.Arrange_Default_MappingData();
@@ -430,7 +434,7 @@ public class MappingExporter_Update_Tests : TestBase
     }
 
     [Test]
-    public async Task Update_adds_input_setting_xml()
+    public async Task Update_creates_input_setting_xml()
     {
         // Arrange
         var (exportedInput, exportedSetting) = this.Arrange_XmlInputSetting_MappingData();

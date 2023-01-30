@@ -67,6 +67,8 @@ public class MappingExporter_Update_Tests : TestBase
         Assert.AreEqual("Root", this._outputXml.Root.Name.LocalName);
     }
 
+    #region Helper Methods
+
     private XElement? GetElementForMapping(XDocument xd, EDMapping mapping)
     {
         return xd.XPathSelectElements($"/Root/{mapping.Name}").SingleOrDefault();
@@ -102,6 +104,8 @@ public class MappingExporter_Update_Tests : TestBase
 
     private string GetBindingKeyValue(XElement bindingElement) => $"{bindingElement!.GetAttribute("Device")}-{bindingElement!.GetAttribute("Key")}";
 
+    #endregion
+    
     private void Arrange_Default_MappingData(bool preserve)
     {
         this._source = new EDMappingData {
