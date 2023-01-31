@@ -1,3 +1,4 @@
+using System.Xml;
 using System.Xml.Linq;
 
 namespace SSCM.Core;
@@ -26,4 +27,19 @@ public static class XmlExtensions
         return self?.Attributes().FirstOrDefault(a => a.Name.LocalName.Equals(attrName))?.Value ?? string.Empty;
     }
 
+    public static async Task<XDocument> LoadAsync(string path)
+    {
+        if (!System.IO.File.Exists(path))
+        {
+            throw new FileNotFoundException($"Could not find file [{path}]!");
+        }
+
+        using (var fs = new FileStream(path, FileMode.Open))
+        {
+            var ct = new CancellationToken();
+            var xd = await XDocument.LoadAsync(fs, LoadOptions.None, ct);
+            
+            return xd;
+        }
+    }
 }

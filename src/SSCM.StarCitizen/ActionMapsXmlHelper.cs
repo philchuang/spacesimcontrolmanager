@@ -52,15 +52,7 @@ public class ActionMapsXmlHelper
         }
     }
 
-    public async Task Save(string path)
-    {
-        using (var fs = new FileStream(path, FileMode.Create))
-        using (var xw = XmlWriter.Create(fs, new XmlWriterSettings { Async = true, Indent = true }))
-        {
-            var ct = new CancellationToken();
-            await this.Xml.WriteToAsync(xw, ct);
-        }
-    }
+    public void Save(string path) => this.Xml.Save(path);
 
     #region Helpers
     private string ActionProfilesXPath { get => $"/ActionMaps/ActionProfiles[@profileName='{this.ActionMapsProfileName}']"; }

@@ -74,4 +74,20 @@ public static class AssertSC
         Assert.AreEqual(expected.MultiTap, actual.MultiTap, nameof(expected.MultiTap));
         Assert.AreEqual(expected.Preserve, actual.Preserve, nameof(expected.Preserve));
     }
+
+    public static void AreEqual(SCAttribute? expected, SCAttribute? actual)
+    {
+        if (ReferenceEquals(expected, actual)) return;
+
+        Assert.NotNull(expected);
+        Assert.NotNull(actual);
+
+        // silly unreachable code to get rid of warnings
+        if (expected == null) return;
+        if (actual == null) return;
+
+        Assert.AreEqual(expected.Name, actual.Name, nameof(expected.Name));
+        Assert.AreEqual(expected.Value, actual.Value, nameof(expected.Value));
+        Assert.AreEqual(expected.Preserve, actual.Preserve, nameof(expected.Preserve));
+    }
 }
