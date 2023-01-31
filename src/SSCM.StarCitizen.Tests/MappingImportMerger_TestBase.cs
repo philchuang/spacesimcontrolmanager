@@ -38,25 +38,21 @@ public abstract class MappingImportMerger_TestBase
                 new SCMapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick" },
                 new SCMapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}", InputType = "joystick" },
                 new SCMapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}", InputType = "joystick" },
-            }
-        };
-        this._updated = new SCMappingData
-        {
-            Inputs = {
-                this._current.Inputs[0].JsonCopy(),
-                this._current.Inputs[1].JsonCopy(),
             },
-            Mappings = {
-                this._current.Mappings[0].JsonCopy(),
-                this._current.Mappings[1].JsonCopy(),
-                this._current.Mappings[2].JsonCopy(),
-                this._current.Mappings[3].JsonCopy(),
+            Attributes = {
+                new SCAttribute { Name = RandomString(), Value = RandomString() },
+                new SCAttribute { Name = RandomString(), Value = RandomString() },
+                new SCAttribute { Name = RandomString(), Value = RandomString() },
+                new SCAttribute { Name = RandomString(), Value = RandomString() },
             }
         };
 
         this._current.Inputs.Concat(this._updated.Inputs).ToList().ForEach(i => {
             i.Settings.ToList().ForEach(s => s.Parent = i.Id);
         });
+
+        
+        this._updated = this._current.JsonCopy();
     }
 
     protected void Detects_Inputs_Added_Arrange()
@@ -144,6 +140,35 @@ public abstract class MappingImportMerger_TestBase
         originalMapping.Preserve = false;
         var changedMapping = this._updated.Mappings.Last();
         changedMapping.Input = $"js1_{RandomString()}";
+    }
+
+    protected SCAttribute Detects_Attribute_Added_Arrange()
+    {
+        this.Detects_All_Unchanged_Arrange();
+        var addedAttribute = new SCAttribute { Name = RandomString(), Value = RandomString() };
+        this._updated.Attributes.Add(addedAttribute);
+        return addedAttribute;
+    }
+
+    protected SCAttribute Detects_Attribute_Removed_NotPreserved_Arrange(bool preserve = false)
+    {
+        this.Detects_All_Unchanged_Arrange();
+        var currentRemovedAttribute = this._current.Attributes.Last();
+        currentRemovedAttribute.Preserve = preserve;
+        var updatedRemovedAttribute = this._updated.Attributes.Last();
+        this._updated.Attributes.Remove(updatedRemovedAttribute);
+        return currentRemovedAttribute;
+    }
+    
+    protected (SCAttribute, SCAttribute) Detects_Attribute_Changed_NotPreserved_Arrange(bool preserve = false)
+    {
+        this.Detects_All_Unchanged_Arrange();
+        var currentChangedAttribute = this._current.Attributes.Last();
+        currentChangedAttribute.Preserve = preserve;
+        var updatedChangedAttribute = this._updated.Attributes.Last();
+        updatedChangedAttribute.Preserve = preserve;
+        updatedChangedAttribute.Value = RandomString();
+        return (currentChangedAttribute, updatedChangedAttribute);
     }
 
     protected (SCInputDevice, SCInputDevice, SCInputDevice, SCInputDevice, 

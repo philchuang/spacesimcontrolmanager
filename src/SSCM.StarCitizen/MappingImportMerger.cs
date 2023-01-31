@@ -11,7 +11,12 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
     public MappingMergeResult ResultSC {
         get;
         set;
-    } = new MappingMergeResult(new SCMappingData(), new SCMappingData(), new ComparisonResult<SCInputDevice>(), new ComparisonResult<SCMapping> ());
+    } = new MappingMergeResult(
+        new SCMappingData(), 
+        new SCMappingData(), 
+        new ComparisonResult<SCInputDevice>(), 
+        new ComparisonResult<SCMapping>(),
+        new ComparisonResult<SCAttribute>());
 
     public MappingMergeResultBase<SCMappingData> Result {
         get => this.ResultSC;
@@ -89,6 +94,24 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
                     current.Mappings.RemoveAt(idx + 1);
                 }
             }
+            else if (action.Value is SCAttribute attribute)
+            {
+                if (action.Mode == MappingMergeActionMode.Add)
+                {
+                    current.Attributes.Add(attribute);
+                }
+                else if (action.Mode == MappingMergeActionMode.Remove)
+                {
+                    current.Attributes.Remove(attribute);
+                }
+                else if (action.Mode == MappingMergeActionMode.Replace)
+                {
+                    var currentAttribute = current.Attributes.Single(a => a.Name == attribute.Name);
+                    var idx = current.Attributes.IndexOf(currentAttribute);
+                    current.Attributes.Insert(idx, attribute);
+                    current.Attributes.RemoveAt(idx + 1);
+                }
+            }
         }
         
         return current;
@@ -111,18 +134,23 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             ComparisonHelper.Compare(
                 current.Mappings, updated.Mappings,
                 m => $"{m.ActionMap}-{m.Action}-{m.InputType}",
-                (c, u) => c.Input == u.Input && c.MultiTap == u.MultiTap)
+                (c, u) => c.Input == u.Input && c.MultiTap == u.MultiTap),
+            ComparisonHelper.Compare(
+                current.Attributes, updated.Attributes,
+                a => a.Name,
+                (c, u) => c.Value == u.Value)
         );
         this.AnalyzeResult();
     }
 
     private void AnalyzeResult()
     {
-        this.Result.HasDifferences = this.ResultSC.InputDiffs.Any() || this.ResultSC.MappingDiffs.Any();
+        this.Result.HasDifferences = this.ResultSC.InputDiffs.Any() || this.ResultSC.MappingDiffs.Any() || this.ResultSC.AttributeDiffs.Any();
         this.Result.CanMerge = true;
         this.AnalyzeInputDiffs();
         this.AnalyzeMappingDiffs();
-        this.Result.CanMerge = this.Result.CanMerge && this.Result.MergeActions.Any();
+        this.AnalyzeAttributeDiffs();
+        this.Result.CanMerge &= this.Result.MergeActions.Any();
     }
 
     private void StopMerge()
@@ -262,6 +290,47 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             else
             {
                 this.StandardOutput($"MAPPING changed and will not merge: [{pair.Current.ActionMap}-{pair.Current.Action}] => {pair.Updated.Input}, preserving {pair.Current.Input}");
+            }
+        }
+    }
+
+    private void AnalyzeAttributeDiffs()
+    {
+        if (!this.Result.CanMerge) return;
+
+        foreach (var attr in this.ResultSC.AttributeDiffs.Added)
+        {
+            // attribute added - add with preserve = true
+            this.StandardOutput($"ATTRIBUTE added and will merge: [{attr.Name}] => {attr.Value}");
+            attr.Preserve = true;
+            this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Add, attr));
+        }
+
+        foreach (var attr in this.ResultSC.AttributeDiffs.Removed)
+        {
+            // attribute removed - remove if current preserve == false - else keep current
+            if (!attr.Preserve)
+            {
+                this.StandardOutput($"ATTRIBUTE removed and will merge: [{attr.Name}]");
+                this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, attr));
+            }
+            else
+            {
+                this.StandardOutput($"ATTRIBUTE removed and will not merge: [{attr.Name}], preserving {attr.Value}");
+            }
+        }
+
+        foreach (var pair in this.ResultSC.AttributeDiffs.Changed)
+        {
+            // setting changed - update if preserve == false - else keep current
+            if (!pair.Current.Preserve)
+            {
+                this.StandardOutput($"ATTRIBUTE changed and will merge: [{pair.Current.Name}] {pair.Current.Value} => {pair.Updated.Value}");
+                this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Replace, pair.Updated));
+            }
+            else
+            {
+                this.StandardOutput($"ATTRIBUTE changed and will not merge: [{pair.Current.Name}] => {pair.Updated.Value}, preserving {pair.Current.Value}");
             }
         }
     }

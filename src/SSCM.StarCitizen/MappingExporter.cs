@@ -325,7 +325,7 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
         if (string.Equals(attr.Value, value)) return false;
         
         attrElement.SetAttributeValue("value", attr.Value);
-        base._StandardOutput($"Updating attribute {attr.Name} to {attr.Value}...");
+        base._StandardOutput($"Updating attribute {attr.Name} from [{value}] to [{attr.Value}]...");
         return true;
     }
 }

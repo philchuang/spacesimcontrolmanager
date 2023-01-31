@@ -57,6 +57,7 @@ public class MappingImporter : IMappingImporter<SCMappingData>
 
         this.StandardOutput($"Read in {this._data.Inputs.Count} input devices.");
         this.StandardOutput($"Read in {this._data.Mappings.Count} mappings.");
+        this.StandardOutput($"Read in {this._data.Attributes.Count} attributes.");
         return this._data;
     }
 

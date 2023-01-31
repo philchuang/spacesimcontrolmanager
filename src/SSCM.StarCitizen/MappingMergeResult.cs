@@ -7,11 +7,13 @@ public class MappingMergeResult : MappingMergeResultBase<SCMappingData>
 {
     public ComparisonResult<SCInputDevice> InputDiffs { get; init; }
     public ComparisonResult<SCMapping> MappingDiffs { get; init; }
+    public ComparisonResult<SCAttribute> AttributeDiffs { get; init; }
 
-    public MappingMergeResult(SCMappingData current, SCMappingData updated, ComparisonResult<SCInputDevice> inputs, ComparisonResult<SCMapping> mappings) : base(current, updated)
+    public MappingMergeResult(SCMappingData current, SCMappingData updated, ComparisonResult<SCInputDevice> inputs, ComparisonResult<SCMapping> mappings, ComparisonResult<SCAttribute> attributes) : base(current, updated)
     {
         this.InputDiffs = inputs;
         this.MappingDiffs = mappings;
+        this.AttributeDiffs = attributes;
     }
 
     public override string ToString()
@@ -28,6 +30,10 @@ public class MappingMergeResult : MappingMergeResultBase<SCMappingData>
         if (this.MappingDiffs.Any())
         {
             sb.Append(this.PrintDiffs(this.MappingDiffs, "mappings", PrintMapping));
+        }
+        if (this.AttributeDiffs.Any())
+        {
+            sb.Append(this.PrintDiffs(this.AttributeDiffs, "attributes", PrintAttribute));
         }
         return sb.ToString();
     }
@@ -47,5 +53,10 @@ public class MappingMergeResult : MappingMergeResultBase<SCMappingData>
     private static string PrintMapping(SCMapping mapping)
     {
         return $"{mapping.Input}{(mapping.MultiTap != null ? $" multitap = {mapping.MultiTap}" : "")}";
+    }
+
+    private static string PrintAttribute(SCAttribute attribute)
+    {
+        return attribute.Value;
     }
 }
