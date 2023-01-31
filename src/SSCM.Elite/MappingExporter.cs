@@ -92,9 +92,7 @@ public class MappingExporter : IMappingExporter<EDMappingData>
         var changed = false;
         foreach (var m in mappings.Where(m => m.AnyPreserve))
         {
-            var result = ApplyMapping(m);
-            if (result) this.StandardOutput($"Updated mapping [{m.Name}].");
-            changed |= result;
+            changed |= ApplyMapping(m);
         }
         return changed;
     }
@@ -103,31 +101,37 @@ public class MappingExporter : IMappingExporter<EDMappingData>
     {
         var changed = false;
         var xe = this._xml!.GetOrCreateMapping(mapping.Name);
-        var func = (EDBinding? b, string name) => b != null && b.Preserve && ApplyBinding(xe.GetOrCreate(name), b);
-        changed |= func(mapping.Binding, nameof(mapping.Binding));
-        changed |= func(mapping.Primary, nameof(mapping.Primary));
-        changed |= func(mapping.Secondary, nameof(mapping.Secondary));
+        var func = (EDBinding? b, string type, string mappingId) => b != null && b.Preserve && ApplyBinding(xe.GetOrCreate(type), b, mappingId);
+        changed |= func(mapping.Binding, nameof(mapping.Binding), mapping.Id);
+        changed |= func(mapping.Primary, nameof(mapping.Primary), mapping.Id);
+        changed |= func(mapping.Secondary, nameof(mapping.Secondary), mapping.Id);
 
         foreach (var s in mapping.Settings.Where(s => s.Preserve))
         {
-            var result = ApplySetting(xe.GetOrCreate(s.Name), s);
-            if (result) this.StandardOutput($"Updated {s.Id} to {s.Value}.");
+            changed |= ApplySetting(xe.GetOrCreate(s.Name), s);
         }
         return changed;
     }
 
-    private bool ApplyBinding(XElement bindingElement, EDBinding binding)
+    private (string, string) ReadBindingElement(XElement bindingElement)
     {
-        var changed = false;
         var device = bindingElement.GetAttribute("Device");
         var key = bindingElement.GetAttribute("Key");
+        return (device, key);
+    }
+
+    private bool ApplyBinding(XElement bindingElement, EDBinding binding, string mappingId)
+    {
+        var changed = false;
+        var (device, key) = ReadBindingElement(bindingElement);
+        var currentBinding = $"{device}-{key}";
 
         if (!string.Equals(device, binding.Key.Device))
         {
             changed = true;
             bindingElement.SetAttributeValue("Device", binding.Key.Device);
         }
-        if (!string.Equals(device, binding.Key.Key))
+        if (!string.Equals(key, binding.Key.Key))
         {
             changed = true;
             bindingElement.SetAttributeValue("Key", binding.Key.Key);
@@ -136,7 +140,12 @@ public class MappingExporter : IMappingExporter<EDMappingData>
         if (binding.Modifiers.Any())
         {
             var modifierElements = bindingElement.Elements().Where(e => string.Equals("Modifier", e.Name.LocalName, StringComparison.OrdinalIgnoreCase)).ToList();
-            var modifiers = new HashSet<string>(modifierElements.Select(m => new EDBindingKey(m.GetAttribute("Device"), m.GetAttribute("Key")).Id));
+            if (modifierElements.Any())
+            {
+                currentBinding += " + " + 
+                    string.Join(" + ", modifierElements.Select(ReadBindingElement).Select(((string, string) t) => $"{t.Item1}-{t.Item2}"));
+            }
+            var modifiers = new HashSet<string>(modifierElements.Select(ReadBindingElement).Select(((string, string) t) => $"{t.Item1}-{t.Item2}"));
             if (modifiers.Count != binding.Modifiers.Count
                 || binding.Modifiers.Any(k => !modifiers.Contains(k.Id)))
             {
@@ -152,6 +161,11 @@ public class MappingExporter : IMappingExporter<EDMappingData>
             }
         }
 
+        if (changed)
+        {
+            this.StandardOutput($"Updated {mappingId}.{bindingElement.Name.LocalName} from {currentBinding} to {binding.ToString()}.");
+        }
+
         return changed;
     }
 
@@ -164,6 +178,7 @@ public class MappingExporter : IMappingExporter<EDMappingData>
         }
         
         settingElement.SetAttributeValue("Value", setting.Value);
+        this.StandardOutput($"Updated {setting.Id} from {value} to {setting.Value}.");
         return true;
     }
 
@@ -173,9 +188,7 @@ public class MappingExporter : IMappingExporter<EDMappingData>
         foreach (var s in settings.Where(s => s.Preserve))
         {
             var xe = this._xml.GetOrCreateMapping(s.Name);
-            var result = ApplySetting(xe, s);
-            if (result) this.StandardOutput($"Updated {s.Id} to {s.Value}.");
-            changed |= result;
+            changed |= ApplySetting(xe, s);
         }
         return changed;
    }
