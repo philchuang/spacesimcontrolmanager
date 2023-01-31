@@ -133,7 +133,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
                         (cs, us) => ComparisonHelper.DictionariesAreEqual(cs.Properties, us.Properties))),
             ComparisonHelper.Compare(
                 current.Mappings, updated.Mappings,
-                m => $"{m.ActionMap}-{m.Action}-{m.InputType}",
+                m => $"{m.Id}-{m.InputType}",
                 (c, u) => c.Input == u.Input && c.MultiTap == u.MultiTap),
             ComparisonHelper.Compare(
                 current.Attributes, updated.Attributes,
@@ -260,7 +260,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
         foreach (var mapping in this.ResultSC.MappingDiffs.Added)
         {
             // mapping added - add with preserve = true
-            this.StandardOutput($"MAPPING added and will merge: [{mapping.ActionMap}-{mapping.Action}] => {mapping.Input}");
+            this.StandardOutput($"MAPPING added and will merge: [{mapping.Id}] => {mapping.InputToString}");
             mapping.Preserve = true;
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Add, mapping));
         }
@@ -270,12 +270,12 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             // mapping removed - remove if current preserve == false - else keep current
             if (!mapping.Preserve)
             {
-                this.StandardOutput($"MAPPING removed and will merge: [{mapping.ActionMap}-{mapping.Action}]");
+                this.StandardOutput($"MAPPING removed and will merge: [{mapping.Id}]");
                 this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, mapping));
             }
             else
             {
-                this.StandardOutput($"MAPPING removed and will not merge: [{mapping.ActionMap}-{mapping.Action}], preserving {mapping.Input}");
+                this.StandardOutput($"MAPPING removed and will not merge: [{mapping.Id}], preserving {mapping.InputToString}");
             }
         }
 
@@ -284,12 +284,12 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             // setting changed - update if preserve == false - else keep current
             if (!pair.Current.Preserve)
             {
-                this.StandardOutput($"MAPPING changed and will merge: [{pair.Current.ActionMap}-{pair.Current.Action}] {pair.Current.Input} => {pair.Updated.Input}");
+                this.StandardOutput($"MAPPING changed and will merge: [{pair.Current.Id}] {pair.Current.InputToString} => {pair.Updated.InputToString}");
                 this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Replace, pair.Updated));
             }
             else
             {
-                this.StandardOutput($"MAPPING changed and will not merge: [{pair.Current.ActionMap}-{pair.Current.Action}] => {pair.Updated.Input}, preserving {pair.Current.Input}");
+                this.StandardOutput($"MAPPING changed and will not merge: [{pair.Current.Id}] => {pair.Updated.InputToString}, preserving {pair.Current.InputToString}");
             }
         }
     }

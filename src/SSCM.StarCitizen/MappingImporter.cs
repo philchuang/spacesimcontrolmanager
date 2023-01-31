@@ -180,8 +180,8 @@ public class MappingImporter : IMappingImporter<SCMappingData>
         }
         if (string.IsNullOrWhiteSpace(input.Split("_").LastOrDefault()))
         {
-            this.WarningOutput($"Found rebind node with invalid input value: {actionName}, {input}");
-            preserve = false;
+            // not invalid, just SC's way of saying it's unbound
+            // preserve it since it probably means that the user manually unbound it
         }
         var multitapStr = rebind.GetAttribute("multiTap");
         if (!int.TryParse(multitapStr, out var multitap)) multitap = -1;

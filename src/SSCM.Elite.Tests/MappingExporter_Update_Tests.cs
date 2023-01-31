@@ -367,9 +367,9 @@ public class MappingExporter_Update_Tests : TestBase
         Assert.AreEqual(setting.Value, outputSettingValue);
     }
 
-    // [Test]
-    // public async Task Manual_Test()
-    // {
+    [Test]
+    public async Task Manual_Test()
+    {
     //     var folders = new EDFoldersForTest {
     //         EliteDataDir = @"C:\Users\me\Documents\SSCM\Elite",
     //         GameConfigDir = @"C:\Users\me\AppData\Local\Frontier Developments\Elite Dangerous\Options\Bindings",

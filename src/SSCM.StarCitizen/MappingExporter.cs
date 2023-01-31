@@ -254,7 +254,7 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
 
     private bool ExportMappings(IEnumerable<SCMapping> mappings)
     {
-        var changed = false;
+        var anyChanged = false;
         foreach (var mapping in mappings.Where(m => m.Preserve))
         {
             var actionElement = this._mappingsXml.GetActionForMapping(mapping);
@@ -270,7 +270,7 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
                     this._mappingsXml.AddActionmapElement(actionmapElement);
                 }
 
-                changed = true;
+                anyChanged = true;
                 base._DebugOutput($"Creating <action name=\"{mapping.Action}\">...");
                 // create <action>
                 actionElement = new XElement("action");
@@ -281,25 +281,50 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
             var rebindElement = actionElement.GetChildren("rebind").SingleOrDefault(r => (r.GetAttribute("input") ?? string.Empty).StartsWith(ActionMapsXmlHelper.GetOptionsTypeAbbv(mapping.InputType)));
             if (rebindElement == null)
             {
-                changed = true;
+                anyChanged = true;
                 base._DebugOutput($"Creating <rebind input=\"{mapping.Input}\" />...");
-                base._StandardOutput($"Adding {mapping.ActionMap}/{mapping.Action} for {mapping.Input}...");
+                base._StandardOutput($"Adding {mapping.Id} for {mapping.InputToString}...");
                 rebindElement = new XElement("rebind");
                 rebindElement.SetAttributeValue("input", mapping.Input);
+                if (mapping.MultiTap != null)
+                    rebindElement.SetAttributeValue("multiTap", mapping.MultiTap.ToString());
                 actionElement.Add(rebindElement);
             }
             else
             {
-                if (!string.Equals(rebindElement.GetAttribute("input"), mapping.Input))
+                var thisChanged = false;
+                var inputAttrValue = rebindElement.GetAttribute("input");
+                if (!string.Equals(inputAttrValue, mapping.Input))
                 {
-                    changed = true;
-                    base._StandardOutput($"Updating {mapping.ActionMap}/{mapping.Action} to {mapping.Input}...");
+                    anyChanged = true;
+                    thisChanged = true;
                     rebindElement.SetAttributeValue("input", mapping.Input);
+                }
+                // TODO write test for multitap
+                var multiTapAttrValue = rebindElement.GetAttribute("multiTap");
+                if (!string.Equals(multiTapAttrValue, mapping.MultiTap?.ToString() ?? string.Empty))
+                {
+                    anyChanged = true;
+                    thisChanged = true;
+                    if (mapping.MultiTap == null)
+                    {
+                        rebindElement.Attribute("multiTap")!.Remove();
+                    }
+                    else
+                    {
+                        rebindElement.SetAttributeValue("multiTap", mapping.MultiTap.ToString());
+                    }
+                }
+
+                if (thisChanged)
+                {
+                    var prevValue = $"{inputAttrValue}{(!string.IsNullOrWhiteSpace(multiTapAttrValue) ? $":{multiTapAttrValue}" : "")}";
+                    base._StandardOutput($"Updating {mapping.Id} from {prevValue} to {mapping.InputToString}...");
                 }
             }
         }
         
-        return changed;
+        return anyChanged;
     }
 
     private bool ExportAttributes(IEnumerable<SCAttribute> attributes)
