@@ -5,36 +5,31 @@ namespace SSCM.StarCitizen;
 
 public interface ISCFolders
 {
-    public string ActionMapsDir { get; }
+    public string GameConfigDir { get; }
 
-    public string SscmDataDir { get; }
+    public string ScDataDir { get; }
 }
 
 public class SCFolders : ISCFolders
 {
     public const string PROGRAM_FILES_SC_PROFILES_DEFAULT_DIR = @"Roberts Space Industries\StarCitizen\LIVE\USER\Client\0\Profiles\default";
-    public const string SSCM_DATA_DIR = @"SSCM\SC";
+    public const string SC_DATA_DIR = "SC";
+
+    public string GameConfigDir { get; private set; }
+
+    public string ScDataDir { get; private set; }
 
     private readonly IPlatform _platform;
+    private readonly ISscmFolders _sscmFolders;
     private readonly IConfiguration _config;
-    private readonly string? _actionMapsDir;
-    private readonly string? _sscmDataDir;
 
-    public SCFolders(IPlatform platform, IConfiguration config)
+    public SCFolders(IPlatform platform, ISscmFolders sscmFolders, IConfiguration config)
     {
         this._platform = platform;
+        this._sscmFolders = sscmFolders;
         this._config = config;
-        var settings = this._config.GetSection("SCFolders");
 
-        var valueOrNull = (string? s) => string.IsNullOrWhiteSpace(s) ? null : s;
-        if (settings != null)
-        {
-            this._actionMapsDir = valueOrNull(settings[nameof(ActionMapsDir)]?.Trim());
-            this._sscmDataDir = valueOrNull(settings[nameof(SscmDataDir)]?.Trim());
-        }
+        this.GameConfigDir = this._config.GetValueOrNull(nameof(SCFolders), nameof(GameConfigDir)) ?? System.IO.Path.Combine(this._platform.ProgramFilesDir, PROGRAM_FILES_SC_PROFILES_DEFAULT_DIR);
+        this.ScDataDir = this._config.GetValueOrNull(nameof(SCFolders), nameof(ScDataDir)) ?? System.IO.Path.Combine(this._sscmFolders.DataDir, SC_DATA_DIR);
     }
-
-    public string ActionMapsDir { get { return this._actionMapsDir ?? System.IO.Path.Combine(this._platform.ProgramFilesDir, PROGRAM_FILES_SC_PROFILES_DEFAULT_DIR); } }
-
-    public string SscmDataDir { get { return this._sscmDataDir ?? System.IO.Path.Combine(this._platform.UserDocumentsDir, SSCM_DATA_DIR); } }
 }

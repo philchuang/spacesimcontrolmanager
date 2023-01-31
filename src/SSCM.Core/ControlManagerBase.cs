@@ -10,15 +10,11 @@ public interface IControlManager
 
     string CommandAlias { get; }
     string GameType { get; }
-    string GameConfigLocation { get; set; }
-    string AppSaveLocation { get; set; }
 
     Task Import(ImportMode mode);
     Task ExportPreview();
     Task ExportApply();
-    Task<string> Report(bool preservedOnly = false);
-    Task<string> ReportInputs(bool preservedOnly = false);
-    Task<string> ReportMappings(bool preservedOnly = false);
+    Task<string> Report(ReportingOptions options);
     void Backup();
     void Restore();
     void Open();
@@ -36,14 +32,11 @@ public abstract class ControlManagerBase<TData> : IControlManager
 
     public abstract string CommandAlias { get; }
     public abstract string GameType { get; }
-    public string GameConfigLocation { get; set; } = string.Empty;
-    public string AppSaveLocation { get; set; } = string.Empty;
-
     protected abstract string GameConfigPath { get; }
     protected abstract string MappingDataSavePath { get; }
     protected IPlatform Platform { get; init; }
+    
     private readonly Lazy<IMappingDataRepository<TData>> _lazyMappingDataRepository;
-    // TODO make IMappingDataRepository app-specific
     protected IMappingDataRepository<TData> MappingDataRepository => this._lazyMappingDataRepository.Value;
 
     protected ControlManagerBase(IPlatform platform)
@@ -132,25 +125,11 @@ public abstract class ControlManagerBase<TData> : IControlManager
         WriteLineStandard($"CONFIGURATION UPDATED: Changes applied to [{exporter.GameConfigPath}].");
     }
 
-    public async Task<string> Report(bool preservedOnly = false)
+    public async Task<string> Report(ReportingOptions options)
     {
         var reporter = this.CreateReporter();
         var data = await this.MappingDataRepository.Load();
-        return reporter.Report(data ?? this.MappingDataRepository.CreateNew(), preservedOnly);
-    }
-
-    public async Task<string> ReportInputs(bool preservedOnly = false)
-    {
-        var reporter = this.CreateReporter();
-        var data = await this.MappingDataRepository.Load();
-        return reporter.ReportInputs(data ?? this.MappingDataRepository.CreateNew(), preservedOnly);
-    }
-
-    public async Task<string> ReportMappings(bool preservedOnly = false)
-    {
-        var reporter = this.CreateReporter();
-        var data = await this.MappingDataRepository.Load();
-        return reporter.ReportMappings(data ?? this.MappingDataRepository.CreateNew(), preservedOnly);
+        return reporter.Report(data ?? this.MappingDataRepository.CreateNew(), options);
     }
 
     public void Backup()

@@ -3,84 +3,50 @@ using SSCM.Core;
 
 namespace SSCM.StarCitizen;
 
-public class MappingReporter : IMappingReporter<MappingData>
+public class MappingReporter : IMappingReporter<SCMappingData>
 {
-    private const string INPUT_HEADER = @"Id,Type,Name,Preserve,SettingNames";
-    private const string MAPPING_HEADER = @"Group,Action,Preserve,InputType,Binding,Options";
+    public event Action<string> StandardOutput = delegate {};
+    public event Action<string> WarningOutput = delegate {};
+    public event Action<string> DebugOutput = delegate {};
+
+    private readonly MappingReporterCsv _csv;
+    private readonly MappingReporterMarkdown _md;
+    private readonly MappingReporterJson _json;
 
     public MappingReporter()
     {
+        this._csv = new MappingReporterCsv();
+        this._md = new MappingReporterMarkdown();
+        this._json = new MappingReporterJson();
     }
 
-    public string Report(MappingData data, bool preservedOnly)
+    public string Report(SCMappingData data, ReportingOptions options)
     {
-        var sb = new StringBuilder();
-
-        ReportInputs(data, preservedOnly, sb);
-        ReportMappings(data, preservedOnly, sb);
-
-        return sb.ToString();
+        return options.Format switch {
+            ReportingFormat.Csv => this._csv.Report(data, options),
+            ReportingFormat.Markdown => this._md.Report(data, options),
+            ReportingFormat.Json => this._json.Report(data, options),
+            _ => throw new ArgumentOutOfRangeException($"Unable to report in format [{options.Format.ToString()}]!"),
+        };
     }
 
-    public string ReportInputs(MappingData data, bool preservedOnly)
+    public string ReportInputs(SCMappingData data, ReportingOptions options)
     {
-        var sb = new StringBuilder();
-        ReportInputs(data, preservedOnly, sb);
-        return sb.ToString();
+        return options.Format switch {
+            ReportingFormat.Csv => this._csv.ReportInputs(data, options),
+            ReportingFormat.Markdown => this._md.ReportInputs(data, options),
+            ReportingFormat.Json => this._json.ReportInputs(data, options),
+            _ => throw new ArgumentOutOfRangeException($"Unable to report in format [{options.Format.ToString()}]!"),
+        };
     }
 
-    private static void ReportInputs(MappingData data, bool preservedOnly, StringBuilder sb)
+    public string ReportMappings(SCMappingData data, ReportingOptions options)
     {
-        if (!data.Inputs.Any()) return;
-        
-        if (sb.Length > 0)
-        {
-            sb.AppendLine("\n");
-        }
-
-        sb.AppendLine(INPUT_HEADER);
-
-        foreach (var input in data.Inputs.Where(i => !preservedOnly || i.Preserve))
-        {
-            WriteInput(input, sb);
-        }
-    }
-
-    private static void WriteInput(InputDevice input, StringBuilder sb)
-    {
-        sb.Append($"{input.Id},{input.Type},{input.Product},{input.Preserve},");
-        if (input.Settings.Any()) sb.Append($"\"{string.Join(", ", input.Settings.Select(s => s.Name).OrderBy(s => s))}\"");
-        sb.AppendLine();
-    }
-
-    public string ReportMappings(MappingData data, bool preservedOnly)
-    {
-        var sb = new StringBuilder();
-        ReportMappings(data, preservedOnly, sb);
-        return sb.ToString();
-    }
-
-    private static void ReportMappings(MappingData data, bool preservedOnly, StringBuilder sb)
-    {
-        if (!data.Mappings.Any()) return;
-        
-        if (sb.Length > 0)
-        {
-            sb.AppendLine("\n");
-        }
-
-        sb.AppendLine(MAPPING_HEADER);
-
-        foreach (var mapping in data.Mappings.Where(m => !preservedOnly || m.Preserve))
-        {
-            WriteMapping(mapping, sb);
-        }
-    }
-
-    private static void WriteMapping(Mapping mapping, StringBuilder sb)
-    {
-        sb.Append($"{mapping.ActionMap},{mapping.Action},{mapping.Preserve},{mapping.InputType},{mapping.Input},");
-        if (mapping.MultiTap != null) sb.Append($"\"MultiTap: {mapping.MultiTap}\"");
-        sb.AppendLine();
+        return options.Format switch {
+            ReportingFormat.Csv => this._csv.ReportMappings(data, options),
+            ReportingFormat.Markdown => this._md.ReportMappings(data, options),
+            ReportingFormat.Json => this._json.ReportMappings(data, options),
+            _ => throw new ArgumentOutOfRangeException($"Unable to report in format [{options.Format.ToString()}]!"),
+        };
     }
 }

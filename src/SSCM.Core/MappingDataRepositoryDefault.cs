@@ -1,8 +1,9 @@
-using SSCM.Core;
+namespace SSCM.Core;
 
-namespace SSCM.StarCitizen;
+// TODO write tests for this class
 
-public class MappingDataRepository : IMappingDataRepository<MappingData>
+public class MappingDataRepositoryDefault<TData> : IMappingDataRepository<TData>
+    where TData : class, new()
 {
     public event Action<string> StandardOutput = delegate {};
     public event Action<string> WarningOutput = delegate {};
@@ -15,28 +16,37 @@ public class MappingDataRepository : IMappingDataRepository<MappingData>
     private readonly IPlatform _platform;
     private readonly string _mappingDataSaveDir;
 
-    public MappingDataRepository(IPlatform platform, string mappingDataSavePath, string backupFilenameFormat)
+    public MappingDataRepositoryDefault(IPlatform platform, string mappingDataSavePath, string backupFilenameFormat)
     {
         this._platform = platform;
         this.MappingDataSavePath = mappingDataSavePath;
-        this._mappingDataSaveDir = new FileInfo(this.MappingDataSavePath).DirectoryName;
+        this._mappingDataSaveDir = new FileInfo(this.MappingDataSavePath)!.DirectoryName!;
         this.BackupFilenameFormat = backupFilenameFormat;
     }
 
-    public MappingData CreateNew() => new MappingData();
+    public TData CreateNew() => new TData();
 
-    public async Task<MappingData?> Load(string? saveFilePath = null)
+    public async Task<TData?> Load(string? saveFilePath = null)
     {
         if (string.IsNullOrWhiteSpace(saveFilePath))
         {
             saveFilePath = this.MappingDataSavePath;
         }
 
-        var serializer = new DataSerializer<MappingData>(saveFilePath);
-        return await serializer.Read();
+        try
+        {
+            var serializer = new DataSerializer<TData>(saveFilePath);
+            return await serializer.Read();
+        }
+        catch (Exception ex)
+        {
+            WarningOutput($"Exception occurred while loading [{saveFilePath}]: {ex.Message}.");
+            DebugOutput(ex.ToString());
+            return null;
+        }
     }
 
-    public async Task Save(MappingData data, string? saveFilePath = null)
+    public async Task Save(TData data, string? saveFilePath = null)
     {
         if (data == null)
         {
@@ -50,7 +60,7 @@ public class MappingDataRepository : IMappingDataRepository<MappingData>
 
         var saveDir = new FileInfo(saveFilePath).DirectoryName;
         System.IO.Directory.CreateDirectory(saveDir);
-        var serializer = new DataSerializer<MappingData>(saveFilePath);
+        var serializer = new DataSerializer<TData>(saveFilePath);
         await serializer.Write(data);
         this.StandardOutput($"Mappings saved to [{this.MappingDataSavePath}].");
     }

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Root PresetName="Custom" MajorVersion="4" MinorVersion="0">
+	<PitchAxisRaw>
+        <Binding Device="231D0200" Key="Joy_YAxis" />
+        <Inverted Value="1" />
+        <Deadzone Value="0.00000000" />
+    </PitchAxisRaw>
+	<BackwardKey>
+        <Primary Device="Keyboard" Key="Key_S" />
+        <Secondary Device="231D3205" Key="Joy_POV1Down" />
+    </BackwardKey>
+	<SetSpeed75>
+        <Primary Device="{NoDevice}" Key="" />
+        <Secondary Device="231D3205" Key="Joy_POV1Right" />
+    </SetSpeed75>
+	<FSSMouseLinearity Value="1.00000000" />
+</Root>

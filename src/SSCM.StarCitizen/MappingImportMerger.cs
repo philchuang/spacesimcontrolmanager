@@ -2,7 +2,7 @@ using SSCM.Core;
 
 namespace SSCM.StarCitizen;
 
-public class MappingImportMerger : IMappingImportMerger<MappingData>
+public class MappingImportMerger : IMappingImportMerger<SCMappingData>
 {
     public event Action<string> StandardOutput = delegate {};
     public event Action<string> WarningOutput = delegate {};
@@ -11,9 +11,9 @@ public class MappingImportMerger : IMappingImportMerger<MappingData>
     public MappingMergeResult ResultSC {
         get;
         set;
-    } = new MappingMergeResult(new MappingData(), new MappingData(), new ComparisonResult<InputDevice>(), new ComparisonResult<Mapping> ());
+    } = new MappingMergeResult(new SCMappingData(), new SCMappingData(), new ComparisonResult<SCInputDevice>(), new ComparisonResult<SCMapping> ());
 
-    public MappingMergeResultBase<MappingData> Result {
+    public MappingMergeResultBase<SCMappingData> Result {
         get => this.ResultSC;
         set => this.ResultSC = (MappingMergeResult) value;
     }
@@ -22,14 +22,14 @@ public class MappingImportMerger : IMappingImportMerger<MappingData>
     {
     }
 
-    public bool Preview(MappingData current, MappingData updated)
+    public bool Preview(SCMappingData current, SCMappingData updated)
     {
         this.CalculateDiffs(current, updated);
 
         return this.Result.HasDifferences && this.Result.CanMerge;
     }
 
-    public MappingData Merge(MappingData current, MappingData updated)
+    public SCMappingData Merge(SCMappingData current, SCMappingData updated)
     {
         this.CalculateDiffs(current, updated);
 
@@ -37,7 +37,7 @@ public class MappingImportMerger : IMappingImportMerger<MappingData>
 
         foreach (var action in this.Result.MergeActions)
         {
-            if (action.Value is InputDevice input)
+            if (action.Value is SCInputDevice input)
             {
                 if (action.Mode == MappingMergeActionMode.Add)
                 {
@@ -52,7 +52,7 @@ public class MappingImportMerger : IMappingImportMerger<MappingData>
                     throw new InvalidOperationException($"Invalid combination of MappingMergeActionMode.Replace and InputDevice.");
                 }
             }
-            else if (action.Value is InputDeviceSetting setting)
+            else if (action.Value is SCInputDeviceSetting setting)
             {
                 var target = current.Inputs.Where(i => $"{i.Type}-{i.Instance}-{i.Product}" == setting.Parent).Single();
                 if (action.Mode == MappingMergeActionMode.Add)
@@ -71,7 +71,7 @@ public class MappingImportMerger : IMappingImportMerger<MappingData>
                     target.Settings.RemoveAt(idx + 1);
                 }
             }
-            else if (action.Value is Mapping mapping)
+            else if (action.Value is SCMapping mapping)
             {
                 if (action.Mode == MappingMergeActionMode.Add)
                 {
@@ -94,7 +94,7 @@ public class MappingImportMerger : IMappingImportMerger<MappingData>
         return current;
     }
 
-    private void CalculateDiffs(MappingData current, MappingData updated)
+    private void CalculateDiffs(SCMappingData current, SCMappingData updated)
     {
         // capture differences
         this.Result = new MappingMergeResult(
@@ -186,7 +186,7 @@ public class MappingImportMerger : IMappingImportMerger<MappingData>
         return $"{{{string.Join(",", d.OrderBy(kvp => kvp.Key).Select(kvp => $"{kvp.Key}={kvp.Value}"))}}}";
     }
 
-    private void AnalyzeInputSettingsDiffs(InputDevice input, ComparisonResult<InputDeviceSetting> settingsDiffs)
+    private void AnalyzeInputSettingsDiffs(SCInputDevice input, ComparisonResult<SCInputDeviceSetting> settingsDiffs)
     {
         foreach (var setting in settingsDiffs.Added)
         {

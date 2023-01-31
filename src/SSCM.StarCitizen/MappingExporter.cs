@@ -5,7 +5,7 @@ using static SSCM.StarCitizen.Extensions;
 
 namespace SSCM.StarCitizen;
 
-public class MappingExporter : IMappingExporter<MappingData>
+public class MappingExporter : IMappingExporter<SCMappingData>
 {
     public event Action<string> StandardOutput = delegate {};
     public event Action<string> WarningOutput = delegate {};
@@ -28,44 +28,45 @@ public class MappingExporter : IMappingExporter<MappingData>
 
     public string Backup()
     {
-        if (!System.IO.File.Exists(this.GameConfigPath))
+        if (!File.Exists(this.GameConfigPath))
         {
             throw new FileNotFoundException($"Could not find the Star Citizen mappings file at [{this.GameConfigPath}]!");
         }
 
         // make backup of actionmaps.xml
-        var actionmapsxmlBackup = System.IO.Path.Combine(this._folders.SscmDataDir, $"actionmaps.xml.{this._platform.UtcNow.ToLocalTime().ToString("yyyyMMddHHmmss")}.bak");
-        System.IO.File.Copy(this.GameConfigPath, actionmapsxmlBackup);
-        return actionmapsxmlBackup;
+        Directory.CreateDirectory(this._folders.ScDataDir);
+        var backupPath = Path.Combine(this._folders.ScDataDir, $"actionmaps.xml.{this._platform.UtcNow.ToLocalTime().ToString("yyyyMMddHHmmss")}.bak");
+        File.Copy(this.GameConfigPath, backupPath);
+        return backupPath;
     }
 
     public string RestoreLatest()
     {
         // find all files matching pattern, sort ordinally
-        var backups = System.IO.Directory.GetFiles(this._folders.SscmDataDir, "actionmaps.xml.*.bak");
+        var backups = Directory.GetFiles(this._folders.ScDataDir, "actionmaps.xml.*.bak");
         var latest = backups.OrderBy(s => s).LastOrDefault();
         if (latest == null)
         {
-            throw new FileNotFoundException($"Could not find any backup files in [{this._folders.SscmDataDir}]!");
+            throw new FileNotFoundException($"Could not find any backup files in [{this._folders.ScDataDir}]!");
         }
 
         // copy latest file to actionmaps.xml
-        System.IO.File.Copy(latest, this.GameConfigPath, true);
+        File.Copy(latest, this.GameConfigPath, true);
 
         return latest;
     }
 
-    public async Task<bool> Preview(MappingData source)
+    public async Task<bool> Preview(SCMappingData source)
     {
         return await this.Export(source, false);
     }
 
-    public async Task<bool> Update(MappingData source)
+    public async Task<bool> Update(SCMappingData source)
     {
         return await this.Export(source, true);
     }
 
-    private void Validate(MappingData source)
+    private void Validate(SCMappingData source)
     {
         var inputPrefixes = source.Inputs.Select(i => i.GetInputPrefix()).ToHashSet();
         foreach (var type in source.Inputs.Select(i => i.Type).Distinct())
@@ -109,7 +110,7 @@ public class MappingExporter : IMappingExporter<MappingData>
         }
     }
 
-    private async Task<bool> Export(MappingData source, bool apply)
+    private async Task<bool> Export(SCMappingData source, bool apply)
     {
         this.Validate(source);
 
@@ -129,14 +130,14 @@ public class MappingExporter : IMappingExporter<MappingData>
         return changed;
     }
 
-    private bool RestoreInputs(IEnumerable<InputDevice> inputs)
+    private bool RestoreInputs(IEnumerable<SCInputDevice> inputs)
     {
         var changed = false;
         // only restore joysticks and gamepads for now
         var preservedInputs = inputs.Where(i => (string.Equals("joystick", i.Type, StringComparison.OrdinalIgnoreCase) || string.Equals("gamepad", i.Type, StringComparison.OrdinalIgnoreCase)) && i.Preserve).ToList();
-        var inputsToAdd = new List<InputDevice>();
+        var inputsToAdd = new List<SCInputDevice>();
         // map of current prefix => exported input, current options element, current rebind elements
-        var inputsToRemap = new Dictionary<string, (InputDevice input, XElement options, IList<XElement> rebinds)>();
+        var inputsToRemap = new Dictionary<string, (SCInputDevice input, XElement options, IList<XElement> rebinds)>();
         var inputPrefixesToRemove = new List<string>();
         foreach (var exportedInput in preservedInputs)
         {
@@ -210,7 +211,7 @@ public class MappingExporter : IMappingExporter<MappingData>
         return changed;
     }
 
-    private bool ExportInputDevices(IEnumerable<InputDevice> inputs)
+    private bool ExportInputDevices(IEnumerable<SCInputDevice> inputs)
     {
         var changed = this.RestoreInputs(inputs);
 
@@ -265,7 +266,7 @@ public class MappingExporter : IMappingExporter<MappingData>
         return changed;
     }
 
-    private bool ExportMappings(IEnumerable<Mapping> mappings)
+    private bool ExportMappings(IEnumerable<SCMapping> mappings)
     {
         var changed = false;
         foreach (var mapping in mappings.Where(m => m.Preserve))

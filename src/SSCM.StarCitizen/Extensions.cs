@@ -7,7 +7,7 @@ public static class Extensions
 {
     private static Regex INPUT_REGEX = new Regex(@"^([A-z]+)(\d+)_(.+)$");
 
-    public static (string Type, int Instance, string bind)? GetInputTypeAndInstance(this Mapping self)
+    public static (string Type, int Instance, string bind)? GetInputTypeAndInstance(this SCMapping self)
     {
         var match = INPUT_REGEX.Match(self.Input);
         if (!match.Success) return null;
@@ -19,14 +19,14 @@ public static class Extensions
         return (type, instance, bind);
     }
 
-    public static string GetInputPrefix(this InputDevice self)
+    public static string GetInputPrefix(this SCInputDevice self)
     {
         var typeAbbv = ActionMapsXmlHelper.GetOptionsTypeAbbv(self.Type);
         var prefix = $"{typeAbbv}{self.Instance}_";
         return prefix;
     }
     
-    public static InputDevice GetRelatedInput(this MappingData self, Mapping mapping)
+    public static SCInputDevice GetRelatedInput(this SCMappingData self, SCMapping mapping)
     {
         string type;
         int instance;
@@ -52,7 +52,7 @@ public static class Extensions
         }
     }
 
-    public static IEnumerable<Mapping> GetRelatedMappings(this MappingData self, InputDevice input)
+    public static IEnumerable<SCMapping> GetRelatedMappings(this SCMappingData self, SCInputDevice input)
     {
         var prefix = input.GetInputPrefix();
         return self.Mappings.Where(m => m.Input.StartsWith(prefix));
@@ -64,12 +64,12 @@ public static class Extensions
         return def;
     }
 
-    public static bool HasChangedInputInstanceId(this ComparisonResult<InputDevice> self)
+    public static bool HasChangedInputInstanceId(this ComparisonResult<SCInputDevice> self)
     {
         return self.Changed.Any(HasChangedInputInstanceId);
     }
 
-    public static bool HasChangedInputInstanceId(this ComparisonPair<InputDevice> self)
+    public static bool HasChangedInputInstanceId(this ComparisonPair<SCInputDevice> self)
     {
         return self.Current.Instance != self.Updated.Instance;
     }

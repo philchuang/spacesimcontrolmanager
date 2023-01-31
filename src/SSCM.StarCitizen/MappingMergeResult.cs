@@ -3,12 +3,12 @@ using System.Text;
 
 namespace SSCM.StarCitizen;
 
-public class MappingMergeResult : MappingMergeResultBase<MappingData>
+public class MappingMergeResult : MappingMergeResultBase<SCMappingData>
 {
-    public ComparisonResult<InputDevice> InputDiffs { get; init; }
-    public ComparisonResult<Mapping> MappingDiffs { get; init; }
+    public ComparisonResult<SCInputDevice> InputDiffs { get; init; }
+    public ComparisonResult<SCMapping> MappingDiffs { get; init; }
 
-    public MappingMergeResult(MappingData current, MappingData updated, ComparisonResult<InputDevice> inputs, ComparisonResult<Mapping> mappings) : base(current, updated)
+    public MappingMergeResult(SCMappingData current, SCMappingData updated, ComparisonResult<SCInputDevice> inputs, ComparisonResult<SCMapping> mappings) : base(current, updated)
     {
         this.InputDiffs = inputs;
         this.MappingDiffs = mappings;
@@ -32,7 +32,7 @@ public class MappingMergeResult : MappingMergeResultBase<MappingData>
         return sb.ToString();
     }
 
-    private static string PrintInputDevice(InputDevice input)
+    private static string PrintInputDevice(SCInputDevice input)
     {
         var sb = new StringBuilder();
         sb.Append($"{input.Type}-{input.Instance}, Settings = [");
@@ -44,7 +44,7 @@ public class MappingMergeResult : MappingMergeResultBase<MappingData>
         return sb.ToString();
     }
 
-    private static string PrintMapping(Mapping mapping)
+    private static string PrintMapping(SCMapping mapping)
     {
         return $"{mapping.Input}{(mapping.MultiTap != null ? $" multitap = {mapping.MultiTap}" : "")}";
     }

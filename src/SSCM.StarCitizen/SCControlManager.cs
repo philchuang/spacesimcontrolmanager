@@ -4,38 +4,32 @@ namespace SSCM.StarCitizen;
 
 // TODO write tests for this class
 
-public class ControlManager : ControlManagerBase<MappingData>
+public class SCControlManager : ControlManagerBase<SCMappingData>
 {
-    protected override string GameConfigPath => System.IO.Path.Combine(this.GameConfigLocation, Constants.SC_ACTIONMAPS_XML_NAME);
-    protected override string MappingDataSavePath => System.IO.Path.Combine(this.AppSaveLocation, Constants.SSCM_SCMAPPINGS_JSON_NAME);
+    // TODO move logic to SCFolders
+    protected override string GameConfigPath => System.IO.Path.Combine(this._folders.GameConfigDir, Constants.SC_ACTIONMAPS_XML_NAME);
+    protected override string MappingDataSavePath => System.IO.Path.Combine(this._folders.ScDataDir, Constants.SSCM_SCMAPPINGS_JSON_NAME);
 
     public override string CommandAlias => "sc";
     public override string GameType => "Star Citizen";
 
     private readonly ISCFolders _folders;
 
-    public ControlManager(IPlatform platform, ISCFolders folders) : base(platform)
+    public SCControlManager(IPlatform platform, ISCFolders folders) : base(platform)
     {
         this._folders = folders;
-        Initialize();
     }
 
-    private void Initialize()
+    protected override IMappingDataRepository<SCMappingData> CreateMappingDataRepository()
     {
-        this.GameConfigLocation = this._folders.ActionMapsDir;
-        this.AppSaveLocation = this._folders.SscmDataDir;
-    }
-
-    protected override IMappingDataRepository<MappingData> CreateMappingDataRepository()
-    {
-        var repo = new MappingDataRepository(this.Platform, this.MappingDataSavePath, "scmappings.{0}.json.bak");
+        var repo = new MappingDataRepositoryDefault<SCMappingData>(this.Platform, this.MappingDataSavePath, "scmappings.{0}.json.bak");
         repo.StandardOutput += WriteLineStandard;
         repo.WarningOutput += WriteLineWarning;
         repo.DebugOutput += WriteLineDebug;
         return repo;
     }
 
-    protected override IMappingImporter<MappingData> CreateImporter()
+    protected override IMappingImporter<SCMappingData> CreateImporter()
     {
         var importer = new MappingImporter(this.Platform, this.GameConfigPath);
         importer.StandardOutput += WriteLineStandard;
@@ -44,7 +38,7 @@ public class ControlManager : ControlManagerBase<MappingData>
         return importer;
     }
 
-    protected override IMappingImportMerger<MappingData> CreateMerger()
+    protected override IMappingImportMerger<SCMappingData> CreateMerger()
     {
         var merger = new MappingImportMerger();
         merger.StandardOutput += WriteLineStandard;
@@ -53,7 +47,7 @@ public class ControlManager : ControlManagerBase<MappingData>
         return merger;
     }
 
-    protected override IMappingExporter<MappingData> CreateExporter()
+    protected override IMappingExporter<SCMappingData> CreateExporter()
     {
         var exporter = new MappingExporter(this.Platform, this._folders, GameConfigPath);
         exporter.StandardOutput += WriteLineStandard;
@@ -62,9 +56,23 @@ public class ControlManager : ControlManagerBase<MappingData>
         return exporter;
     }
 
-    protected override IMappingReporter<MappingData> CreateReporter()
+    protected override IMappingReporter<SCMappingData> CreateReporter()
     {
         var exporter = new MappingReporter();
         return exporter;
+    }
+
+    public async Task<string> ReportInputs(ReportingOptions options)
+    {
+        var reporter = this.CreateReporter();
+        var data = await this.MappingDataRepository.Load();
+        return ((MappingReporter) reporter).ReportInputs(data ?? this.MappingDataRepository.CreateNew(), options);
+    }
+
+    public async Task<string> ReportMappings(ReportingOptions options)
+    {
+        var reporter = this.CreateReporter();
+        var data = await this.MappingDataRepository.Load();
+        return ((MappingReporter) reporter).ReportMappings(data ?? this.MappingDataRepository.CreateNew(), options);
     }
 }

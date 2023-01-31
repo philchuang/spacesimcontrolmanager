@@ -1,0 +1,254 @@
+# Uses Regexes to determine which ED mappings belong to which groups
+
+GroupMappings:
+  General-InterfaceMode:
+  - ^Cycle.+(Page|Panel)$
+  - ^UI_.+$
+
+  General-GalaxyMap:
+  - ^CamPitch.+$
+  - ^CamTranslate.+$
+  - ^CamYaw.+$
+  - ^CamZoom.+$
+  - ^GalaxyMapHome$
+
+  General-CameraSuite:
+  - ^FixCamera(Relative|World)Toggle$
+  - ^FStop.+$
+  - ^PhotoCameraToggle.*$
+  - ^QuitCamera$
+  - ^ToggleAdvanceMode$
+  - ^ToggleRotationLock$
+  - ^VanityCamera.+$
+
+  General-FreeCamera:
+  - ^.*FreeCam.*$
+  - ^(Pitch|Yaw)Camera(Mouse)?$
+  - ^PitchCamera(Down|Up)$
+  - ^(Roll|Yaw)Camera(Left|Right)?$
+
+  General-HoloMe:
+  - ^CommanderCreator.+$
+
+  General-Playlist:
+  - ^GalnetAudio_.+$
+
+  General-StoreCamera:
+  - ^Store.+$
+
+  Ship-MouseControls:
+  - ^Mouse(X|Y)(Decay|Mode)$
+  - ^MouseDeadzone$
+  - ^MouseDecayRate$
+  - ^MouseGUI$
+  - ^MouseLinearity$
+  - ^MouseReset$
+  - ^MouseSensitivity$
+
+  Ship-FlightRotation:
+  - ^Pitch.+Button(?!.*_Landing).*$
+  - ^PitchAxis(?!.*(Alternate|_Landing)).*$
+  - ^Roll.+Button(?!.*_Landing).*$
+  - ^RollAxis(?!.*(Alternate|_Landing)).*$
+  - ^Yaw.+Button(?!.*_Landing).*$
+  - ^Yaw(Left|Right)Button$
+  - ^YawAxisRaw$
+  - ^YawToRoll(?!.*(Alternate|_Landing)).*$
+
+  Ship-FlightThrust:
+  - ^(Backward|Forward)ThrustButton$
+  - ^(Down|Up)ThrustButton$
+  - ^(Lateral|Vertical)ThrustRaw$
+  - ^(Left|Right)ThrustButton$
+  - ^AheadThrust$
+
+  Ship-AlternateFlightControls:
+  - ^.*Alternate.*$
+
+  Ship-FlightThrottle:
+  - ^(Backward|Forward)Key$
+  - ^SetSpeed.+$
+  - ^Throttle(Axis|Increment|Range)$
+  - ^ToggleReverseThrottleInput$
+
+  Ship-FlightLandingOverrides:
+  - ^.+_Landing$
+
+  Ship-FlightMiscellaneous:
+  - ^DisableRotationCorrectToggle$
+  - ^Hyperspace$
+  - ^HyperSuperCombination$
+  - ^OrbitLinesToggle$
+  - ^Supercruise$
+  - ^ToggleFlightAssist$
+  - ^UseBoostJuice$
+
+  Ship-Targeting:
+  - ^Cycle(Next|Previous)(Hostile)?Target$
+  - ^Cycle(Next|Previous)Subsystem$
+  - ^Cycle(Next|Previous)Target$
+  - ^SelectHighestThreat$
+  - ^SelectTarget$
+  - ^SelectTargetsTarget$
+  - ^TargetNextRouteSystem$
+  - ^TargetWingman.+$
+  - ^WingNavLock$
+
+  Ship-Weapons:
+  - ^(Primary|Secondary)Fire$
+  - ^CycleFireGroup(Next|Previous)$
+  - ^DeployHardpoint.*$
+
+  Ship-Cooling:
+  - ^ToggleButtonUpInput$
+  - ^DeployHeatSink$
+
+  Ship-Miscellaneous:
+  - ^ChargeECM$
+  - ^CqcMuteButtonMode$
+  - ^EjectAllCargo$
+  - ^EnableMenuGroups$
+  - ^EngineColourToggle$
+  - ^FireChaffLauncher$
+  - ^HMDReset$
+  - ^Increase(Engines|Systems|Weapons)Power$
+  - ^LandingGearToggle$
+  - ^MicrophoneMute$
+  - ^MuteButtonMode$
+  - ^NightVisionToggle$
+  - ^Radar(De|In)creaseRange$
+  - ^RadarRangeAxis$
+  - ^ResetPowerDistribution$
+  - ^ShipSpotLightToggle$
+  - ^ToggleCargoScoop$
+  - ^TriggerFieldNeutraliser$
+  - ^UseShieldCell$
+  - ^WeaponColourToggle$
+
+  Ship-ModeSwitches:
+  - ^(Comms|Left|Right|Role)PanelFocusOptions$
+  - ^EnableCameraLockOn$
+  - ^ExplorationFSSEnter$
+  - ^Focus(Comms|Left|Radar|Right)Panel$
+  - ^FocusOnTextEntryField$
+  - ^FriendsMenu$
+  - ^GalaxyMapOpen$
+  - ^HeadLookToggle$
+  - ^OpenCodexGoToDiscovery$
+  - ^Pause$
+  - ^PlayerHUDModeToggle$
+  - ^QuickCommsPanel$
+  - ^ShowPGScoreSummaryInput$
+  - ^SystemMapOpen$
+  - ^UIFocus(Mode)?$
+
+  Ship-HeadlookMode:
+  - ^Head(l|L)ook(?!.*Toggle).+$
+  - ^HeadlookResetOnToggle$
+  - ^MouseHeadlook.*$
+
+  Ship-MultiCrew:
+  - ^MultiCrew.+$
+
+  Ship-FighterOrders:
+  - ^OpenOrders$
+  - ^Order.+$
+
+  Ship-FullSpectrumSystemScanner:
+  - ^ExplorationFSS(?!Enter).+$
+  - ^FSS.+$
+
+  Ship-DetailedSurfaceScanner:
+  - ^ExplorationSAA.+$
+  - ^SAA.+$
+
+  SRV-Driving:
+  - ^AutoBreakBuggyButton$
+  - ^BuggyCycleFireGroup(Next|Previous)$
+  - ^BuggyPitch.+$
+  - ^Buggy(Primary|Secondary)FireButton$
+  - ^BuggyRoll.+$
+  - ^DriveAssistDefault$
+  - ^HeadlightsBuggyButton$
+  - ^MouseBuggy.+$
+  - ^Steer.+$
+  - ^ToggleBuggyTurretButton$
+  - ^ToggleDriveAssist$
+  - ^VerticalThrustersButton$
+
+  SRV-DrivingTargeting:
+  - ^SelectTarget_Buggy$
+
+  SRV-DrivingTurretControls:
+  - ^BuggyTurret.+$
+  - ^MouseTurret(X|Y)(Decay|Mode)$
+
+  SRV-DriveThrottle:
+  - ^(De|In)creaseSpeedButton(Max|Partial)$
+  - ^BuggyThrottle.+$
+  - ^BuggyToggleReverseThrottleInput$
+  - ^DriveSpeedAxis$
+
+  SRV-DrivingMiscellaneous:
+  - ^EjectAllCargo_Buggy$
+  - ^EnableMenuGroupsSRV$
+  - ^Increase(Engines|Systems|Weapons)Power_Buggy$
+  - ^RecallDismissShip$
+  - ^ResetPowerDistribution_Buggy$
+  - ^ToggleCargoScoop_Buggy$
+
+  SRV-DrivingModeSwitches:
+  - ^Focus(Comms|Left|Radar|Right)Panel_Buggy$
+  - ^GalaxyMapOpen_Buggy$
+  - ^HeadLookToggle_Buggy$
+  - ^OpenCodexGoToDiscovery_Buggy$
+  - ^PlayerHUDModeToggle_Buggy$
+  - ^QuickCommsPanel_Buggy$
+  - ^SystemMapOpen_Buggy$
+  - ^UIFocus_Buggy$
+
+  OnFoot-OnFoot:
+  - ^Humanoid(Backward|Forward)Button$
+  - ^Humanoid(Crouch|Jump|Sprint|Walk)Button$
+  - ^Humanoid(Prim|Second)aryInteractButton$
+  - ^HumanoidBattery$
+  - ^HumanoidClearAuthorityLevel$
+  - ^HumanoidEmoteWheelButton$
+  - ^HumanoidForwardAxis$
+  - ^HumanoidHealthPack$
+  - ^HumanoidHideWeaponButton$
+  - ^HumanoidItemWheel.+$
+  - ^HumanoidMeleeButton$
+  - ^HumanoidPitch.+$
+  - ^HumanoidPrimaryFireButton$
+  - ^HumanoidReloadButton$
+  - ^HumanoidRotate.+$
+  - ^HumanoidSelect.+Button$
+  - ^HumanoidSelect.+Grenade$
+  - ^HumanoidStrafe.+$
+  - ^HumanoidSwitch.+$
+  - ^HumanoidThrowGrenadeButton$
+  - ^HumanoidToggle.+Button$
+  - ^HumanoidUtilityWheelCycleMode$
+  - ^HumanoidZoomButton$
+  - ^MouseHumanoid.+$
+
+  OnFoot-OnFootModeSwitches:
+  - ^.*(?<!PhotoCameraToggle)_Humanoid$
+  - ^HumanoidOpenAccessPanelButton$
+  - ^HumanoidConflictContextualUIButton$
+  
+  OnFoot-OnFootMiscellaneous:
+  - ^EnableMenuGroupsOnFoot$
+
+  OnFoot-OnFootEmotes:
+  - ^HumanoidEmoteSlot\d$
+
+  TBD:
+  - ^EnableRumbleTrigger$
+  - ^HumanoidPing$
+  - ^MotionHeadlook$
+  - ^yawRotateHeadlook$
+
+IgnoreList:
+- ^KeyboardLayout$

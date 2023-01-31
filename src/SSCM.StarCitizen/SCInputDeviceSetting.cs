@@ -1,6 +1,6 @@
 namespace SSCM.StarCitizen;
 
-public class InputDeviceSetting
+public class SCInputDeviceSetting
 {
     public string Name { get; set; } = string.Empty;
     public string Parent { get; set; } = string.Empty;

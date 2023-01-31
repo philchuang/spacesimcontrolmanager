@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.CommandLine;
 using SSCM.Core;
-using SSCM.StarCitizen;
 
 namespace SSCM.cli;
 
@@ -20,6 +19,8 @@ class Program
         return await root.InvokeAsync(args);
     }
 
+    // TODO working on a config subcommand where the user can set variables (dirs, etc.)
+
     static IHostBuilder CreateDefaultBuilder()
     {
         IConfigurationRoot? config = null;
@@ -34,20 +35,27 @@ class Program
             {
                 services.AddSingleton<IConfiguration>(s => config!);
                 services.AddSingleton<IPlatform, Platform>();
-                services.AddSingleton<ISCFolders, SCFolders>();
+                services.AddSingleton<ISscmFolders, SscmFolders>();
+                services.AddSingleton<SSCM.StarCitizen.ISCFolders, SSCM.StarCitizen.SCFolders>();
+                services.AddSingleton<SSCM.Elite.IEDFolders, SSCM.Elite.EDFolders>();
                 // TODO adapt to read this in dynamically based on DLLs
-                services.AddTransient<IControlManager>(s => new ControlManager(s.GetService<IPlatform>()!, s.GetService<ISCFolders>()!));
+                services.AddTransient<IControlManager, SSCM.StarCitizen.SCControlManager>();
+                services.AddTransient<IControlManager, SSCM.Elite.EDControlManager>();
             });
     }
 
     private static List<IControlManager> CreateManagers(IHost host)
     {
-        // TODO adapt to get all IControlManager implementations
-        var manager = host.Services.GetRequiredService<IControlManager>();
-        manager.StandardOutput += Console.WriteLine;
-        manager.WarningOutput += Console.WriteLine;
-        manager.DebugOutput += s => { if (ShowDebugOutput) Console.WriteLine(s); };
-        return new List<IControlManager> { manager };
+        var managers = host.Services.GetServices<IControlManager>().ToList();
+        
+        foreach (var manager in managers)
+        {
+            manager.StandardOutput += Console.WriteLine;
+            manager.WarningOutput += s => Console.WriteLine($"[WARN ] {s}");
+            manager.DebugOutput += s => { if (ShowDebugOutput) Console.WriteLine($"[DEBUG] {s}"); };
+        }
+
+        return managers;
     }
 
     private static Command BuildRootCommand(List<IControlManager> managers)
@@ -74,6 +82,7 @@ class Program
         mgr.AddCommand(BuildExportCommand(manager, debugOption));
         mgr.AddCommand(BuildBackupCommand(manager, debugOption));
         mgr.AddCommand(BuildRestoreCommand(manager, debugOption));
+        // mgr.AddCommand(BuildConfigCommand(manager));
         root.AddCommand(mgr);
     }
 
@@ -110,31 +119,57 @@ class Program
     {
         var preservedOnlyOption = new Option<bool>(
             aliases: new [] { "--preserved", "-p" },
-            description: "Only report data marked for preservation"
+            description: "Only output mappings marked for preservation"
         );
 
-        var cmd = new Command("report", "Outputs saved input and mappings data in CSV format.");
+        var headersOnlyOption = new Option<bool>(
+            aliases: new [] { "--names", "-n" },
+            description: "Only output mapping names, not values"
+        );
+
+        var formatOption = new Option<string>(
+            aliases: new [] { "--format", "-f" },
+            description: "Output in a specific format",
+            getDefaultValue: () => "md"
+        ).FromAmong("md", "csv", "json");
+
+        var cmd = new Command("report", "Outputs saved mappings in text format.");
         cmd.AddOption(preservedOnlyOption);
-        cmd.SetHandler(async (preservedOnly) => {
-            Console.WriteLine(await manager.Report(preservedOnly: preservedOnly));
+        cmd.AddOption(headersOnlyOption);
+        cmd.AddOption(formatOption);
+        cmd.SetHandler(async (preservedOnly, headersOnly, format) => {
+            var options = new ReportingOptions {
+                Format = format switch {
+                    "md" => ReportingFormat.Markdown,
+                    "markdown" => ReportingFormat.Markdown,
+                    "csv" => ReportingFormat.Csv,
+                    "json" => ReportingFormat.Json,
+                    _ => throw new ArgumentOutOfRangeException(format),
+                },
+                HeadersOnly = headersOnly,
+                PreservedOnly = preservedOnly,
+            };
+            Console.WriteLine(await manager.Report(options));
         },
-        preservedOnlyOption);
+        preservedOnlyOption, headersOnlyOption, formatOption);
 
-        var inputsCmd = new Command("inputs", "Outputs input data in CSV format.");
-        inputsCmd.AddOption(preservedOnlyOption);
-        inputsCmd.SetHandler(async(preservedOnly) => {
-            Console.WriteLine(await manager.ReportInputs(preservedOnly: preservedOnly));
-        },
-        preservedOnlyOption);
-        cmd.AddCommand(inputsCmd);
+        // TODO re-add, maybe have module-specific CLI configuration logic
+        // ONLY FOR SC 
+        // var inputsCmd = new Command("inputs", "Outputs input data in CSV format.");
+        // inputsCmd.AddOption(preservedOnlyOption);
+        // inputsCmd.SetHandler(async(preservedOnly) => {
+        //     Console.WriteLine(await manager.ReportInputs(preservedOnly: preservedOnly));
+        // },
+        // preservedOnlyOption);
+        // cmd.AddCommand(inputsCmd);
 
-        var mappingsCmd = new Command("mappings", "Outputs mappings data in CSV format.");
-        mappingsCmd.AddOption(preservedOnlyOption);
-        mappingsCmd.SetHandler(async(preservedOnly) => {
-            Console.WriteLine(await manager.ReportMappings(preservedOnly: preservedOnly));
-        },
-        preservedOnlyOption);
-        cmd.AddCommand(mappingsCmd);
+        // var mappingsCmd = new Command("mappings", "Outputs mappings data in CSV format.");
+        // mappingsCmd.AddOption(preservedOnlyOption);
+        // mappingsCmd.SetHandler(async(preservedOnly) => {
+        //     Console.WriteLine(await manager.ReportMappings(preservedOnly: preservedOnly));
+        // },
+        // preservedOnlyOption);
+        // cmd.AddCommand(mappingsCmd);
 
         return cmd;
     }
@@ -203,15 +238,8 @@ class Program
         return cmd;
     }
 
-    private static void AddEliteDangerousCommands(IControlManager manager, RootCommand root, Option<bool> debugOption)
-    {
-        // var ed = new Command("ed", "Manage Elite: Dangerous mappings");
-        // ed.AddCommand(BuildImportCommand(manager, debugOption));
-        // ed.AddCommand(BuildEditCommand(manager));
-        // ed.AddCommand(BuildEditSCCommand(manager));
-        // ed.AddCommand(BuildExportCommand(manager, debugOption));
-        // ed.AddCommand(BuildBackupCommand(manager, debugOption));
-        // ed.AddCommand(BuildRestoreCommand(manager, debugOption));
-        // root.AddCommand(ed);
-    }
+    // private static Command BuildConfigCommand(IControlManager manager)
+    // {
+    //     // TODO implement
+    // }
 }

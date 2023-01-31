@@ -1,6 +1,6 @@
 namespace SSCM.StarCitizen;
 
-public class Mapping
+public class SCMapping
 {
     public string ActionMap { get; set; } = string.Empty;
     public string Action { get; set; } = string.Empty;

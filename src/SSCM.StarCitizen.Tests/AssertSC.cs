@@ -4,11 +4,11 @@ using SSCM.Tests;
 
 namespace SSCM.StarCitizen.Tests;
 
-public static class AssertSscm
+public static class AssertSC
 {
-    public static void AreEqual(MappingData? expected, MappingData? actual)
+    public static void AreEqual(SCMappingData? expected, SCMappingData? actual)
     {
-        if (expected == null && actual == null) return;
+        if (ReferenceEquals(expected, actual)) return;
 
         Assert.NotNull(expected);
         Assert.NotNull(actual);
@@ -22,9 +22,9 @@ public static class AssertSscm
         Assert2.EnumerableEquals(expected.Mappings, actual.Mappings, AreEqual);
     }
 
-    public static void AreEqual(InputDevice? expected, InputDevice? actual)
+    public static void AreEqual(SCInputDevice? expected, SCInputDevice? actual)
     {
-        if (expected == null && actual == null) return;
+        if (ReferenceEquals(expected, actual)) return;
 
         Assert.NotNull(expected);
         Assert.NotNull(actual);
@@ -39,9 +39,9 @@ public static class AssertSscm
         Assert2.EnumerableEquals(expected.Settings, actual.Settings, AreEqual);
     }
 
-    public static void AreEqual(InputDeviceSetting? expected, InputDeviceSetting? actual)
+    public static void AreEqual(SCInputDeviceSetting? expected, SCInputDeviceSetting? actual)
     {
-        if (expected == null && actual == null) return;
+        if (ReferenceEquals(expected, actual)) return;
 
         Assert.NotNull(expected);
         Assert.NotNull(actual);
@@ -56,9 +56,9 @@ public static class AssertSscm
         Assert2.DictionaryEquals(expected.Properties, actual.Properties, false, Assert.AreEqual);
     }
 
-    public static void AreEqual(Mapping? expected, Mapping? actual)
+    public static void AreEqual(SCMapping? expected, SCMapping? actual)
     {
-        if (expected == null && actual == null) return;
+        if (ReferenceEquals(expected, actual)) return;
 
         Assert.NotNull(expected);
         Assert.NotNull(actual);
@@ -73,20 +73,5 @@ public static class AssertSscm
         Assert.AreEqual(expected.InputType, actual.InputType, nameof(expected.InputType));
         Assert.AreEqual(expected.MultiTap, actual.MultiTap, nameof(expected.MultiTap));
         Assert.AreEqual(expected.Preserve, actual.Preserve, nameof(expected.Preserve));
-    }
-
-    public static void AreEqual(MappingMergeAction? expected, MappingMergeAction? actual)
-    {
-        if (expected == null && actual == null) return;
-
-        Assert.NotNull(expected);
-        Assert.NotNull(actual);
-
-        // silly unreachable code to get rid of warnings
-        if (expected == null) return;
-        if (actual == null) return;
-
-        Assert.AreEqual(expected.Mode, actual.Mode, nameof(expected.Mode));
-        Assert.AreSame(expected.Value, actual.Value, nameof(expected.Value));
     }
 }

@@ -24,9 +24,9 @@ public class MappingReporter_Report_Tests
     {
         // Arrange
         var expected = new List<string> { EXPECTED_INPUT_HEADER };
-        var data = new MappingData();
+        var data = new SCMappingData();
         // basic case
-        var input = new InputDevice {
+        var input = new SCInputDevice {
             Type = RandomString(),
             Instance = 1,
             Product = RandomString(),
@@ -35,21 +35,21 @@ public class MappingReporter_Report_Tests
         data.Inputs.Add(input);
         expected.Add($"{input.Id},{input.Type},{input.Product},{input.Preserve},");
         // basic case with options
-        input = new InputDevice {
-            Type = RandomString(),
+        input = new SCInputDevice {
+            Type = input.Type,
             Instance = 2,
             Product = RandomString(),
             Preserve = true,
             Settings = {
-                new InputDeviceSetting { Name = "A" + RandomString(4) },
-                new InputDeviceSetting { Name = "B" + RandomString(4) },
+                new SCInputDeviceSetting { Name = "A" + RandomString(4) },
+                new SCInputDeviceSetting { Name = "B" + RandomString(4) },
             }
         };
         data.Inputs.Add(input);
         expected.Add($"{input.Id},{input.Type},{input.Product},{input.Preserve},\"{string.Join(", ", input.Settings.Select(s => s.Name).OrderBy(s => s))}\"");
 
         // Act
-        var actual = this._reporter.ReportInputs(data, preservedOnly: false);
+        var actual = this._reporter.ReportInputs(data, new ReportingOptions { PreservedOnly = false });
 
         // Assert
         Assert2.EnumerableEquals(expected, actual.Split("\n").Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s)));
@@ -60,10 +60,10 @@ public class MappingReporter_Report_Tests
     {
         // Arrange
         var expected = new List<string> { EXPECTED_MAPPING_HEADER };
-        var data = new MappingData();
+        var data = new SCMappingData();
         // basic case
-        var mapping = new Mapping {
-            ActionMap = RandomString(),
+        var mapping = new SCMapping {
+            ActionMap = "1" + RandomString(),
             Action = RandomString(),
             Preserve = true,
             InputType = RandomString(),
@@ -72,8 +72,8 @@ public class MappingReporter_Report_Tests
         data.Mappings.Add(mapping);
         expected.Add($"{mapping.ActionMap},{mapping.Action},{mapping.Preserve},{mapping.InputType},{mapping.Input},");
         // basic case with options
-        mapping = new Mapping {
-            ActionMap = RandomString(),
+        mapping = new SCMapping {
+            ActionMap = "2" + RandomString(),
             Action = RandomString(),
             Preserve = true,
             InputType = RandomString(),
@@ -84,7 +84,7 @@ public class MappingReporter_Report_Tests
         expected.Add($"{mapping.ActionMap},{mapping.Action},{mapping.Preserve},{mapping.InputType},{mapping.Input},\"MultiTap: {mapping.MultiTap}\"");
 
         // Act
-        var actual = this._reporter.ReportMappings(data, preservedOnly: false);
+        var actual = this._reporter.ReportMappings(data, new ReportingOptions { PreservedOnly = false });
 
         // Assert
         Assert2.EnumerableEquals(expected, actual.Split("\n").Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s)));
@@ -95,9 +95,9 @@ public class MappingReporter_Report_Tests
     {
         // Arrange
         var expected = new List<string> { EXPECTED_INPUT_HEADER };
-        var data = new MappingData();
+        var data = new SCMappingData();
         // basic case
-        var input = new InputDevice {
+        var input = new SCInputDevice {
             Type = RandomString(),
             Instance = 1,
             Product = RandomString(),
@@ -106,8 +106,8 @@ public class MappingReporter_Report_Tests
         data.Inputs.Add(input);
         expected.Add($"{input.Id},{input.Type},{input.Product},{input.Preserve},");
         // not preserved
-        input = new InputDevice {
-            Type = RandomString(),
+        input = new SCInputDevice {
+            Type = input.Type,
             Instance = 2,
             Product = RandomString(),
             Preserve = false,
@@ -116,8 +116,8 @@ public class MappingReporter_Report_Tests
 
         expected.Add(EXPECTED_MAPPING_HEADER);
         // basic case
-        var mapping = new Mapping {
-            ActionMap = RandomString(),
+        var mapping = new SCMapping {
+            ActionMap = "1" + RandomString(),
             Action = RandomString(),
             Preserve = true,
             InputType = RandomString(),
@@ -126,8 +126,8 @@ public class MappingReporter_Report_Tests
         data.Mappings.Add(mapping);
         expected.Add($"{mapping.ActionMap},{mapping.Action},{mapping.Preserve},{mapping.InputType},{mapping.Input},");
         // not preserved
-        mapping = new Mapping {
-            ActionMap = RandomString(),
+        mapping = new SCMapping {
+            ActionMap = "2" + RandomString(),
             Action = RandomString(),
             Preserve = false,
             InputType = RandomString(),
@@ -136,8 +136,9 @@ public class MappingReporter_Report_Tests
         data.Mappings.Add(mapping);
 
         // Act
-        var actual = this._reporter.Report(data, preservedOnly: true);
+        var actual = this._reporter.Report(data, new ReportingOptions { PreservedOnly = true, Format = ReportingFormat.Csv });
 
         // Assert
-        Assert2.EnumerableEquals(expected, actual.Split("\n").Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s)));    }
+        Assert2.EnumerableEquals(expected, actual.Split("\n").Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s)));
+    }
 }

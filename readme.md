@@ -1,12 +1,12 @@
 # Space Sim Control Manager
 
-Utility to help players retain and migrate their control mappings for space-sim games, especially for new SC version releases. Elite Dangerous support is also planned.
+Utility to help players retain and migrate their control mappings for space-sim games, especially for new SC version releases. Elite Dangerous is also supported.
 
-## Standard Usage
+## Standard Usage (Star Citizen)
 
 ### Import
 
-Imports the Star Citizen actionmaps.xml and saves it locally in a mappings JSON file.
+Reads the Star Citizen `actionmaps.xml` file and stores the input device settings and mappings.
 
 ```text
 > SSCM.exe sc import
@@ -17,7 +17,7 @@ Mappings backed up to [My Documents\SSCM\SC\scmappings.json].
 
 ### Edit
 
-Opens the mappings JSON file in the system default editor. Edit the `Preserve` property to affect the export behavior.
+Opens the captured mappings file in the system default editor. Set the `Preserve` property to `true` to overwrite the game configuration when exporting.
 
 ```text
 > SSCM.exe sc edit
@@ -26,7 +26,7 @@ Opening [My Documents\SSCM\SC\scmappings.json] in the default editor, change the
 
 ### Export Preview
 
-Previews updates to the Star Citizen bindings based on the locally saved mappings file.
+Previews changes to the Star Citizen game configuration based on the preserved captured mappings.
 
 ```text
 > SSCM.exe sc export
@@ -38,7 +38,7 @@ CONFIGURATION NOT UPDATED: Execute "export apply" to apply these changes.
 
 ### Export Apply
 
-Updates the Star Citizen bindings based on the locally saved mappings file.
+Updates the Star Citizen game configuration based on the preserved captured mappings.
 
 ```text
 > SSCM.exe sc export apply
@@ -51,11 +51,27 @@ CONFIGURATION UPDATED: Changes applied to [C:\Program Files\Roberts Space Indust
 MUST RESTART STAR CITIZEN FOR CHANGES TO TAKE AFFECT.
 ```
 
+### Report
+
+Creates a plain-text report of the captured mappings (multiple formats available).
+
+```text
+> SSCM.exe sc report > starcitizen_mappings.md
+```
+
+```text
+> SSCM.exe sc report -f csv > starcitizen_mappings.scv
+```
+
+```text
+> SSCM.exe sc report -f json > starcitizen_mappings.json
+```
+
 ## Advanced Usage
 
 ### Importing when there is already saved mappings
 
-Instead of importing, this command displays the differences between the current and saved mappings for review.
+Instead of automatically importing, this will display the differences between the captured and latest mappings for review.
 
 ```text
 > SSCM.exe sc import
@@ -67,6 +83,8 @@ MAPPING changed and will not merge: [seat_general-v_toggle_scan_mode] => js2_but
 
 #### Merge mappings
 
+Merges the latest changes for the non-preserved mappings.
+
 ```text
 > SSCM.exe sc import merge
 MAPPING changed and will merge: [seat_general-v_toggle_mining_mode] js2_button55 => js2_button54
@@ -76,6 +94,8 @@ Mappings backed up to [My Documents\SSCM\SC\scmappings.json].
 ```
 
 #### Overwrite mappings
+
+Overwrite all the captured mappings with the latest changes.
 
 ```text
 > SSCM.exe sc import overwrite
@@ -87,7 +107,7 @@ Mappings backed up to [My Documents\SSCM\SC\scmappings.json].
 
 ### Back up the Star Citizen actionmaps.xml
 
-Makes a local copy of the Star Citizen actionmaps.xml which can be restored later.
+Makes a local copy of the Star Citizen actionmaps.xml, which can be restored later.
 
 ```text
 > SSCM.exe sc backup
@@ -105,7 +125,7 @@ actionmaps.xml restored from [My Documents\SSCM\SC\actionmaps.xml.20221223022032
 
 ### Edit the Star Citizen actionmaps.xml
 
-Opens the Star Citizen actionmaps.xml in the system default editor.
+Opens the Star Citizen game configuration in the system default editor.
 
 ```text
 > SSCM.exe sc editgame

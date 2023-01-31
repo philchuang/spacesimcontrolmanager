@@ -4,35 +4,35 @@ using static SSCM.StarCitizen.Extensions;
 
 namespace SSCM.StarCitizen;
 
-public class MappingImporter : IMappingImporter<MappingData>
+public class MappingImporter : IMappingImporter<SCMappingData>
 {
     public event Action<string> StandardOutput = delegate {};
     public event Action<string> WarningOutput = delegate {};
     public event Action<string> DebugOutput = delegate {};
 
-    public string ActionMapsXmlPath { get; private set; }
+    public string GameConfigPath { get; private set; }
 
     private readonly IPlatform _platform;
 
-    private MappingData _data = new MappingData();
+    private SCMappingData _data = new SCMappingData();
 
-    public MappingImporter(IPlatform platform, string actionmapsxmlpath)
+    public MappingImporter(IPlatform platform, string gameConfigPath)
     {
         this._platform = platform;
-        this.ActionMapsXmlPath = actionmapsxmlpath;
+        this.GameConfigPath = gameConfigPath;
     }
 
-    public async Task<MappingData> Read()
+    public async Task<SCMappingData> Read()
     {
-        if (!System.IO.File.Exists(this.ActionMapsXmlPath))
+        if (!System.IO.File.Exists(this.GameConfigPath))
         {
-            throw new FileNotFoundException($"Could not find the Star Citizen mappings file at [{this.ActionMapsXmlPath}]!");
+            throw new FileNotFoundException($"Could not find the Star Citizen mappings file at [{this.GameConfigPath}]!");
         }
 
-        this._data = new MappingData { ReadTime = this._platform.UtcNow };
+        this._data = new SCMappingData { ReadTime = this._platform.UtcNow };
 
-        this.StandardOutput($"Reading [{this.ActionMapsXmlPath}]...");
-        using (var fs = new FileStream(this.ActionMapsXmlPath, FileMode.Open))
+        this.StandardOutput($"Reading [{this.GameConfigPath}]...");
+        using (var fs = new FileStream(this.GameConfigPath, FileMode.Open))
         {
             var ct = new CancellationToken();
             var xd = await XDocument.LoadAsync(fs, LoadOptions.None, ct);
@@ -90,10 +90,10 @@ public class MappingImporter : IMappingImporter<MappingData>
 
         this.DebugOutput($"Processing options [{product}]...");
 
-        var input = new InputDevice { Type = option.GetAttribute("type"), Instance = IntTryParseOrDefault(option.GetAttribute("instance"), -1), Preserve = true, Product = product };
+        var input = new SCInputDevice { Type = option.GetAttribute("type"), Instance = IntTryParseOrDefault(option.GetAttribute("instance"), -1), Preserve = true, Product = product };
         foreach (var prop in option.Elements())
         {
-            var setting = new InputDeviceSetting
+            var setting = new SCInputDeviceSetting
             {
                 Name = prop.Name.LocalName,
                 Parent = $"{input.Type}-{input.Instance}-{input.Product}", // I think product is probably sufficient, assuming the GUID is unique to the device
@@ -170,6 +170,6 @@ public class MappingImporter : IMappingImporter<MappingData>
         var multitapStr = rebind.GetAttribute("multiTap");
         if (!int.TryParse(multitapStr, out var multitap)) multitap = -1;
         var (inputType, instance) = ActionMapsXmlHelper.GetOptionsTypeAndInstanceForPrefix(input);
-        this._data.Mappings.Add(new Mapping { ActionMap = actionmapName, Action = actionName, Input = input, InputType = inputType, MultiTap = multitap != -1 ? multitap : null, Preserve = preserve });
+        this._data.Mappings.Add(new SCMapping { ActionMap = actionmapName, Action = actionName, Input = input, InputType = inputType, MultiTap = multitap != -1 ? multitap : null, Preserve = preserve });
     }
 }
