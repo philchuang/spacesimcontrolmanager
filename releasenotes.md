@@ -9,6 +9,7 @@
 
 ## Changelog
 
+v1.1.1 - fixed a bug with Elite export
 v1.1.0 - added Elite: Dangerous
 v1.0.6 - renamed files to make it easier to run
 v1.0.5 - added report command
