@@ -3,24 +3,18 @@ using SSCM.Core;
 
 namespace SSCM.StarCitizen;
 
-public class MappingReporterCsv
+public class MappingReporterCsv : SCMappingReporterBase
 {
     private const string INPUT_HEADER = @"Id,Type,Name,Preserve,SettingNames";
     private const string MAPPING_HEADER = @"Group,Action,Preserve,InputType,Binding,Options";
+
+    protected override ReportingFormat Format => ReportingFormat.Csv;
 
     public MappingReporterCsv()
     {
     }
 
-    public string Report(SCMappingData data, ReportingOptions options)
-    {
-        return options.Format switch {
-            ReportingFormat.Csv => ReportCsv(data, options),
-            _ => throw new ArgumentOutOfRangeException($"Unable to report in format [{options.Format.ToString()}]!"),
-        };
-    }
-
-    private string ReportCsv(SCMappingData data, ReportingOptions options)
+    protected override string ReportFull(SCMappingData data, ReportingOptions options)
     {
         var sb = new StringBuilder();
 
@@ -52,7 +46,7 @@ public class MappingReporterCsv
 
         sb.AppendLine(INPUT_HEADER);
 
-        foreach (var input in data.Inputs.Where(i => !options.PreservedOnly || i.Preserve))
+        foreach (var input in data.Inputs.Where(i => !options.PreservedOnly || i.Preserve).OrderBy(i => i.Type).ThenBy(i => i.Instance))
         {
             WriteInput(input, options, sb);
         }
@@ -87,7 +81,7 @@ public class MappingReporterCsv
 
         sb.AppendLine(MAPPING_HEADER);
 
-        foreach (var mapping in data.Mappings.Where(m => !options.PreservedOnly || m.Preserve))
+        foreach (var mapping in data.Mappings.Where(m => !options.PreservedOnly || m.Preserve).OrderBy(m => m.ActionMap).ThenBy(m => m.Action))
         {
             WriteMapping(mapping, options, sb);
         }

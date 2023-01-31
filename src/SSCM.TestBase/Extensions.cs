@@ -9,14 +9,6 @@ namespace SSCM.Tests;
 
 public static class Extensions
 {
-    public static T JsonCopy<T>(this T self)
-    {
-        if (self == null) throw new ArgumentNullException(nameof(self));
-        var json = JsonConvert.SerializeObject(self);
-        var clone = JsonConvert.DeserializeObject<T>(json);
-        return clone!;
-    }
-
     private static Random _rnd = new Random();
     private const string ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     private const string ALPHANUMERIC = ALPHA+"0123456789_";

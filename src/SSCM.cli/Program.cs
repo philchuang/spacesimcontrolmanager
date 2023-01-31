@@ -119,38 +119,39 @@ class Program
     {
         var preservedOnlyOption = new Option<bool>(
             aliases: new [] { "--preserved", "-p" },
-            description: "Only report data marked for preservation"
+            description: "Only output mappings marked for preservation"
         );
 
         var headersOnlyOption = new Option<bool>(
             aliases: new [] { "--names", "-n" },
-            description: "Only report mapping names, not values"
+            description: "Only output mapping names, not values"
         );
 
-        var mdOption = new Option<bool>(
-            aliases: new [] { "--markdown", "-m" },
-            description: "Output in markdown format instead"
-        );
+        var formatOption = new Option<string>(
+            aliases: new [] { "--format", "-f" },
+            description: "Output in a specific format",
+            getDefaultValue: () => "md"
+        ).FromAmong("md", "csv", "json");
 
-        var jsonOption = new Option<bool>(
-            aliases: new [] { "--json", "-j" },
-            description: "Output in JSON format instead"
-        );
-
-        var cmd = new Command("report", "Outputs saved input and mappings data in CSV format.");
+        var cmd = new Command("report", "Outputs saved mappings in text format.");
         cmd.AddOption(preservedOnlyOption);
         cmd.AddOption(headersOnlyOption);
-        cmd.AddOption(mdOption);
-        // cmd.AddOption(jsonOption); // unsure about this one
-        cmd.SetHandler(async (preservedOnly, headersOnly, markdown, json) => {
+        cmd.AddOption(formatOption);
+        cmd.SetHandler(async (preservedOnly, headersOnly, format) => {
             var options = new ReportingOptions {
-                Format = markdown ? ReportingFormat.Markdown : json ? ReportingFormat.Json : ReportingFormat.Csv,
+                Format = format switch {
+                    "md" => ReportingFormat.Markdown,
+                    "markdown" => ReportingFormat.Markdown,
+                    "csv" => ReportingFormat.Csv,
+                    "json" => ReportingFormat.Json,
+                    _ => throw new ArgumentOutOfRangeException(format),
+                },
                 HeadersOnly = headersOnly,
                 PreservedOnly = preservedOnly,
             };
             Console.WriteLine(await manager.Report(options));
         },
-        preservedOnlyOption, headersOnlyOption, mdOption, jsonOption);
+        preservedOnlyOption, headersOnlyOption, formatOption);
 
         // TODO re-add, maybe have module-specific CLI configuration logic
         // ONLY FOR SC 

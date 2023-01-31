@@ -3,19 +3,12 @@ using SSCM.Core;
 
 namespace SSCM.StarCitizen;
 
-public class MappingReporterMarkdown
+public class MappingReporterMarkdown : SCMappingReporterBase
 {
+    protected override ReportingFormat Format => ReportingFormat.Markdown;
+
     public MappingReporterMarkdown()
     {
-    }
-
-    public string Report(SCMappingData data, ReportingOptions options)
-    {
-        return options.Format switch
-        {
-            ReportingFormat.Markdown => ReportMarkdown(data, options),
-            _ => throw new ArgumentOutOfRangeException($"Unable to report in format [{options.Format.ToString()}]!"),
-        };
     }
 
     public string ReportInputs(SCMappingData data, ReportingOptions options)
@@ -40,7 +33,7 @@ public class MappingReporterMarkdown
         return sb.ToString();
     }
 
-    private string ReportMarkdown(SCMappingData data, ReportingOptions options)
+    protected override string ReportFull(SCMappingData data, ReportingOptions options)
     {
         var sb = new StringBuilder();
 

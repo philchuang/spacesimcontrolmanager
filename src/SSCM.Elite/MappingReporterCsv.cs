@@ -3,24 +3,18 @@ using SSCM.Core;
 
 namespace SSCM.Elite;
 
-public class MappingReporterCsv
+public class MappingReporterCsv : EDMappingReporterBase
 {
     private const string MAPPING_HEADER = @"Group,Name,Preserve,Type,Binding";
     private const string SETTING_HEADER = @"Group,Name,Preserve,Value";
+
+    protected override ReportingFormat Format => ReportingFormat.Csv;
 
     public MappingReporterCsv()
     {
     }
 
-    public string Report(EDMappingData data, ReportingOptions options)
-    {
-        return options.Format switch {
-            ReportingFormat.Csv => ReportCsv(data, options),
-            _ => throw new ArgumentOutOfRangeException($"Unable to report in format [{options.Format.ToString()}]!"),
-        };
-    }
-
-    private static string ReportCsv(EDMappingData data, ReportingOptions options)
+    protected override string ReportFull(EDMappingData data, ReportingOptions options)
     {
         var sb = new StringBuilder();
 

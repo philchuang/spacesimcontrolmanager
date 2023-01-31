@@ -36,7 +36,7 @@ public class MappingReporter_Report_Tests
         expected.Add($"{input.Id},{input.Type},{input.Product},{input.Preserve},");
         // basic case with options
         input = new SCInputDevice {
-            Type = RandomString(),
+            Type = input.Type,
             Instance = 2,
             Product = RandomString(),
             Preserve = true,
@@ -63,7 +63,7 @@ public class MappingReporter_Report_Tests
         var data = new SCMappingData();
         // basic case
         var mapping = new SCMapping {
-            ActionMap = RandomString(),
+            ActionMap = "1" + RandomString(),
             Action = RandomString(),
             Preserve = true,
             InputType = RandomString(),
@@ -73,7 +73,7 @@ public class MappingReporter_Report_Tests
         expected.Add($"{mapping.ActionMap},{mapping.Action},{mapping.Preserve},{mapping.InputType},{mapping.Input},");
         // basic case with options
         mapping = new SCMapping {
-            ActionMap = RandomString(),
+            ActionMap = "2" + RandomString(),
             Action = RandomString(),
             Preserve = true,
             InputType = RandomString(),
@@ -107,7 +107,7 @@ public class MappingReporter_Report_Tests
         expected.Add($"{input.Id},{input.Type},{input.Product},{input.Preserve},");
         // not preserved
         input = new SCInputDevice {
-            Type = RandomString(),
+            Type = input.Type,
             Instance = 2,
             Product = RandomString(),
             Preserve = false,
@@ -117,7 +117,7 @@ public class MappingReporter_Report_Tests
         expected.Add(EXPECTED_MAPPING_HEADER);
         // basic case
         var mapping = new SCMapping {
-            ActionMap = RandomString(),
+            ActionMap = "1" + RandomString(),
             Action = RandomString(),
             Preserve = true,
             InputType = RandomString(),
@@ -127,7 +127,7 @@ public class MappingReporter_Report_Tests
         expected.Add($"{mapping.ActionMap},{mapping.Action},{mapping.Preserve},{mapping.InputType},{mapping.Input},");
         // not preserved
         mapping = new SCMapping {
-            ActionMap = RandomString(),
+            ActionMap = "2" + RandomString(),
             Action = RandomString(),
             Preserve = false,
             InputType = RandomString(),

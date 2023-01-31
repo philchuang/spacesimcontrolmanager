@@ -3,23 +3,17 @@ using SSCM.Core;
 
 namespace SSCM.Elite;
 
-public class MappingReporterMarkdown
+public class MappingReporterMarkdown : EDMappingReporterBase
 {
+    protected override ReportingFormat Format => ReportingFormat.Markdown;
+    
     public MappingReporterMarkdown()
     {
     }
 
-    public string Report(EDMappingData data, ReportingOptions options)
+    protected override string ReportFull(EDMappingData data, ReportingOptions options)
     {
-        return options.Format switch {
-            ReportingFormat.Markdown => ReportMarkdown(data, options),
-            _ => throw new ArgumentOutOfRangeException($"Unable to report in format [{options.Format.ToString()}]!"),
-        };
-    }
-
-    private static string ReportMarkdown(EDMappingData data, ReportingOptions options)
-    {
-        var reportingMap = CreateReportingMap(data, options);
+        var reportingMap = CreateReportingMap(data);
 
         var sb = new StringBuilder();
 
@@ -45,6 +39,8 @@ public class MappingReporterMarkdown
             {
                 if (item.Value is EDMapping m)
                 {
+                    if (options.PreservedOnly && !m.AnyPreserve) continue;
+
                     if (options.HeadersOnly)
                     {
                         sb.AppendLine($"{item.Key}{(m.AnyPreserve ? "&ast;" : "")}  ");
@@ -58,13 +54,12 @@ public class MappingReporterMarkdown
                 }
                 else if (item.Value is EDMappingSetting s)
                 {
-                    if (!options.PreservedOnly || s.Preserve)
-                    {
-                        sb.Append($"{item.Key}{(s.Preserve ? "&ast;" : "")}");
-                        if (!options.HeadersOnly)
-                            sb.Append($" = `{s.Value}`");
-                        sb.AppendLine("  ");
-                    }
+                    if (options.PreservedOnly && !s.Preserve) continue;
+
+                    sb.Append($"{item.Key}{(s.Preserve ? "&ast;" : "")}");
+                    if (!options.HeadersOnly)
+                        sb.Append($" = {(string.IsNullOrWhiteSpace(s.Value) ? "[EMPTY]" : $"`{s.Value}`")}");
+                    sb.AppendLine("  ");
                 }
             }
 
@@ -72,38 +67,5 @@ public class MappingReporterMarkdown
         }
 
         return sb.ToString();
-    }
-
-    private static SortedDictionary<string, SortedDictionary<string, object>> CreateReportingMap(EDMappingData data, ReportingOptions options)
-    {
-        var allGroupNames = data.Mappings.Select(m => m.Group).Concat(data.Settings.Select(s => s.Group)).Distinct().ToList();
-        var reportingMap = new SortedDictionary<string, SortedDictionary<string, object>>();
-        foreach (var m in data.Mappings)
-        {
-            if (!reportingMap.TryGetValue(m.Group, out var list))
-            {
-                list = new SortedDictionary<string, object>();
-                reportingMap[m.Group] = list;
-            }
-
-            list[m.Name] = m;
-
-            foreach (var s in m.Settings)
-            {
-                list[$"{m.Name}.{s.Name}"] = s;
-            }
-        }
-        foreach (var s in data.Settings)
-        {
-            if (!reportingMap.TryGetValue(s.Group, out var list))
-            {
-                list = new SortedDictionary<string, object>();
-                reportingMap[s.Group] = list;
-            }
-
-            list[s.Name] = s;
-        }
-
-        return reportingMap;
     }
 }
