@@ -23,10 +23,12 @@ public class MappingExporter_Update_Tests : TestBase
 {
     private MappingExporter? _exporter;
     private readonly IPlatform _platform;
-    private readonly ISCFolders _folders;
+    private readonly SCFoldersForTest _folders;
     private SCMappingData _source = new SCMappingData();
-    private XDocument? _inputXml = null;
-    private XDocument? _outputXml = null;
+    private XDocument? _inputMappingsXml = null;
+    private XDocument? _outputMappingsXml = null;
+    private XDocument? _inputAttributesXml = null;
+    private XDocument? _outputAttributesXml = null;
 
     public MappingExporter_Update_Tests()
     {
@@ -34,39 +36,45 @@ public class MappingExporter_Update_Tests : TestBase
         this._folders = new SCFoldersForTest();
     }
 
-    private string GameConfigPath => new FileInfo(Path.Combine(base.TestTempDir, "actionmaps.xml")).FullName;
+    private string GameMappingsPath => new FileInfo(Path.Combine(base.TestTempDir, "actionmaps.xml")).FullName;
+    private string GameAttributesPath => new FileInfo(Path.Combine(base.TestTempDir, "attributes.xml")).FullName;
 
     [SetUp]
     protected async Task Init()
     {
-        this._exporter = new MappingExporter(this._platform, this._folders, this.GameConfigPath);
+        this._folders.GameMappingsPath = this.GameMappingsPath;
+        this._folders.GameAttributesPath = this.GameAttributesPath;
+        this._exporter = new MappingExporter(this._platform, this._folders);
         this._exporter.StandardOutput += s => TestContext.Out.WriteLine($"[STD  ]\t{s}");
         this._exporter.DebugOutput    += s => TestContext.Out.WriteLine($"[DEBUG]\t{s}");
         this._exporter.WarningOutput  += s => TestContext.Out.WriteLine($"[WARN ]\t{s}");
 
-        this._inputXml = await this.LoadXml(Samples.GetActionMapsXmlPath());
+        this._inputMappingsXml = await this.LoadXml(Samples.GetActionMapsXmlPath());
+        this._inputAttributesXml = await this.LoadXml(Samples.GetAttributesXmlPath());
     }
 
     private async Task<bool> Act()
     {
         // write _originalXml
-        await this._inputXml.WriteToAsync(this.GameConfigPath);
+        await this._inputMappingsXml.WriteToAsync(this.GameMappingsPath);
+        await this._inputAttributesXml.WriteToAsync(this.GameAttributesPath);
 
         // execute export
         var changed = await this._exporter.Update(this._source);
 
         // read _updatedXml
-        this._outputXml = await this.LoadXml(this.GameConfigPath);
+        this._outputMappingsXml = await this.LoadXml(this.GameMappingsPath);
+        this._outputAttributesXml = await this.LoadXml(this.GameAttributesPath);
 
         return changed;
     }
 
     private void AssertBasics()
     {
-        Assert.NotNull(this._outputXml, nameof(this._outputXml));
-        Assert.NotNull(this._outputXml.Root, nameof(this._outputXml.Root));
-        Assert.AreEqual("ActionMaps", this._outputXml.Root.Name.LocalName);
-        Assert.NotNull(this._outputXml.XPathSelectElement("/ActionMaps/ActionProfiles[@profileName='default']"));
+        Assert.NotNull(this._outputMappingsXml, nameof(this._outputMappingsXml));
+        Assert.NotNull(this._outputMappingsXml.Root, nameof(this._outputMappingsXml.Root));
+        Assert.AreEqual("ActionMaps", this._outputMappingsXml.Root.Name.LocalName);
+        Assert.NotNull(this._outputMappingsXml.XPathSelectElement("/ActionMaps/ActionProfiles[@profileName='default']"));
     }
 
     #region Helper Methods
@@ -145,7 +153,7 @@ public class MappingExporter_Update_Tests : TestBase
         this._source.Mappings.ToList().ForEach(m => m.Preserve = false);
         var mapping = this._source.Mappings.Single(m => m.ActionMap == "spaceship_movement" && m.Action == "v_ifcs_toggle_cruise_control");
         mapping.Preserve = preserve;
-        var actionRebindElement = this.GetActionRebindElement(this._inputXml, mapping);
+        var actionRebindElement = this.GetActionRebindElement(this._inputMappingsXml, mapping);
         var originalInputValue = actionRebindElement.GetAttribute("input");
         mapping.Input = mapping.Input == originalInputValue ? $"{originalInputValue.Split('_')[0]}_{RandomString()}" : mapping.Input;
         return (originalInputValue, mapping, actionRebindElement.Parent);
@@ -164,9 +172,9 @@ public class MappingExporter_Update_Tests : TestBase
         Assert.IsTrue(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
-        if (this._outputXml == null) return;
+        if (this._outputMappingsXml == null) return;
 
-        var changedActionRebindElement = this.GetActionRebindElement(this._outputXml, mapping);
+        var changedActionRebindElement = this.GetActionRebindElement(this._outputMappingsXml, mapping);
         Assert.NotNull(changedActionRebindElement, nameof(changedActionRebindElement));
         Assert.AreEqual(mapping.Input, changedActionRebindElement.GetAttribute("input"));
     }
@@ -186,9 +194,9 @@ public class MappingExporter_Update_Tests : TestBase
         Assert.IsTrue(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
-        if (this._outputXml == null) return;
+        if (this._outputMappingsXml == null) return;
 
-        var changedActionRebindElement = this.GetActionRebindElement(this._outputXml, mapping);
+        var changedActionRebindElement = this.GetActionRebindElement(this._outputMappingsXml, mapping);
         Assert.NotNull(changedActionRebindElement, nameof(changedActionRebindElement));
         Assert.AreEqual(mapping.Input, changedActionRebindElement.GetAttribute("input"));
 
@@ -211,9 +219,9 @@ public class MappingExporter_Update_Tests : TestBase
         Assert.IsFalse(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
-        if (this._outputXml == null) return;
+        if (this._outputMappingsXml == null) return;
 
-        var changedActionRebindElement = this.GetActionRebindElement(this._outputXml, mapping);
+        var changedActionRebindElement = this.GetActionRebindElement(this._outputMappingsXml, mapping);
         Assert.NotNull(changedActionRebindElement, nameof(changedActionRebindElement));
         Assert.AreEqual(originalInputValue, changedActionRebindElement.GetAttribute("input"));
     }
@@ -234,11 +242,11 @@ public class MappingExporter_Update_Tests : TestBase
         Assert.IsTrue(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
-        if (this._outputXml == null || this._inputXml == null) return;
+        if (this._outputMappingsXml == null || this._inputMappingsXml == null) return;
 
-        var originalActionRebindElement = this.GetActionRebindElement(this._inputXml, mapping);
+        var originalActionRebindElement = this.GetActionRebindElement(this._inputMappingsXml, mapping);
         Assert.IsNull(originalActionRebindElement, nameof(originalActionRebindElement));
-        var addedActionRebindElement = this.GetActionRebindElement(this._outputXml, mapping);
+        var addedActionRebindElement = this.GetActionRebindElement(this._outputMappingsXml, mapping);
         Assert.NotNull(addedActionRebindElement, nameof(addedActionRebindElement));
         Assert.AreEqual(mapping.Input, addedActionRebindElement.GetAttribute("input"));
     }
@@ -259,11 +267,11 @@ public class MappingExporter_Update_Tests : TestBase
         Assert.IsTrue(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
-        if (this._outputXml == null || this._inputXml == null) return;
+        if (this._outputMappingsXml == null || this._inputMappingsXml == null) return;
 
-        var originalActionRebindElement = this.GetActionRebindElement(this._inputXml, mapping);
+        var originalActionRebindElement = this.GetActionRebindElement(this._inputMappingsXml, mapping);
         Assert.IsNull(originalActionRebindElement, nameof(originalActionRebindElement));
-        var addedActionRebindElement = this.GetActionRebindElement(this._outputXml, mapping);
+        var addedActionRebindElement = this.GetActionRebindElement(this._outputMappingsXml, mapping);
         Assert.NotNull(addedActionRebindElement, nameof(addedActionRebindElement));
         Assert.AreEqual(mapping.Input, addedActionRebindElement.GetAttribute("input"));
     }
@@ -278,7 +286,7 @@ public class MappingExporter_Update_Tests : TestBase
         var exportedSetting = exportedInput.Settings.First();
         exportedSetting.Preserve = settingPreserve;
         
-        var targetInputElement = this.GetInputElement(this._inputXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
+        var targetInputElement = this.GetInputElement(this._inputMappingsXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
         var targetSettingElement = targetInputElement.Elements().Single();
         var targetSettingValueAttribute = targetSettingElement.Attributes().First();
         var targetSettingValue = targetSettingValueAttribute.Value;
@@ -302,9 +310,9 @@ public class MappingExporter_Update_Tests : TestBase
         Assert.IsTrue(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
-        if (this._outputXml == null) return;
+        if (this._outputMappingsXml == null) return;
 
-        var changedInputElement = this.GetInputElement(this._outputXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
+        var changedInputElement = this.GetInputElement(this._outputMappingsXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
         Assert.NotNull(changedInputElement, nameof(changedInputElement));
         var changedSettingElement = changedInputElement.Elements().Single();
         Assert.NotNull(changedSettingElement, nameof(changedSettingElement));
@@ -336,7 +344,7 @@ public class MappingExporter_Update_Tests : TestBase
         var (exportedInput, exportedSetting) = this.Arrange_XmlInputSetting_MappingData();
         var (exportedSettingValueName, exportedSettingValue) = exportedSetting.Properties.Select(kvp => (kvp.Key, kvp.Value)).First();        
         // find related pre-update input node
-        var targetInputElement = this.GetInputElement(this._inputXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
+        var targetInputElement = this.GetInputElement(this._inputMappingsXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
         // find setting node
         var targetSettingElement = targetInputElement.GetChildren(exportedSetting.Name).SingleOrDefault();
         if (targetSettingElement == null)
@@ -363,9 +371,9 @@ public class MappingExporter_Update_Tests : TestBase
         Assert.IsTrue(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
-        if (this._outputXml == null) return;
+        if (this._outputMappingsXml == null) return;
 
-        var changedInputElement = this.GetInputElement(this._outputXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
+        var changedInputElement = this.GetInputElement(this._outputMappingsXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
         Assert.NotNull(changedInputElement, nameof(changedInputElement));
         var changedSettingElement = changedInputElement.GetChildren(exportedSetting.Name).SingleOrDefault();
         Assert.NotNull(changedSettingElement, nameof(changedSettingElement));
@@ -388,9 +396,9 @@ public class MappingExporter_Update_Tests : TestBase
         Assert.IsFalse(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
-        if (this._outputXml == null) return;
+        if (this._outputMappingsXml == null) return;
 
-        var unchangedInputElement = this.GetInputElement(this._outputXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
+        var unchangedInputElement = this.GetInputElement(this._outputMappingsXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
         Assert.NotNull(unchangedInputElement, nameof(unchangedInputElement));
         var unchangedSettingElement = unchangedInputElement.Elements().Single();
         Assert.NotNull(unchangedSettingElement, nameof(unchangedSettingElement));
@@ -411,7 +419,7 @@ public class MappingExporter_Update_Tests : TestBase
         var exportedSetting = new SCInputDeviceSetting { Name = "AbcDef", Preserve = true, Properties = { { "GhiJkl", RandomString() } } };
         exportedInput.Settings.Add(exportedSetting);
         
-        var targetInputElement = this.GetInputElement(this._inputXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
+        var targetInputElement = this.GetInputElement(this._inputMappingsXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
         var targetSettingElement = targetInputElement.GetChildren(exportedSetting.Name).SingleOrDefault();
 
         var exportedSettingValue = exportedSetting.Properties.First();
@@ -423,9 +431,9 @@ public class MappingExporter_Update_Tests : TestBase
         Assert.IsTrue(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
-        if (this._outputXml == null) return;
+        if (this._outputMappingsXml == null) return;
 
-        var changedInputElement = this.GetInputElement(this._outputXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
+        var changedInputElement = this.GetInputElement(this._outputMappingsXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
         Assert.NotNull(changedInputElement, nameof(changedInputElement));
         var addedSettingElement = changedInputElement.GetChildren(exportedSetting.Name).SingleOrDefault();
         Assert.NotNull(addedSettingElement, nameof(addedSettingElement));
@@ -441,7 +449,7 @@ public class MappingExporter_Update_Tests : TestBase
         var (exportedInput, exportedSetting) = this.Arrange_XmlInputSetting_MappingData();
         var (exportedSettingValueName, exportedSettingValue) = exportedSetting.Properties.Select(kvp => (kvp.Key, kvp.Value)).First();        
         // find related pre-update input node
-        var targetInputElement = this.GetInputElement(this._inputXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
+        var targetInputElement = this.GetInputElement(this._inputMappingsXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
         // find setting node
         var targetSettingElement = targetInputElement.GetChildren(exportedSetting.Name).SingleOrDefault();
         if (targetSettingElement != null)
@@ -456,9 +464,9 @@ public class MappingExporter_Update_Tests : TestBase
         Assert.IsTrue(changed, nameof(changed));
         this.AssertBasics();
         // silly code to prevent warnings
-        if (this._outputXml == null) return;
+        if (this._outputMappingsXml == null) return;
 
-        var changedInputElement = this.GetInputElement(this._outputXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
+        var changedInputElement = this.GetInputElement(this._outputMappingsXml, exportedInput.Type, exportedInput.Instance, exportedInput.Product);
         Assert.NotNull(changedInputElement, nameof(changedInputElement));
         var changedSettingElement = changedInputElement.GetChildren(exportedSetting.Name).SingleOrDefault();
         Assert.NotNull(changedSettingElement, nameof(changedSettingElement));
@@ -488,7 +496,7 @@ public class MappingExporter_Update_Tests : TestBase
         this._source.Mappings.Add(preservedGamepadMapping);
         preservedMappings.Add(preservedGamepadMapping);
         // xml-1: change joystick 1->2, 2->3
-        var originalXmlStr = new StringBuilder(this._inputXml.ToString(SaveOptions.DisableFormatting));
+        var originalXmlStr = new StringBuilder(this._inputMappingsXml.ToString(SaveOptions.DisableFormatting));
         originalXmlStr.Replace("<options type=\"joystick\" instance=\"3\" />", "");
         originalXmlStr.Replace("<options type=\"joystick\" instance=\"2\"", "<options type=\"joystick\" instance=\"3\"");
         originalXmlStr.Replace("<options type=\"joystick\" instance=\"1\"", "<options type=\"joystick\" instance=\"2\"");
@@ -502,20 +510,20 @@ public class MappingExporter_Update_Tests : TestBase
             var newPrefix = $"{bindInfo.Value.Type}{bindInfo.Value.Instance+1}";
             originalXmlStr.Replace($"<rebind input=\"{m.Input}", $"<rebind input=\"{newPrefix}_{RandomString()}");
         }
-        this._inputXml = XDocument.Parse(originalXmlStr.ToString());
-        var originalJoystick2Mappings = this._inputXml.XPathSelectElements("//*/rebind[starts-with(@input,'js2_')]").ToList();
-        var originalJoystick3Mappings = this._inputXml.XPathSelectElements("//*/rebind[starts-with(@input,'js3_')]").ToList();
+        this._inputMappingsXml = XDocument.Parse(originalXmlStr.ToString());
+        var originalJoystick2Mappings = this._inputMappingsXml.XPathSelectElements("//*/rebind[starts-with(@input,'js2_')]").ToList();
+        var originalJoystick3Mappings = this._inputMappingsXml.XPathSelectElements("//*/rebind[starts-with(@input,'js3_')]").ToList();
         // xml-4: add new joystick 1
         var originalJoystick1Element =
             new XElement("options", 
             new XAttribute("type", "joystick"),
             new XAttribute("instance", "1"),
             new XAttribute("Product", RandomString()));
-        var originalJoystick2Element = GetInputElement(this._inputXml, preservedJoystickInputs[0].Type, preservedJoystickInputs[0].Instance + 1, preservedJoystickInputs[0].Product);
-        var originalJoystick3Element = GetInputElement(this._inputXml, preservedJoystickInputs[1].Type, preservedJoystickInputs[1].Instance + 1, preservedJoystickInputs[1].Product);
+        var originalJoystick2Element = GetInputElement(this._inputMappingsXml, preservedJoystickInputs[0].Type, preservedJoystickInputs[0].Instance + 1, preservedJoystickInputs[0].Product);
+        var originalJoystick3Element = GetInputElement(this._inputMappingsXml, preservedJoystickInputs[1].Type, preservedJoystickInputs[1].Instance + 1, preservedJoystickInputs[1].Product);
         originalJoystick2Element.AddBeforeSelf(originalJoystick1Element);
         // xml-5: add made-up mappings for new js1
-        var originalActionProfilesElement = this._inputXml.XPathSelectElement($"/ActionMaps/ActionProfiles[@profileName='default']");
+        var originalActionProfilesElement = this._inputMappingsXml.XPathSelectElement($"/ActionMaps/ActionProfiles[@profileName='default']");
         var originalNewActionMapElement = new XElement("actionmap", new XAttribute("name", RandomString()));
         originalActionProfilesElement.Add(originalNewActionMapElement);
         var originalJoystick1Mappings = 
@@ -540,18 +548,18 @@ public class MappingExporter_Update_Tests : TestBase
 
         // Assert
         Assert.IsTrue(changed, nameof(changed));
-        var updatedXmlStr = this._outputXml.ToString(SaveOptions.DisableFormatting);
+        var updatedXmlStr = this._outputMappingsXml.ToString(SaveOptions.DisableFormatting);
         // assert-1: joystick inputs 1 and 2 are restored (2->1, 3->2)
         foreach (var joystick in preservedJoystickInputs)
         {
-            var updatedElement = this.GetInputElement(this._outputXml, joystick.Type, joystick.Instance, joystick.Product);
+            var updatedElement = this.GetInputElement(this._outputMappingsXml, joystick.Type, joystick.Instance, joystick.Product);
             Assert.NotNull(updatedElement, nameof(updatedElement));
         }
         // assert-1-a: assert that original input settings have carried over and preserved settings restored
-        var updatedJoystick1Element = GetInputElement(this._outputXml, preservedJoystickInputs[0].Type, preservedJoystickInputs[0].Instance, preservedJoystickInputs[0].Product);
+        var updatedJoystick1Element = GetInputElement(this._outputMappingsXml, preservedJoystickInputs[0].Type, preservedJoystickInputs[0].Instance, preservedJoystickInputs[0].Product);
         var updatedJoystick1SettingElement = updatedJoystick1Element.GetChildren("flight_move_pitch");
         Assert.NotNull(updatedJoystick1SettingElement.SingleOrDefault(), nameof(updatedJoystick1SettingElement));
-        var updatedJoystick2Element = GetInputElement(this._outputXml, preservedJoystickInputs[1].Type, preservedJoystickInputs[1].Instance, preservedJoystickInputs[1].Product);
+        var updatedJoystick2Element = GetInputElement(this._outputMappingsXml, preservedJoystickInputs[1].Type, preservedJoystickInputs[1].Instance, preservedJoystickInputs[1].Product);
         var updatedJoystick2SettingElement = updatedJoystick2Element.GetChildren("flight_move_strafe_vertical");
         Assert.NotNull(updatedJoystick2SettingElement.SingleOrDefault(), nameof(updatedJoystick2SettingElement));
         Assert.AreEqual("1", updatedJoystick2SettingElement.First().GetAttribute("invert"));
@@ -568,18 +576,93 @@ public class MappingExporter_Update_Tests : TestBase
             .ToList()
             .ForEach(mapping => {
                 if (preservedMappings.Any(m => m.ActionMap == mapping.ActionMap && m.Action == mapping.Action)) return; // skip preserved mappings, will test later
-                Assert.NotNull(this._outputXml.XPathSelectElement($"//*/actionmap[@name='{mapping.ActionMap}']/action[@name='{mapping.Action}']/rebind[@input='{mapping.RestoredBinding}']"));
+                Assert.NotNull(this._outputMappingsXml.XPathSelectElement($"//*/actionmap[@name='{mapping.ActionMap}']/action[@name='{mapping.Action}']/rebind[@input='{mapping.RestoredBinding}']"));
             });
         // assert-5: preserved mappings are restored
         preservedMappings
             .ForEach(m => {
-                Assert.NotNull(this._outputXml.XPathSelectElement($"//*/actionmap[@name='{m.ActionMap}']/action[@name='{m.Action}']/rebind[@input='{m.Input}']"));
+                Assert.NotNull(this._outputMappingsXml.XPathSelectElement($"//*/actionmap[@name='{m.ActionMap}']/action[@name='{m.Action}']/rebind[@input='{m.Input}']"));
             });
         // assert-6: gamepad input is restored
-        var updatedGamepadInput = this.GetInputElement(this._outputXml, preservedGamepadInput.Type, preservedGamepadInput.Instance, preservedGamepadInput.Product);
+        var updatedGamepadInput = this.GetInputElement(this._outputMappingsXml, preservedGamepadInput.Type, preservedGamepadInput.Instance, preservedGamepadInput.Product);
         Assert.NotNull(updatedGamepadInput, nameof(updatedGamepadInput));
         var updatedGamepadInputSetting = updatedGamepadInput.GetChildren("flight_view").SingleOrDefault();
         Assert.NotNull(updatedGamepadInputSetting, nameof(updatedGamepadInputSetting));
         Assert.AreEqual("1", updatedGamepadInputSetting.GetAttribute("exponent"));
+    }
+
+    [Test]
+    public async Task Update_creates_attribute()
+    {
+        // Arrange
+        var attr = new SCAttribute {
+            Name = RandomString(),
+            Value = RandomString(),
+            Preserve = true,
+        };
+        this._source.Attributes.Add(attr);
+
+        // Act
+        await this.Act();
+
+        // Assert
+        var originalAttrElement = this._inputAttributesXml.XPathSelectElement($"/Attributes/Attr[@name='{attr.Name}']");
+        Assert.IsNull(originalAttrElement, nameof(originalAttrElement));
+        var finalAttrElement = this._outputAttributesXml.XPathSelectElement($"/Attributes/Attr[@name='{attr.Name}']");
+        Assert.IsNotNull(finalAttrElement, nameof(finalAttrElement));
+        Assert.AreEqual(attr.Name, finalAttrElement.GetAttribute("name"));
+        Assert.AreEqual(attr.Value, finalAttrElement.GetAttribute("value"));
+    }
+
+    [Test]
+    public async Task Update_ignores_attribute_change()
+    {
+        // Arrange
+        var attr = new SCAttribute {
+            Name = "ADSMouseSensitivity",
+            Value = "1",
+            Preserve = false,
+        };
+        this._source.Attributes.Add(attr);
+        var originalAttrElement = this._inputAttributesXml.XPathSelectElement($"/Attributes/Attr[@name='{attr.Name}']");
+        originalAttrElement.SetAttributeValue("value", RandomString());
+
+        // Act
+        await this.Act();
+
+        // Assert
+        Assert.IsNotNull(originalAttrElement, nameof(originalAttrElement));
+        Assert.AreNotEqual(attr.Value, originalAttrElement.GetAttribute("value"));
+        var finalAttrElement = this._outputAttributesXml.XPathSelectElement($"/Attributes/Attr[@name='{attr.Name}']");
+        Assert.IsNotNull(finalAttrElement, nameof(finalAttrElement));
+        Assert.AreEqual(attr.Name, finalAttrElement.GetAttribute("name"));
+        Assert.AreNotEqual(attr.Value, finalAttrElement.GetAttribute("value"));
+        Assert.AreEqual(originalAttrElement.GetAttribute("value"), finalAttrElement.GetAttribute("value"));
+    }
+
+    [Test]
+    public async Task Update_overwrites_attribute_change()
+    {
+        // Arrange
+        var attr = new SCAttribute {
+            Name = "ADSMouseSensitivity",
+            Value = "1",
+            Preserve = true,
+        };
+        this._source.Attributes.Add(attr);
+        var originalAttrElement = this._inputAttributesXml.XPathSelectElement($"/Attributes/Attr[@name='{attr.Name}']");
+        originalAttrElement.SetAttributeValue("value", RandomString());
+
+        // Act
+        await this.Act();
+
+        // Assert
+        Assert.IsNotNull(originalAttrElement, nameof(originalAttrElement));
+        Assert.AreNotEqual(attr.Value, originalAttrElement.GetAttribute("value"));
+        var finalAttrElement = this._outputAttributesXml.XPathSelectElement($"/Attributes/Attr[@name='{attr.Name}']");
+        Assert.IsNotNull(finalAttrElement, nameof(finalAttrElement));
+        Assert.AreEqual(attr.Name, finalAttrElement.GetAttribute("name"));
+        Assert.AreEqual(attr.Value, finalAttrElement.GetAttribute("value"));
+        Assert.AreNotEqual(originalAttrElement.GetAttribute("value"), finalAttrElement.GetAttribute("value"));
     }
 }

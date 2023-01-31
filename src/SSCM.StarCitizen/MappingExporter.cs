@@ -1,67 +1,49 @@
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using System.Xml.XPath;
 using SSCM.Core;
 using static SSCM.StarCitizen.Extensions;
 
 namespace SSCM.StarCitizen;
 
-public class MappingExporter : IMappingExporter<SCMappingData>
+public class MappingExporter : MappingExporterBase<SCMappingData>
 {
-    public event Action<string> StandardOutput = delegate {};
-    public event Action<string> WarningOutput = delegate {};
-    public event Action<string> DebugOutput = delegate {};
-
-    public string GameConfigPath { get; private set; }
+    private string GameAttributesPath => this._folders.GameAttributesPath;
+    private string GameConfigDir => this._folders.GameConfigDir;
+    private string GameMappingsPath => this._folders.GameMappingsPath;
 
     private static Regex XML_REGEX = new Regex(@"<(\w[\w\d_]+)[^>]*>.+</\1>");
 
-    private readonly IPlatform _platform;
     private readonly ISCFolders _folders;
-    private ActionMapsXmlHelper? _xml;
-    
-    public MappingExporter(IPlatform platform, ISCFolders folders, string actionmapsxmlpath)
+    private ActionMapsXmlHelper? _mappingsXml;
+    private XDocument? _attributesXml;
+
+    public MappingExporter(IPlatform platform, ISCFolders folders) : base(platform)
     {
-        this._platform = platform;
         this._folders = folders;
-        this.GameConfigPath = actionmapsxmlpath;
     }
 
-    public string Backup()
+    public override string Backup()
     {
-        if (!File.Exists(this.GameConfigPath))
-        {
-            throw new FileNotFoundException($"Could not find the Star Citizen mappings file at [{this.GameConfigPath}]!");
-        }
-
-        // make backup of actionmaps.xml
-        Directory.CreateDirectory(this._folders.ScDataDir);
-        var backupPath = Path.Combine(this._folders.ScDataDir, $"actionmaps.xml.{this._platform.UtcNow.ToLocalTime().ToString("yyyyMMddHHmmss")}.bak");
-        File.Copy(this.GameConfigPath, backupPath);
-        return backupPath;
+        var mappings = base.Backup(this.GameMappingsPath, this._folders.ScDataDir);
+        var attributes = base.Backup(this.GameAttributesPath, this._folders.ScDataDir);
+        return $"{mappings},{attributes}";
     }
 
-    public string RestoreLatest()
+    public override string RestoreLatest()
     {
-        // find all files matching pattern, sort ordinally
-        var backups = Directory.GetFiles(this._folders.ScDataDir, "actionmaps.xml.*.bak");
-        var latest = backups.OrderBy(s => s).LastOrDefault();
-        if (latest == null)
-        {
-            throw new FileNotFoundException($"Could not find any backup files in [{this._folders.ScDataDir}]!");
-        }
+        var mappings = base.RestoreLatest(this._folders.ScDataDir, "actionmaps.xml.*.bak", this.GameMappingsPath);
+        var attributes = base.RestoreLatest(this._folders.ScDataDir, "attributes.xml.*.bak", this.GameAttributesPath);
 
-        // copy latest file to actionmaps.xml
-        File.Copy(latest, this.GameConfigPath, true);
-
-        return latest;
+        return $"{mappings},{attributes}";
     }
 
-    public async Task<bool> Preview(SCMappingData source)
+    public override async Task<bool> Preview(SCMappingData source)
     {
         return await this.Export(source, false);
     }
 
-    public async Task<bool> Update(SCMappingData source)
+    public override async Task<bool> Update(SCMappingData source)
     {
         return await this.Export(source, true);
     }
@@ -114,17 +96,21 @@ public class MappingExporter : IMappingExporter<SCMappingData>
     {
         this.Validate(source);
 
-        this._xml = await ActionMapsXmlHelper.Load(this.GameConfigPath, "default");
+        this._mappingsXml = await ActionMapsXmlHelper.Load(this.GameMappingsPath, "default");
+        this._attributesXml = await XmlExtensions.LoadAsync(this.GameAttributesPath);
 
         var changed = this.ExportInputDevices(source.Inputs);
-        changed = changed | this.ExportMappings(source.Mappings);
+        changed |= this.ExportMappings(source.Mappings);
+        changed |= this.ExportAttributes(source.Attributes);
 
         if (apply)
         {
-            this.StandardOutput("Saving updated actionmaps.xml...");
-            await this._xml.Save(this.GameConfigPath);
-            this.StandardOutput("Saved, run \"restore\" command to revert.");
-            this.StandardOutput("MUST RESTART STAR CITIZEN FOR CHANGES TO TAKE AFFECT.");
+            base._StandardOutput("Saving updated actionmaps.xml...");
+            this._mappingsXml.Save(this.GameMappingsPath);
+            base._StandardOutput("Saving updated attributes.xml...");
+            this._attributesXml!.Save(this.GameAttributesPath);
+            base._StandardOutput("Saved, run \"restore\" command to revert.");
+            base._StandardOutput("MUST RESTART STAR CITIZEN FOR CHANGES TO TAKE AFFECT.");
         }
 
         return changed;
@@ -141,8 +127,8 @@ public class MappingExporter : IMappingExporter<SCMappingData>
         var inputPrefixesToRemove = new List<string>();
         foreach (var exportedInput in preservedInputs)
         {
-            var targetInputByInstance = this._xml.GetOptionsElementForInputTypeAndInstance(exportedInput);
-            var targetInputByProduct = this._xml.GetOptionsElementForInputTypeAndProduct(exportedInput);
+            var targetInputByInstance = this._mappingsXml.GetOptionsElementForInputTypeAndInstance(exportedInput);
+            var targetInputByProduct = this._mappingsXml.GetOptionsElementForInputTypeAndProduct(exportedInput);
 
             if (targetInputByProduct != null)
             { // exported input exists
@@ -154,7 +140,7 @@ public class MappingExporter : IMappingExporter<SCMappingData>
 
                 // 1-0: exported input has a different instance ID
                 // remap bindings
-                inputsToRemap[ActionMapsXmlHelper.GetInputPrefixForOptionsElement(targetInputByProduct)] = (exportedInput, targetInputByProduct, this._xml.GetAllActionRebindsForOptions(targetInputByProduct));
+                inputsToRemap[ActionMapsXmlHelper.GetInputPrefixForOptionsElement(targetInputByProduct)] = (exportedInput, targetInputByProduct, this._mappingsXml.GetAllActionRebindsForOptions(targetInputByProduct));
                 // delete bindings that are in the way of the exported input instance
                 inputPrefixesToRemove.Add(exportedInput.GetInputPrefix());
                 continue;
@@ -175,11 +161,11 @@ public class MappingExporter : IMappingExporter<SCMappingData>
         foreach (var prefix in inputPrefixesToRemove.Where(p => !inputsToRemap.ContainsKey(p)))
         {
             changed = true;
-            this.StandardOutput($"Removing mappings like [{prefix}]...");
-            this._xml.GetAllActionRebindsForInputPrefix(prefix).ForEach(rebind => rebind.Parent.Remove());
+            base._StandardOutput($"Removing mappings like [{prefix}]...");
+            this._mappingsXml.GetAllActionRebindsForInputPrefix(prefix).ForEach(rebind => rebind.Parent.Remove());
             var (type, instance) = ActionMapsXmlHelper.GetOptionsTypeAndInstanceForPrefix(prefix);
-            this.StandardOutput($"Removing input for {type} {instance}...");
-            this._xml.GetOptionsElementForInputTypeAndInstance(type, instance).Remove();
+            base._StandardOutput($"Removing input for {type} {instance}...");
+            this._mappingsXml.GetOptionsElementForInputTypeAndInstance(type, instance).Remove();
         }
 
         // remap via remapOptionsMap
@@ -189,7 +175,7 @@ public class MappingExporter : IMappingExporter<SCMappingData>
             var oldPrefix = oldPrefixAndElements.Key;
             var (exportedInput, optionsElementToUpdate, rebindElementsToUpdate) = oldPrefixAndElements.Value;
             var newPrefix = exportedInput.GetInputPrefix();
-            this.StandardOutput($"Rebinding mappings from [{oldPrefix}] to [{newPrefix}]...");
+            base._StandardOutput($"Rebinding mappings from [{oldPrefix}] to [{newPrefix}]...");
             foreach (var rebind in rebindElementsToUpdate)
             {
                 rebind.SetAttributeValue("input", rebind.GetAttribute("input").Replace(oldPrefix, newPrefix));
@@ -203,9 +189,9 @@ public class MappingExporter : IMappingExporter<SCMappingData>
         {
             changed = true;
             var options = new XElement("options", new XAttribute("type", input.Type), new XAttribute("instance", input.Instance.ToString()), new XAttribute("Product", input.Product));
-            this.DebugOutput($"Creating {options.ToString()}...");
-            this.StandardOutput($"Restoring {input.Type}-{input.Instance} input [{input.Product}]");
-            this._xml.AddOptionsElement(options);
+            base._DebugOutput($"Creating {options.ToString()}...");
+            base._StandardOutput($"Restoring {input.Type}-{input.Instance} input [{input.Product}]");
+            this._mappingsXml.AddOptionsElement(options);
         }
 
         return changed;
@@ -219,17 +205,17 @@ public class MappingExporter : IMappingExporter<SCMappingData>
         {
             foreach (var setting in input.Settings.Where(s => s.Preserve))
             {
-                var settingElement = this._xml.GetElementForInputSetting(input, setting.Name);
+                var settingElement = this._mappingsXml.GetElementForInputSetting(input, setting.Name);
                 if (settingElement == null)
                 {
-                    var inputElement = this._xml.GetOptionsElementForInputDevice(input);
+                    var inputElement = this._mappingsXml.GetOptionsElementForInputDevice(input);
                     if (inputElement == null)
                     {
                         throw new SscmException($"Could not find <options> element for type [{input.Type}] instance [{input.Instance}] Product [{input.Product}].");
                     }
 
                     changed = true;
-                    this.DebugOutput($"Creating <{setting.Name}>...");
+                    base._DebugOutput($"Creating <{setting.Name}>...");
                     // create setting element
                     settingElement = new XElement(setting.Name);
                     inputElement.Add(settingElement);
@@ -248,7 +234,7 @@ public class MappingExporter : IMappingExporter<SCMappingData>
                         }
                         
                         changed = true;
-                        this.StandardOutput($"Updating {input.Product}/{setting.Name}/{prop.Value}...");
+                        base._StandardOutput($"Updating {input.Product}/{setting.Name}/{prop.Value}...");
                         settingValueElement = XElement.Parse(prop.Value);
                         settingElement.Add(settingValueElement);
                     }
@@ -256,7 +242,7 @@ public class MappingExporter : IMappingExporter<SCMappingData>
                     {
                         changed = true;
                         // handle attribute property
-                        this.StandardOutput($"Updating {input.Product}/{setting.Name}/{prop.Key} to {prop.Value}...");
+                        base._StandardOutput($"Updating {input.Product}/{setting.Name}/{prop.Key} to {prop.Value}...");
                         settingElement.SetAttributeValue(prop.Key, prop.Value);                    
                     }
                 }
@@ -271,21 +257,21 @@ public class MappingExporter : IMappingExporter<SCMappingData>
         var changed = false;
         foreach (var mapping in mappings.Where(m => m.Preserve))
         {
-            var actionElement = this._xml.GetActionForMapping(mapping);
+            var actionElement = this._mappingsXml.GetActionForMapping(mapping);
             if (actionElement == null)
             {
-                var actionmapElement = this._xml.GetActionmapForMapping(mapping);
+                var actionmapElement = this._mappingsXml.GetActionmapForMapping(mapping);
                 if (actionmapElement == null)
                 {
-                    this.DebugOutput($"Creating <actionmap name=\"{mapping.ActionMap}\">...");
+                    base._DebugOutput($"Creating <actionmap name=\"{mapping.ActionMap}\">...");
                     // create <actionmap>
                     actionmapElement = new XElement("actionmap");
                     actionmapElement.SetAttributeValue("name", mapping.ActionMap);
-                    this._xml.AddActionmapElement(actionmapElement);
+                    this._mappingsXml.AddActionmapElement(actionmapElement);
                 }
 
                 changed = true;
-                this.DebugOutput($"Creating <action name=\"{mapping.Action}\">...");
+                base._DebugOutput($"Creating <action name=\"{mapping.Action}\">...");
                 // create <action>
                 actionElement = new XElement("action");
                 actionElement.SetAttributeValue("name", mapping.Action);
@@ -296,8 +282,8 @@ public class MappingExporter : IMappingExporter<SCMappingData>
             if (rebindElement == null)
             {
                 changed = true;
-                this.DebugOutput($"Creating <rebind input=\"{mapping.Input}\" />...");
-                this.StandardOutput($"Adding {mapping.ActionMap}/{mapping.Action} for {mapping.Input}...");
+                base._DebugOutput($"Creating <rebind input=\"{mapping.Input}\" />...");
+                base._StandardOutput($"Adding {mapping.ActionMap}/{mapping.Action} for {mapping.Input}...");
                 rebindElement = new XElement("rebind");
                 rebindElement.SetAttributeValue("input", mapping.Input);
                 actionElement.Add(rebindElement);
@@ -307,12 +293,39 @@ public class MappingExporter : IMappingExporter<SCMappingData>
                 if (!string.Equals(rebindElement.GetAttribute("input"), mapping.Input))
                 {
                     changed = true;
-                    this.StandardOutput($"Updating {mapping.ActionMap}/{mapping.Action} to {mapping.Input}...");
+                    base._StandardOutput($"Updating {mapping.ActionMap}/{mapping.Action} to {mapping.Input}...");
                     rebindElement.SetAttributeValue("input", mapping.Input);
                 }
             }
         }
         
         return changed;
+    }
+
+    private bool ExportAttributes(IEnumerable<SCAttribute> attributes)
+    {
+        var changed = false;
+        foreach (var a in attributes.Where(a => a.Preserve))
+        {
+            var xe = this._attributesXml!.XPathSelectElement($"/Attributes/Attr[@name='{a.Name}']");
+            if (xe == null)
+            {
+                xe = new XElement("Attr", new XAttribute("name", a.Name));
+                base._DebugOutput($"Creating <Attr name=\"{a.Name}\" />...");
+                this._attributesXml!.Root!.Add(xe);
+            }
+            changed |= ApplyAttribute(xe, a);
+        }
+        return changed;
+    }
+
+    private bool ApplyAttribute(XElement attrElement, SCAttribute attr)
+    {
+        var value = attrElement.GetAttribute("value");
+        if (string.Equals(attr.Value, value)) return false;
+        
+        attrElement.SetAttributeValue("value", attr.Value);
+        base._StandardOutput($"Updating attribute {attr.Name} from [{value}] to [{attr.Value}]...");
+        return true;
     }
 }
