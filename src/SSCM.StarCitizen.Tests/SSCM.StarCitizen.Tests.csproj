@@ -15,6 +15,6 @@
   <ItemGroup>
     <ProjectReference Include="..\SSCM.Core\SSCM.Core.csproj" />
     <ProjectReference Include="..\SSCM.StarCitizen\SSCM.StarCitizen.csproj" />
-    <ProjectReference Include="..\SSCM.Testbase\SSCM.Testbase.csproj" />
+    <ProjectReference Include="..\SSCM.TestBase\SSCM.TestBase.csproj" />
   </ItemGroup>
 </Project>
