@@ -102,7 +102,7 @@ public class MappingReporterCsv
         }
         else
         {
-            sb.Append("${mapping.InputType},{mapping.Input},");
+            sb.Append($"{mapping.InputType},{mapping.Input},");
             if (mapping.MultiTap != null) sb.Append($"\"MultiTap: {mapping.MultiTap}\"");
         }
         sb.AppendLine();
