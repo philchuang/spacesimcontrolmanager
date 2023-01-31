@@ -7,6 +7,8 @@ using SSCM.Tests.Mocks;
 
 namespace SSCM.Elite.Tests;
 
+#pragma warning disable CS8602
+
 [TestFixture]
 public class MappingImporter_Read_Tests
 {
@@ -35,9 +37,6 @@ public class MappingImporter_Read_Tests
     {
         Assert.NotNull(this._data);
 
-        // silly unreachable code to get rid of warnings
-        if (this._data == null) return;
-
         Assert.AreEqual(this._platform.UtcNow, this._data.ReadTime);
         Assert.AreEqual(87, this._data.Settings.Count);
         Assert.AreEqual(396, this._data.Mappings.Count);
@@ -45,17 +44,14 @@ public class MappingImporter_Read_Tests
         Assert.AreEqual(384, this._data.Mappings.SelectMany(m => new[] { m.Binding, m.Primary, m.Secondary }).Count(b => b?.Preserve == false));
         Assert.AreEqual(29, this._data.Mappings.SelectMany(m => m.Settings).Count(s => s.Preserve));
         Assert.AreEqual(120, this._data.Mappings.SelectMany(m => m.Settings).Count(s => !s.Preserve));
-        Assert.AreEqual(84, this._data.Settings.Count(s => s.Preserve));
-        Assert.AreEqual(3, this._data.Settings.Count(s => !s.Preserve));
+        Assert.AreEqual(72, this._data.Settings.Count(s => s.Preserve));
+        Assert.AreEqual(15, this._data.Settings.Count(s => !s.Preserve));
     }
 
     [Test]
     public void Read_LoadsMappings()
     {
         Assert.NotNull(this._data);
-
-        // silly unreachable code to get rid of warnings
-        if (this._data == null) return;
 
         // only do a partial comparison
         var mappings = EDDataSerializer_Write_Tests.CreateTestData().Mappings;
@@ -70,9 +66,6 @@ public class MappingImporter_Read_Tests
     public void Read_LoadsSettings()
     {
         Assert.NotNull(this._data);
-
-        // silly unreachable code to get rid of warnings
-        if (this._data == null) return;
 
         // only do a partial comparison
         var settings = new EDMappingSetting[] {

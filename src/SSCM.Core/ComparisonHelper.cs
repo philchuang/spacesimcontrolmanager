@@ -49,12 +49,16 @@ public static class ComparisonHelper
     }
 }
 
+#pragma warning disable CS8618
+
 public class ComparisonPair<T>
 {
     public string Key { get; init; }
     public T Current { get; init; }
     public T Updated { get; init; }
 }
+
+#pragma warning restore CS8618
 
 public class ComparisonResult<T>
 {
