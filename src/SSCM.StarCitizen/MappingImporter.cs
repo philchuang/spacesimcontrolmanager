@@ -10,34 +10,49 @@ public class MappingImporter : IMappingImporter<SCMappingData>
     public event Action<string> WarningOutput = delegate {};
     public event Action<string> DebugOutput = delegate {};
 
-    public string GameConfigPath { get; private set; }
+    public string GameMappingsPath => this._folders.GameMappingsPath;
+    public string GameAttributesPath => this._folders.GameAttributesPath;
 
     private readonly IPlatform _platform;
+    private readonly ISCFolders _folders;
 
     private SCMappingData _data = new SCMappingData();
 
-    public MappingImporter(IPlatform platform, string gameConfigPath)
+    public MappingImporter(IPlatform platform, ISCFolders folders)
     {
         this._platform = platform;
-        this.GameConfigPath = gameConfigPath;
+        this._folders = folders;
     }
 
     public async Task<SCMappingData> Read()
     {
-        if (!System.IO.File.Exists(this.GameConfigPath))
+        if (!System.IO.File.Exists(this.GameMappingsPath))
         {
-            throw new FileNotFoundException($"Could not find the Star Citizen mappings file at [{this.GameConfigPath}]!");
+            throw new FileNotFoundException($"Could not find the Star Citizen mappings file at [{this.GameMappingsPath}]!");
+        }
+        if (!System.IO.File.Exists(this.GameAttributesPath))
+        {
+            throw new FileNotFoundException($"Could not find the Star Citizen attributes file at [{this.GameAttributesPath}]!");
         }
 
         this._data = new SCMappingData { ReadTime = this._platform.UtcNow };
 
-        this.StandardOutput($"Reading [{this.GameConfigPath}]...");
-        using (var fs = new FileStream(this.GameConfigPath, FileMode.Open))
+        this.StandardOutput($"Reading [{this.GameMappingsPath}]...");
+        using (var fs = new FileStream(this.GameMappingsPath, FileMode.Open))
         {
             var ct = new CancellationToken();
             var xd = await XDocument.LoadAsync(fs, LoadOptions.None, ct);
 
-            ReadXDocument(xd);
+            ReadMappingsDocument(xd);
+        }
+
+        this.StandardOutput($"Reading [{this.GameAttributesPath}]...");
+        using (var fs = new FileStream(this.GameAttributesPath, FileMode.Open))
+        {
+            var ct = new CancellationToken();
+            var xd = await XDocument.LoadAsync(fs, LoadOptions.None, ct);
+
+            ReadAttributesDocument(xd);
         }
 
         this.StandardOutput($"Read in {this._data.Inputs.Count} input devices.");
@@ -45,7 +60,7 @@ public class MappingImporter : IMappingImporter<SCMappingData>
         return this._data;
     }
 
-    private void ReadXDocument(XDocument xd)
+    private void ReadMappingsDocument(XDocument xd)
     {
         if (xd.Root == null)
         {
@@ -171,5 +186,43 @@ public class MappingImporter : IMappingImporter<SCMappingData>
         if (!int.TryParse(multitapStr, out var multitap)) multitap = -1;
         var (inputType, instance) = ActionMapsXmlHelper.GetOptionsTypeAndInstanceForPrefix(input);
         this._data.Mappings.Add(new SCMapping { ActionMap = actionmapName, Action = actionName, Input = input, InputType = inputType, MultiTap = multitap != -1 ? multitap : null, Preserve = preserve });
+    }
+
+    private void ReadAttributesDocument(XDocument xd)
+    {
+        if (xd.Root == null)
+        {
+            throw new InvalidDataException($"Expecting <Attributes>, found nothing!");
+        }
+
+        if (!xd.Root.Name.LocalName.Equals("Attributes"))
+        {
+            throw new InvalidDataException($"Expecting <Attributes>, found <{xd.Root.Name.LocalName}>!");
+        }
+
+        ReadAttributes(xd.Root);
+    }
+
+    private void ReadAttributes(XElement root)
+    {
+        var attrs = root.GetChildren("Attr");
+        foreach (var a in attrs)
+        {
+            ReadAttribute(a);
+        }
+    }
+
+    private void ReadAttribute(XElement attrElement)
+    {
+        var name = attrElement.GetAttribute("name");
+        var value = attrElement.GetAttribute("value");
+
+        var attr = new SCAttribute {
+            Name = name,
+            Value = value,
+            Preserve = !string.IsNullOrWhiteSpace(value),
+        };
+
+        this._data.Attributes.Add(attr);
     }
 }

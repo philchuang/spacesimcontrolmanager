@@ -6,9 +6,8 @@ namespace SSCM.StarCitizen;
 
 public class SCControlManager : ControlManagerBase<SCMappingData>
 {
-    // TODO move logic to SCFolders
     protected override string GameConfigPath => System.IO.Path.Combine(this._folders.GameConfigDir, Constants.SC_ACTIONMAPS_XML_NAME);
-    protected override string MappingDataSavePath => System.IO.Path.Combine(this._folders.ScDataDir, Constants.SSCM_SCMAPPINGS_JSON_NAME);
+    protected override string MappingDataSavePath => this._folders.MappingDataSavePath;
 
     public override string CommandAlias => "sc";
     public override string GameType => "Star Citizen";
@@ -22,7 +21,7 @@ public class SCControlManager : ControlManagerBase<SCMappingData>
 
     protected override IMappingDataRepository<SCMappingData> CreateMappingDataRepository()
     {
-        var repo = new MappingDataRepositoryDefault<SCMappingData>(this.Platform, this.MappingDataSavePath, "scmappings.{0}.json.bak");
+        var repo = new MappingDataRepositoryDefault<SCMappingData>(this.Platform, this._folders.MappingDataSavePath, "scmappings.{0}.json.bak");
         repo.StandardOutput += WriteLineStandard;
         repo.WarningOutput += WriteLineWarning;
         repo.DebugOutput += WriteLineDebug;
@@ -31,7 +30,7 @@ public class SCControlManager : ControlManagerBase<SCMappingData>
 
     protected override IMappingImporter<SCMappingData> CreateImporter()
     {
-        var importer = new MappingImporter(this.Platform, this.GameConfigPath);
+        var importer = new MappingImporter(this.Platform, this._folders);
         importer.StandardOutput += WriteLineStandard;
         importer.WarningOutput += WriteLineWarning;
         importer.DebugOutput += WriteLineDebug;
@@ -49,7 +48,7 @@ public class SCControlManager : ControlManagerBase<SCMappingData>
 
     protected override IMappingExporter<SCMappingData> CreateExporter()
     {
-        var exporter = new MappingExporter(this.Platform, this._folders, GameConfigPath);
+        var exporter = new MappingExporter(this.Platform, this._folders);
         exporter.StandardOutput += WriteLineStandard;
         exporter.WarningOutput += WriteLineWarning;
         exporter.DebugOutput += WriteLineDebug;

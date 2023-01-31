@@ -13,6 +13,11 @@ public static class Samples
         return new FileInfo(Path.Combine(GetDir(), "actionmaps.3.17.4.xml")).FullName;
     }
 
+    public static string GetAttributesXmlPath()
+    {
+        return new FileInfo(Path.Combine(GetDir(), "attributes.3.17.5.xml")).FullName;
+    }
+
     public static string GetPartialMappingsJsonPath()
     {
         return new FileInfo(Path.Combine(GetDir(), "scmappings.3.17.4.partial.json")).FullName;

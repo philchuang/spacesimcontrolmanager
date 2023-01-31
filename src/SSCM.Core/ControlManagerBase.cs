@@ -122,7 +122,7 @@ public abstract class ControlManagerBase<TData> : IControlManager
         var exporter = this.CreateExporter();
         exporter.Backup();
         await exporter.Update(data);
-        WriteLineStandard($"CONFIGURATION UPDATED: Changes applied to [{exporter.GameConfigPath}].");
+        WriteLineStandard($"CONFIGURATION UPDATED: Changes applied to {this.GameType}.");
     }
 
     public async Task<string> Report(ReportingOptions options)

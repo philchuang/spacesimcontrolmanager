@@ -17,47 +17,41 @@ public abstract class MappingExporter_BackupRestore_TestBase<TData> : TestBase
         this._platform = new PlatformForTest(DateTime.UtcNow);
     }
 
-
     protected abstract IMappingExporter<TData> CreateExporter();
-
-    protected abstract string GameConfigPath { get; }
 
     protected abstract string BackupDir { get; }
 
-    protected abstract string GetBackupFilePath(DateTime dt);
-
-    protected abstract string BackupFileFilter { get; }
-
-    protected async Task CreateDummyGameConfig()
+    protected async Task<string> CreateDummyFile(string path)
     {
-        // create dummy gameconfig
-        if (File.Exists(this.GameConfigPath)) File.Delete(this.GameConfigPath);
-        Directory.CreateDirectory(Path.GetDirectoryName(this.GameConfigPath));
-        await File.WriteAllTextAsync(this.GameConfigPath, $"{nameof(RestoreLatest_Overwrites_GameConfig)}-{Guid.NewGuid().ToString()}");
+        // create dummy file
+        if (File.Exists(path)) File.Delete(path);
+        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        var contents = $"{nameof(MappingExporter_BackupRestore_TestBase<TData>)}-{Guid.NewGuid().ToString()}";
+        await File.WriteAllTextAsync(path, contents);
+        return contents;
     }
 
-    public virtual async Task Backup_Creates_Copy()
+    protected async Task Backup_Creates_Copy(string targetPath, string expectedPath)
     {
         // Arrange
-        await this.CreateDummyGameConfig();
-        var expected = this.GetBackupFilePath(this._platform.UtcNow.ToLocalTime());
+        await this.CreateDummyFile(targetPath);
 
         // Act
         var actual = this.CreateExporter().Backup();
 
         // Assert
-        Assert.AreEqual(expected, actual);
+        Assert.AreEqual(expectedPath, actual);
         Assert.True(File.Exists(actual));
     }
 
-    public virtual async Task RestoreLatest_Overwrites_GameConfig()
+    protected async Task RestoreLatest_Overwrites_File(string targetPath, string backupFilter, Func<DateTime, string> backupFilenameGenerator)
     {
-        await this.CreateDummyGameConfig();
+        await this.CreateDummyFile(targetPath);
 
         // clean out old test data
         if (Directory.Exists(this.BackupDir))
         {
-            foreach (var f in Directory.GetFiles(this.BackupDir, this.BackupFileFilter))
+            foreach (var f in Directory.GetFiles(this.BackupDir, backupFilter))
             {
                 File.Delete(f);
             }
@@ -73,9 +67,8 @@ public abstract class MappingExporter_BackupRestore_TestBase<TData> : TestBase
         for (var i = 1; i <= 12; i++)
         {
             var backupTime = new DateTime(2022, i, 1, i, i*2, i*3);
-            lastContents = $"{nameof(RestoreLatest_Overwrites_GameConfig)}-{Guid.NewGuid().ToString()}";
-            lastBackupPath = this.GetBackupFilePath(backupTime);
-            await File.WriteAllTextAsync(lastBackupPath, lastContents);
+            lastBackupPath = backupFilenameGenerator(backupTime);
+            lastContents = await this.CreateDummyFile(backupFilenameGenerator(backupTime));
         }
 
         var actual = this.CreateExporter().RestoreLatest();

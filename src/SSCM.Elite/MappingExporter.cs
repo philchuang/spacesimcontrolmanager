@@ -4,61 +4,28 @@ using SSCM.Core;
 
 namespace SSCM.Elite;
 
-public class MappingExporter : IMappingExporter<EDMappingData>
+public class MappingExporter : MappingExporterBase<EDMappingData>
 {
-    public event Action<string> StandardOutput = delegate {};
-    public event Action<string> WarningOutput = delegate {};
-    public event Action<string> DebugOutput = delegate {};
+    private string GameMappingsPath => this._folders.GameConfigPath;
 
-    public string GameConfigPath => this._folders.GameConfigPath;
-
-    private readonly IPlatform _platform;
     private readonly IEDFolders _folders;
     private CustomBindsXmlHelper? _xml;
-
     
-    public MappingExporter(IPlatform platform, IEDFolders folders)
+    public MappingExporter(IPlatform platform, IEDFolders folders): base(platform)
     {
-        this._platform = platform;
         this._folders = folders;
     }
 
-    public string Backup()
-    {
-        if (!File.Exists(this.GameConfigPath))
-        {
-            throw new FileNotFoundException($"Could not find the Elite Dangerous mappings file at [{this.GameConfigPath}]!");
-        }
+    public override string Backup() => base.Backup(this.GameMappingsPath, this._folders.EliteDataDir);
 
-        // make backup
-        Directory.CreateDirectory(this._folders.EliteDataDir);
-        var backupPath = Path.Combine(this._folders.EliteDataDir, $"{Path.GetFileName(this.GameConfigPath)}.{this._platform.UtcNow.ToLocalTime().ToString("yyyyMMddHHmmss")}.bak");
-        File.Copy(this.GameConfigPath, backupPath);
-        return backupPath;
-    }
+    public override string RestoreLatest() => base.RestoreLatest(this._folders.EliteDataDir, $"{Path.GetFileName(this.GameMappingsPath)}.*.bak", this.GameMappingsPath);
 
-    public string RestoreLatest()
-    {
-        // find all files matching pattern, sort ordinally
-        var backups = Directory.GetFiles(this._folders.EliteDataDir, $"{Path.GetFileName(this.GameConfigPath)}.*.bak");
-        var latest = backups.OrderBy(s => s).LastOrDefault();
-        if (latest == null)
-        {
-            throw new FileNotFoundException($"Could not find any backup files in [{this._folders.EliteDataDir}]!");
-        }
-
-        // copy latest file to actionmaps.xml
-        File.Copy(latest, this.GameConfigPath, true);
-
-        return latest;
-    }
-
-    public async Task<bool> Preview(EDMappingData source)
+    public override async Task<bool> Preview(EDMappingData source)
     {
         return await this.Export(source, false);
     }
 
-    public async Task<bool> Update(EDMappingData source)
+    public override async Task<bool> Update(EDMappingData source)
     {
         return await this.Export(source, true);
     }
@@ -78,10 +45,10 @@ public class MappingExporter : IMappingExporter<EDMappingData>
 
         if (apply)
         {
-            this.StandardOutput($"Saving updated {Path.GetFileName(this.GameConfigPath)}...");
-            await this._xml.Save(this.GameConfigPath);
-            this.StandardOutput("Saved, run \"restore\" command to revert.");
-            this.StandardOutput("MUST RESTART ELITE DANGEROUS FOR CHANGES TO TAKE AFFECT.");
+            base._StandardOutput($"Saving updated {Path.GetFileName(this.GameMappingsPath)}...");
+            await this._xml.Save(this.GameMappingsPath);
+            base._StandardOutput("Saved, run \"restore\" command to revert.");
+            base._StandardOutput("MUST RESTART ELITE DANGEROUS FOR CHANGES TO TAKE AFFECT.");
         }
 
         return changed;
@@ -163,7 +130,7 @@ public class MappingExporter : IMappingExporter<EDMappingData>
 
         if (changed)
         {
-            this.StandardOutput($"Updated {mappingId}.{bindingElement.Name.LocalName} from {currentBinding} to {binding.ToString()}.");
+            base._StandardOutput($"Updated {mappingId}.{bindingElement.Name.LocalName} from {currentBinding} to {binding.ToString()}.");
         }
 
         return changed;
@@ -178,16 +145,16 @@ public class MappingExporter : IMappingExporter<EDMappingData>
         }
         
         settingElement.SetAttributeValue("Value", setting.Value);
-        this.StandardOutput($"Updated {setting.Id} from {value} to {setting.Value}.");
+        base._StandardOutput($"Updated {setting.Id} from {value} to {setting.Value}.");
         return true;
     }
 
     private bool ExportSettings(IList<EDMappingSetting> settings)
     {
-         var changed = false;
+        var changed = false;
         foreach (var s in settings.Where(s => s.Preserve))
         {
-            var xe = this._xml.GetOrCreateMapping(s.Name);
+            var xe = this._xml!.GetOrCreateMapping(s.Name);
             changed |= ApplySetting(xe, s);
         }
         return changed;
