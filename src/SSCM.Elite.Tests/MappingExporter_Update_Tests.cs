@@ -366,4 +366,20 @@ public class MappingExporter_Update_Tests : TestBase
         Assert.AreNotEqual(inputSettingValue, outputSettingValue);
         Assert.AreEqual(setting.Value, outputSettingValue);
     }
+
+    // [Test]
+    // public async Task Manual_Test()
+    // {
+    //     var folders = new EDFoldersForTest {
+    //         EliteDataDir = @"C:\Users\me\Documents\SSCM\Elite",
+    //         GameConfigDir = @"C:\Users\me\AppData\Local\Frontier Developments\Elite Dangerous\Options\Bindings",
+    //         GameConfigPath = @"C:\Users\me\AppData\Local\Frontier Developments\Elite Dangerous\Options\Bindings\Custom.4.0.binds"
+    //     };
+    //     var mgr = new EDControlManager(this._platform, folders);
+    //     mgr.StandardOutput += s => TestContext.Out.WriteLine($"[STD  ]\t{s}");
+    //     mgr.DebugOutput    += s => TestContext.Out.WriteLine($"[DEBUG]\t{s}");
+    //     mgr.WarningOutput  += s => TestContext.Out.WriteLine($"[WARN ]\t{s}");
+
+    //     await mgr.ExportPreview();
+    // }
 }
