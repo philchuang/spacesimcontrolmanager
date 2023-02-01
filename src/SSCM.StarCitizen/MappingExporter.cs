@@ -162,7 +162,7 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
         {
             changed = true;
             base._StandardOutput($"Removing mappings like [{prefix}]...");
-            this._mappingsXml.GetAllActionRebindsForInputPrefix(prefix).ForEach(rebind => rebind.Parent.Remove());
+            this._mappingsXml.GetAllActionRebindsForInputPrefix(prefix).ForEach(rebind => rebind.Remove());
             var (type, instance) = ActionMapsXmlHelper.GetOptionsTypeAndInstanceForPrefix(prefix);
             base._StandardOutput($"Removing input for {type} {instance}...");
             this._mappingsXml.GetOptionsElementForInputTypeAndInstance(type, instance).Remove();
