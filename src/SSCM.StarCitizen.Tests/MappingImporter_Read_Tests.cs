@@ -45,8 +45,8 @@ public class MappingImporter_Read_Tests
         Assert.AreEqual(this._platform.UtcNow, this._data.ReadTime);
         Assert.AreEqual(4, this._data.Inputs.Count);
         Assert.AreEqual(115, this._data.Mappings.Count);
-        Assert.AreEqual(98, this._data.Mappings.Count(m => m.Preserve));
-        Assert.AreEqual(17, this._data.Mappings.Count(m => !m.Preserve));
+        Assert.AreEqual(115, this._data.Mappings.Count(m => m.Preserve));
+        Assert.AreEqual(0, this._data.Mappings.Count(m => !m.Preserve));
         Assert.AreEqual(89, this._data.Attributes.Count);
         Assert.AreEqual(84, this._data.Attributes.Count(a => a.Preserve));
         Assert.AreEqual(5, this._data.Attributes.Count(a => !a.Preserve));
@@ -83,11 +83,29 @@ public class MappingImporter_Read_Tests
             new SCMapping { ActionMap = "seat_general", Action = "v_toggle_mining_mode", Input = "js2_button56", MultiTap = null, InputType = "joystick", Preserve = true },
             new SCMapping { ActionMap = "seat_general", Action = "v_toggle_quantum_mode", Input = "js2_button19", MultiTap = null, InputType = "joystick", Preserve = true },
             new SCMapping { ActionMap = "spaceship_targeting", Action = "v_target_unlock_selected", Input = "js1_button16", MultiTap = 2, InputType = "joystick", Preserve = true },
-            new SCMapping { ActionMap = "spaceship_view", Action = "v_view_pitch", Input = "js1_ ", MultiTap = null, InputType = "joystick", Preserve = false },
+            new SCMapping { ActionMap = "spaceship_view", Action = "v_view_pitch", Input = "js1_ ", MultiTap = null, InputType = "joystick", Preserve = true },
         };
 
-        var expected = mappings.ToDictionary(m => $"{m.ActionMap}-{m.Action}-{m.InputType}");
-        var actual = this._data.Mappings.ToDictionary(m => $"{m.ActionMap}-{m.Action}-{m.InputType}");
+        var expected = mappings.ToDictionary(m => $"{m.Id}-{m.InputType}");
+        var actual = this._data.Mappings.ToDictionary(m => $"{m.Id}-{m.InputType}");
+
+        Assert2.DictionaryEquals(expected, actual, true, AssertSC.AreEqual);
+    }
+
+    [Test]
+    public void Read_LoadsAttributes()
+    {
+        Assert.NotNull(this._data);
+
+        // only do a partial comparison
+        var attrs = new SCAttribute[] {
+            new SCAttribute { Name = "LookAheadEnabledTurret", Value = "0", Preserve = true },
+            new SCAttribute { Name = "LookAheadStrengthForward", Value = "1", Preserve = true },
+            new SCAttribute { Name = "Preset0", Value = string.Empty, Preserve = false },
+        };
+
+        var expected = attrs.ToDictionary(a => a.Name);
+        var actual = this._data.Attributes.ToDictionary(a => a.Name);
 
         Assert2.DictionaryEquals(expected, actual, true, AssertSC.AreEqual);
     }

@@ -52,7 +52,12 @@ public class MappingMergeResult : MappingMergeResultBase<SCMappingData>
 
     private static string PrintMapping(SCMapping mapping)
     {
-        return $"{mapping.Input}{(mapping.MultiTap != null ? $" multitap = {mapping.MultiTap}" : "")}";
+        return mapping.InputToString;
+    }
+
+    private static string PrintAttribute(SCAttribute attribute)
+    {
+        return attribute.Value;
     }
 
     private static string PrintAttribute(SCAttribute attribute)

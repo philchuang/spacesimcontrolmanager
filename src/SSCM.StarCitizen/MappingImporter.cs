@@ -26,16 +26,20 @@ public class MappingImporter : IMappingImporter<SCMappingData>
 
     public async Task<SCMappingData> Read()
     {
+        this._data = new SCMappingData { ReadTime = this._platform.UtcNow };
+
+        await this.ReadMappings();
+        await this.ReadAttributes();
+
+        return this._data;
+    }
+    
+    private async Task ReadMappings()
+    {
         if (!System.IO.File.Exists(this.GameMappingsPath))
         {
             throw new FileNotFoundException($"Could not find the Star Citizen mappings file at [{this.GameMappingsPath}]!");
         }
-        if (!System.IO.File.Exists(this.GameAttributesPath))
-        {
-            throw new FileNotFoundException($"Could not find the Star Citizen attributes file at [{this.GameAttributesPath}]!");
-        }
-
-        this._data = new SCMappingData { ReadTime = this._platform.UtcNow };
 
         this.StandardOutput($"Reading [{this.GameMappingsPath}]...");
         using (var fs = new FileStream(this.GameMappingsPath, FileMode.Open))
@@ -45,20 +49,8 @@ public class MappingImporter : IMappingImporter<SCMappingData>
 
             ReadMappingsDocument(xd);
         }
-
-        this.StandardOutput($"Reading [{this.GameAttributesPath}]...");
-        using (var fs = new FileStream(this.GameAttributesPath, FileMode.Open))
-        {
-            var ct = new CancellationToken();
-            var xd = await XDocument.LoadAsync(fs, LoadOptions.None, ct);
-
-            ReadAttributesDocument(xd);
-        }
-
         this.StandardOutput($"Read in {this._data.Inputs.Count} input devices.");
         this.StandardOutput($"Read in {this._data.Mappings.Count} mappings.");
-        this.StandardOutput($"Read in {this._data.Attributes.Count} attributes.");
-        return this._data;
     }
 
     private void ReadMappingsDocument(XDocument xd)
@@ -180,13 +172,31 @@ public class MappingImporter : IMappingImporter<SCMappingData>
         }
         if (string.IsNullOrWhiteSpace(input.Split("_").LastOrDefault()))
         {
-            this.WarningOutput($"Found rebind node with invalid input value: {actionName}, {input}");
-            preserve = false;
+            // not invalid, just SC's way of saying it's unbound
+            // preserve it since it probably means that the user manually unbound it
         }
         var multitapStr = rebind.GetAttribute("multiTap");
         if (!int.TryParse(multitapStr, out var multitap)) multitap = -1;
         var (inputType, instance) = ActionMapsXmlHelper.GetOptionsTypeAndInstanceForPrefix(input);
         this._data.Mappings.Add(new SCMapping { ActionMap = actionmapName, Action = actionName, Input = input, InputType = inputType, MultiTap = multitap != -1 ? multitap : null, Preserve = preserve });
+    }
+
+    private async Task ReadAttributes()
+    {
+        if (!System.IO.File.Exists(this.GameAttributesPath))
+        {
+            throw new FileNotFoundException($"Could not find the Star Citizen attributes file at [{this.GameAttributesPath}]!");
+        }
+
+        this.StandardOutput($"Reading [{this.GameAttributesPath}]...");
+        using (var fs = new FileStream(this.GameAttributesPath, FileMode.Open))
+        {
+            var ct = new CancellationToken();
+            var xd = await XDocument.LoadAsync(fs, LoadOptions.None, ct);
+
+            ReadAttributesDocument(xd);
+        }
+        this.StandardOutput($"Read in {this._data.Attributes.Count} attributes.");
     }
 
     private void ReadAttributesDocument(XDocument xd)

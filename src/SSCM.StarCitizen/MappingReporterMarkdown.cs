@@ -90,7 +90,7 @@ public class MappingReporterMarkdown : SCMappingReporterBase
                 
                 if (!options.HeadersOnly)
                 {
-                    sb.Append($" = `{mapping.Input}`{(mapping.MultiTap != null ? $" (multiTap {mapping.MultiTap.Value})" : "")}");
+                    sb.Append($" = `{mapping.InputToString}`");
                 }
                 
                 sb.AppendLine("  ");

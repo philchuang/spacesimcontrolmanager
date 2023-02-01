@@ -538,7 +538,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, addedMapping), this._merger.ResultSC.MergeActions[++mergeActionsIdx]);
 
         Assert.AreEqual(2, this._merger.ResultSC.MappingDiffs.Removed.Count);
-        Assert2.DictionaryEquals(new[] { removedMapping, removedMappingButPreserved }.ToDictionary(m => $"{m.ActionMap}-{m.Action}"), this._merger.ResultSC.MappingDiffs.Removed.ToDictionary(m => $"{m.ActionMap}-{m.Action}"), true, AssertSC.AreEqual);
+        Assert2.DictionaryEquals(new[] { removedMapping, removedMappingButPreserved }.ToDictionary(m => m.Id), this._merger.ResultSC.MappingDiffs.Removed.ToDictionary(m => m.Id), true, AssertSC.AreEqual);
         AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, removedMapping), this._merger.ResultSC.MergeActions[++mergeActionsIdx]);
 
         Assert.AreEqual(2, this._merger.ResultSC.MappingDiffs.Changed.Count);
