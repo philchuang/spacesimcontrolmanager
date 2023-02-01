@@ -48,7 +48,7 @@ public class MappingExporter : MappingExporterBase<EDMappingData>
             base._StandardOutput($"Saving updated {Path.GetFileName(this.GameMappingsPath)}...");
             await this._xml.Save(this.GameMappingsPath);
             base._StandardOutput("Saved, run \"restore\" command to revert.");
-            base._StandardOutput("MUST RESTART ELITE DANGEROUS FOR CHANGES TO TAKE AFFECT.");
+            base._StandardOutput("MUST RESTART ELITE DANGEROUS FOR CHANGES TO TAKE EFFECT.");
         }
 
         return changed;

@@ -110,7 +110,7 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
             base._StandardOutput("Saving updated attributes.xml...");
             this._attributesXml!.Save(this.GameAttributesPath);
             base._StandardOutput("Saved, run \"restore\" command to revert.");
-            base._StandardOutput("MUST RESTART STAR CITIZEN FOR CHANGES TO TAKE AFFECT.");
+            base._StandardOutput("MUST RESTART STAR CITIZEN FOR CHANGES TO TAKE EFFECT.");
         }
 
         return changed;
@@ -300,7 +300,6 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
                     thisChanged = true;
                     rebindElement.SetAttributeValue("input", mapping.Input);
                 }
-                // TODO write test for multitap
                 var multiTapAttrValue = rebindElement.GetAttribute("multiTap");
                 if (!string.Equals(multiTapAttrValue, mapping.MultiTap?.ToString() ?? string.Empty))
                 {

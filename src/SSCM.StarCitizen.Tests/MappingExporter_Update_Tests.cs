@@ -227,6 +227,50 @@ public class MappingExporter_Update_Tests : TestBase
     }
 
     [Test]
+    public async Task Update_removes_multitap()
+    {
+        // Arrange
+        var (originalInputValue, mapping, actionElement) = this.Arrange_Update_overwrites_mapping_change(true);
+        actionElement.SetAttributeValue("multiTap", "2"); // this should be removed
+
+        // Act
+        var changed = await this.Act();
+
+        // Assert
+        Assert.IsTrue(changed, nameof(changed));
+        this.AssertBasics();
+
+        Assert.AreEqual("2", actionElement.GetAttribute("multiTap"), "multiTap");
+        var changedActionRebindElement = this.GetActionRebindElement(this._outputMappingsXml, mapping);
+        Assert.NotNull(changedActionRebindElement, nameof(changedActionRebindElement));
+        Assert.AreEqual(mapping.Input, changedActionRebindElement.GetAttribute("input"));
+        Assert.IsEmpty(changedActionRebindElement.GetAttribute("multiTap"), "multiTap");
+    }
+
+    [Test]
+    public async Task Update_adds_multitap()
+    {
+        // Arrange
+        var (originalInputValue, mapping, actionElement) = this.Arrange_Update_overwrites_mapping_change(true);
+        mapping.MultiTap = 2;
+
+        // Act
+        var changed = await this.Act();
+
+        // Assert
+        Assert.IsTrue(changed, nameof(changed));
+        this.AssertBasics();
+        // silly code to prevent warnings
+        if (this._outputMappingsXml == null) return;
+
+        Assert.IsEmpty(actionElement.GetAttribute("multiTap"), "multiTap");
+        var changedActionRebindElement = this.GetActionRebindElement(this._outputMappingsXml, mapping);
+        Assert.NotNull(changedActionRebindElement, nameof(changedActionRebindElement));
+        Assert.AreEqual(mapping.Input, changedActionRebindElement.GetAttribute("input"));
+        Assert.AreEqual("2", changedActionRebindElement.GetAttribute("multiTap"), "multiTap");
+    }
+
+    [Test]
     public async Task Update_creates_actionmap_and_action()
     {
         // Arrange
