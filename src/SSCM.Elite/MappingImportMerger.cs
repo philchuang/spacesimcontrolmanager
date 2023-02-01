@@ -167,7 +167,7 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
         var addedBindingHelper = (string mappingId, EDBinding? binding, string type) =>
         {
             if (binding == null) return;
-            this.StandardOutput($"MAPPING added and will merge: [{mappingId}-{type} => {binding}");
+            this.StandardOutput($"MAPPING added and will merge: [{mappingId}-{type}] => {binding}");
             binding.Preserve = true;
         };
 
@@ -185,12 +185,12 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
             // mapping removed - remove if current preserve == false - else keep current
             if (!mapping.AnyPreserve)
             {
-                this.StandardOutput($"MAPPING removed and will merge: [{mapping.Id}]");
+                this.StandardOutput($"MAPPING removed and will merge: [{mapping.Id}] -= {mapping.PreservedBindings}");
                 this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, mapping));
             }
             else
             {
-                this.StandardOutput($"MAPPING removed and will not merge: [{mapping.Id}], preserving.");
+                this.StandardOutput($"MAPPING removed and will not merge: [{mapping.Id}] => {mapping.PreservedBindings}");
             }
         }
 
@@ -205,7 +205,7 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
             }
             else
             {
-                this.StandardOutput($"MAPPING changed and will not merge: [{mapping.Id}-{type}] {current} != {updated}");
+                this.StandardOutput($"MAPPING changed and will not merge: [{mapping.Id}-{type}] => {current} != {updated}");
             }
         };
 
@@ -220,7 +220,6 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
 
     private void AnalyzeSettingDiffs()
     {
-
         foreach (var setting in this.ResultED.SettingDiffs.Added)
         {
             // setting added - add with preserve = true
@@ -234,12 +233,12 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
             // setting removed - remove if current preserve == false - else keep current
             if (!setting.Preserve)
             {
-                this.StandardOutput($"SETTING removed and will merge: [{setting.Id}]");
+                this.StandardOutput($"SETTING removed and will merge: [{setting.Id}] -= {setting.Value}");
                 this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, setting));
             }
             else
             {
-                this.StandardOutput($"SETTING removed and will not merge: [{setting.Id}], preserving {setting.Value}");
+                this.StandardOutput($"SETTING removed and will not merge: [{setting.Id}] => {setting.Value}");
             }
         }
 
@@ -253,7 +252,7 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
             }
             else
             {
-                this.StandardOutput($"SETTING changed and will not merge: [{pair.Current.Id}] {pair.Current.Value} != {pair.Updated.Value}");
+                this.StandardOutput($"SETTING changed and will not merge: [{pair.Current.Id}] => {pair.Current.Value} != {pair.Updated.Value}");
             }
         }
     }

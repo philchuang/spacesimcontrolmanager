@@ -133,7 +133,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
                         (cs, us) => ComparisonHelper.DictionariesAreEqual(cs.Properties, us.Properties))),
             ComparisonHelper.Compare(
                 current.Mappings, updated.Mappings,
-                m => $"{m.ActionMap}-{m.Action}-{m.InputType}",
+                m => $"{m.Id}-{m.InputType}",
                 (c, u) => c.Input == u.Input && c.MultiTap == u.MultiTap),
             ComparisonHelper.Compare(
                 current.Attributes, updated.Attributes,
@@ -174,7 +174,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
         foreach (var input in this.ResultSC.InputDiffs.Added)
         {
             // input device added - add to current
-            this.StandardOutput($"INPUT added and will merge: [{input.Product}]");
+            this.StandardOutput($"INPUT added and will merge: [{input.Id}]");
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Add, input));
         }
 
@@ -183,12 +183,12 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             // input device removed - if referenced by preserved binding, can't merge - else remove current
             if (this.Result.Current.GetRelatedMappings(input).Any(m => m.Preserve))
             {
-                this.StandardOutput($"INPUT removed but will prevent merge: [{input.Product}] has preserved mappings.");
+                this.StandardOutput($"INPUT removed but will prevent merge: [{input.Id}] has preserved mappings.");
                 this.StopMerge();
                 return;
             }
 
-            this.StandardOutput($"INPUT removed and will merge: [{input.Product}]");
+            this.StandardOutput($"INPUT removed and will merge: [{input.Id}]");
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, input));
 
             // remove all related mappings (they probably won't be in the updated MappingData anyway)
@@ -219,7 +219,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
         foreach (var setting in settingsDiffs.Added)
         {
             // setting added - add with preserve = true
-            this.StandardOutput($"INPUT SETTING added and will merge: [{input.Product}] [{setting.Name}] => {DictionaryToString(setting.Properties)}");
+            this.StandardOutput($"INPUT SETTING added and will merge: {input.Product} [{setting.Name}] => {DictionaryToString(setting.Properties)}");
             setting.Preserve = true;
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Add, setting));
         }
@@ -229,12 +229,12 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             // setting removed - remove if current preserve == false - else keep current
             if (!setting.Preserve)
             {
-                this.StandardOutput($"INPUT SETTING removed and will merge: [{input.Product}] [{setting.Name}]");
+                this.StandardOutput($"INPUT SETTING removed and will merge: {input.Product} [{setting.Name}] -= {DictionaryToString(setting.Properties)}");
                 this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, setting));
             }
             else
             {
-                this.StandardOutput($"INPUT SETTING removed and will not merge: [{input.Product}] [{setting.Name}], preserving {DictionaryToString(setting.Properties)}");
+                this.StandardOutput($"INPUT SETTING removed and will not merge: {input.Product} [{setting.Name}] => {DictionaryToString(setting.Properties)}");
             }
         }
 
@@ -243,12 +243,12 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             // setting changed - update if preserve == false - else keep current
             if (!pair.Current.Preserve)
             {
-                this.StandardOutput($"INPUT SETTING changed and will merge: [{input.Product}] [{pair.Current.Name}] {DictionaryToString(pair.Current.Properties)} => {DictionaryToString(pair.Updated.Properties)}");
+                this.StandardOutput($"INPUT SETTING changed and will merge: {input.Product} [{pair.Current.Name}] {DictionaryToString(pair.Current.Properties)} => {DictionaryToString(pair.Updated.Properties)}");
                 this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Replace, pair.Updated));
             }
             else
             {
-                this.StandardOutput($"INPUT SETTING changed and will not merge: [{input.Product}] [{pair.Current.Name}] => {DictionaryToString(pair.Updated.Properties)}, preserving {DictionaryToString(pair.Current.Properties)}");
+                this.StandardOutput($"INPUT SETTING changed and will not merge: {input.Product} [{pair.Current.Name}] => {DictionaryToString(pair.Current.Properties)} != {DictionaryToString(pair.Updated.Properties)}");
             }
         }
     }
@@ -260,7 +260,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
         foreach (var mapping in this.ResultSC.MappingDiffs.Added)
         {
             // mapping added - add with preserve = true
-            this.StandardOutput($"MAPPING added and will merge: [{mapping.ActionMap}-{mapping.Action}] => {mapping.Input}");
+            this.StandardOutput($"MAPPING added and will merge: [{mapping.Id}] => {mapping.InputToString}");
             mapping.Preserve = true;
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Add, mapping));
         }
@@ -270,12 +270,12 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             // mapping removed - remove if current preserve == false - else keep current
             if (!mapping.Preserve)
             {
-                this.StandardOutput($"MAPPING removed and will merge: [{mapping.ActionMap}-{mapping.Action}]");
+                this.StandardOutput($"MAPPING removed and will merge: [{mapping.Id}] -= {mapping.InputToString}");
                 this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, mapping));
             }
             else
             {
-                this.StandardOutput($"MAPPING removed and will not merge: [{mapping.ActionMap}-{mapping.Action}], preserving {mapping.Input}");
+                this.StandardOutput($"MAPPING removed and will not merge: [{mapping.Id}] => {mapping.InputToString}");
             }
         }
 
@@ -284,12 +284,12 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             // setting changed - update if preserve == false - else keep current
             if (!pair.Current.Preserve)
             {
-                this.StandardOutput($"MAPPING changed and will merge: [{pair.Current.ActionMap}-{pair.Current.Action}] {pair.Current.Input} => {pair.Updated.Input}");
+                this.StandardOutput($"MAPPING changed and will merge: [{pair.Current.Id}] {pair.Current.InputToString} => {pair.Updated.InputToString}");
                 this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Replace, pair.Updated));
             }
             else
             {
-                this.StandardOutput($"MAPPING changed and will not merge: [{pair.Current.ActionMap}-{pair.Current.Action}] => {pair.Updated.Input}, preserving {pair.Current.Input}");
+                this.StandardOutput($"MAPPING changed and will not merge: [{pair.Current.Id}] => {pair.Current.InputToString} != {pair.Updated.InputToString}");
             }
         }
     }
@@ -311,12 +311,12 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             // attribute removed - remove if current preserve == false - else keep current
             if (!attr.Preserve)
             {
-                this.StandardOutput($"ATTRIBUTE removed and will merge: [{attr.Name}]");
+                this.StandardOutput($"ATTRIBUTE removed and will merge: [{attr.Name}] -= {attr.Value}");
                 this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, attr));
             }
             else
             {
-                this.StandardOutput($"ATTRIBUTE removed and will not merge: [{attr.Name}], preserving {attr.Value}");
+                this.StandardOutput($"ATTRIBUTE removed and will not merge: [{attr.Name}] => {attr.Value}");
             }
         }
 
@@ -330,7 +330,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             }
             else
             {
-                this.StandardOutput($"ATTRIBUTE changed and will not merge: [{pair.Current.Name}] => {pair.Updated.Value}, preserving {pair.Current.Value}");
+                this.StandardOutput($"ATTRIBUTE changed and will not merge: [{pair.Current.Name}] => {pair.Current.Value} != {pair.Updated.Value}");
             }
         }
     }

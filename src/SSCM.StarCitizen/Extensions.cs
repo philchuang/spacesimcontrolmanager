@@ -39,7 +39,7 @@ public static class Extensions
         }
         catch
         {
-            throw new SscmException($"Mapping input [{mapping.Input}] for [{mapping.ActionMap}-{mapping.Action}] is invalid.");
+            throw new SscmException($"Mapping input [{mapping.InputToString}] for [{mapping.Id}] is invalid.");
         }
 
         try

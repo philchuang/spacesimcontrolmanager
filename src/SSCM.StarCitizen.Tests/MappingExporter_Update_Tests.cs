@@ -227,6 +227,50 @@ public class MappingExporter_Update_Tests : TestBase
     }
 
     [Test]
+    public async Task Update_removes_multitap()
+    {
+        // Arrange
+        var (originalInputValue, mapping, actionElement) = this.Arrange_Update_overwrites_mapping_change(true);
+        actionElement.SetAttributeValue("multiTap", "2"); // this should be removed
+
+        // Act
+        var changed = await this.Act();
+
+        // Assert
+        Assert.IsTrue(changed, nameof(changed));
+        this.AssertBasics();
+
+        Assert.AreEqual("2", actionElement.GetAttribute("multiTap"), "multiTap");
+        var changedActionRebindElement = this.GetActionRebindElement(this._outputMappingsXml, mapping);
+        Assert.NotNull(changedActionRebindElement, nameof(changedActionRebindElement));
+        Assert.AreEqual(mapping.Input, changedActionRebindElement.GetAttribute("input"));
+        Assert.IsEmpty(changedActionRebindElement.GetAttribute("multiTap"), "multiTap");
+    }
+
+    [Test]
+    public async Task Update_adds_multitap()
+    {
+        // Arrange
+        var (originalInputValue, mapping, actionElement) = this.Arrange_Update_overwrites_mapping_change(true);
+        mapping.MultiTap = 2;
+
+        // Act
+        var changed = await this.Act();
+
+        // Assert
+        Assert.IsTrue(changed, nameof(changed));
+        this.AssertBasics();
+        // silly code to prevent warnings
+        if (this._outputMappingsXml == null) return;
+
+        Assert.IsEmpty(actionElement.GetAttribute("multiTap"), "multiTap");
+        var changedActionRebindElement = this.GetActionRebindElement(this._outputMappingsXml, mapping);
+        Assert.NotNull(changedActionRebindElement, nameof(changedActionRebindElement));
+        Assert.AreEqual(mapping.Input, changedActionRebindElement.GetAttribute("input"));
+        Assert.AreEqual("2", changedActionRebindElement.GetAttribute("multiTap"), "multiTap");
+    }
+
+    [Test]
     public async Task Update_creates_actionmap_and_action()
     {
         // Arrange
@@ -664,5 +708,26 @@ public class MappingExporter_Update_Tests : TestBase
         Assert.AreEqual(attr.Name, finalAttrElement.GetAttribute("name"));
         Assert.AreEqual(attr.Value, finalAttrElement.GetAttribute("value"));
         Assert.AreNotEqual(originalAttrElement.GetAttribute("value"), finalAttrElement.GetAttribute("value"));
+    }
+
+    [Test]
+    public async Task Manual_Test()
+    {
+        // var platform = new PlatformForTest(programFilesDir: Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), userDocumentsDir: @"C:\Users\me\Documents");
+        // var gameConfigDir = Path.Combine(platform.ProgramFilesDir, SCFolders.PROGRAM_FILES_SC_PROFILES_DEFAULT_DIR);
+        // var folders = new SCFoldersForTest {
+        //     ScDataDir = @"C:\Users\me\Documents\SSCM\SC",
+        //     MappingDataSavePath = @"C:\Users\me\Documents\SSCM\SC\scmappings.json",
+        //     GameConfigDir = gameConfigDir,
+        //     GameAttributesPath = Path.Combine(gameConfigDir, Constants.SC_ATTRIBUTES_XML_NAME),
+        //     GameMappingsPath = Path.Combine(gameConfigDir, Constants.SC_ACTIONMAPS_XML_NAME),
+        // };
+        // var mgr = new SCControlManager(platform, folders);
+        // mgr.StandardOutput += s => TestContext.Out.WriteLine($"[STD  ]\t{s}");
+        // mgr.DebugOutput    += s => TestContext.Out.WriteLine($"[DEBUG]\t{s}");
+        // mgr.WarningOutput  += s => TestContext.Out.WriteLine($"[WARN ]\t{s}");
+
+        // // await mgr.Import(ImportMode.Default);
+        // await mgr.ExportPreview();
     }
 }

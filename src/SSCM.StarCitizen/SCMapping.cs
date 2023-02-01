@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace SSCM.StarCitizen;
 
 public class SCMapping
@@ -8,4 +10,9 @@ public class SCMapping
     public string InputType { get; set; } = string.Empty;
     public int? MultiTap { get; set; } = null;
     public bool Preserve { get; set; } = false;
+
+    [JsonIgnore]
+    public string Id => $"{this.ActionMap}-{this.Action}";
+    [JsonIgnore]
+    public string InputToString => $"{this.Input}{(this.MultiTap == null ? "" : $":{this.MultiTap}")}";
 }

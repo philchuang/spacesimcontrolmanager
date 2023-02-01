@@ -48,7 +48,7 @@ Updating seat_general-v_toggle_scan_mode to js2_button54...
 Saving updated actionmaps.xml...
 Saved, run "restore" command to revert.
 CONFIGURATION UPDATED: Changes applied to [C:\Program Files\Roberts Space Industries\StarCitizen\LIVE\USER\Client\0\Profiles\default\actionmaps.xml].
-MUST RESTART STAR CITIZEN FOR CHANGES TO TAKE AFFECT.
+MUST RESTART STAR CITIZEN FOR CHANGES TO TAKE EFFECT.
 ```
 
 ### Report
