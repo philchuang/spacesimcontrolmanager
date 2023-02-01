@@ -109,22 +109,4 @@ public class MappingImporter_Read_Tests
 
         Assert2.DictionaryEquals(expected, actual, true, AssertSC.AreEqual);
     }
-
-    [Test]
-    public void Read_LoadsAttributes()
-    {
-        Assert.NotNull(this._data);
-
-        // only do a partial comparison
-        var attrs = new SCAttribute[] {
-            new SCAttribute { Name = "LookAheadEnabledTurret", Value = "0", Preserve = true },
-            new SCAttribute { Name = "LookAheadStrengthForward", Value = "1", Preserve = true },
-            new SCAttribute { Name = "Preset0", Value = string.Empty, Preserve = false },
-        };
-
-        var expected = attrs.ToDictionary(a => a.Name);
-        var actual = this._data.Attributes.ToDictionary(a => a.Name);
-
-        Assert2.DictionaryEquals(expected, actual, true, AssertSC.AreEqual);
-    }
 }

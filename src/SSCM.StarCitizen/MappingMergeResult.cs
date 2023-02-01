@@ -59,9 +59,4 @@ public class MappingMergeResult : MappingMergeResultBase<SCMappingData>
     {
         return attribute.Value;
     }
-
-    private static string PrintAttribute(SCAttribute attribute)
-    {
-        return attribute.Value;
-    }
 }

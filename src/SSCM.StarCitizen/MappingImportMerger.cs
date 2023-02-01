@@ -334,45 +334,4 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             }
         }
     }
-
-    private void AnalyzeAttributeDiffs()
-    {
-        if (!this.Result.CanMerge) return;
-
-        foreach (var attr in this.ResultSC.AttributeDiffs.Added)
-        {
-            // attribute added - add with preserve = true
-            this.StandardOutput($"ATTRIBUTE added and will merge: [{attr.Name}] => {attr.Value}");
-            attr.Preserve = true;
-            this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Add, attr));
-        }
-
-        foreach (var attr in this.ResultSC.AttributeDiffs.Removed)
-        {
-            // attribute removed - remove if current preserve == false - else keep current
-            if (!attr.Preserve)
-            {
-                this.StandardOutput($"ATTRIBUTE removed and will merge: [{attr.Name}]");
-                this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, attr));
-            }
-            else
-            {
-                this.StandardOutput($"ATTRIBUTE removed and will not merge: [{attr.Name}], preserving {attr.Value}");
-            }
-        }
-
-        foreach (var pair in this.ResultSC.AttributeDiffs.Changed)
-        {
-            // setting changed - update if preserve == false - else keep current
-            if (!pair.Current.Preserve)
-            {
-                this.StandardOutput($"ATTRIBUTE changed and will merge: [{pair.Current.Name}] {pair.Current.Value} => {pair.Updated.Value}");
-                this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Replace, pair.Updated));
-            }
-            else
-            {
-                this.StandardOutput($"ATTRIBUTE changed and will not merge: [{pair.Current.Name}] => {pair.Updated.Value}, preserving {pair.Current.Value}");
-            }
-        }
-    }
 }
