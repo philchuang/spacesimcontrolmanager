@@ -93,6 +93,10 @@ MAPPING changed and will not merge: [seat_general-v_toggle_scan_mode] => js2_but
 Mappings backed up to [My Documents\SSCM\SC\scmappings.json].
 ```
 
+#### Interactive Merge mappings
+
+TODO-WIP finalize and document
+
 #### Overwrite mappings
 
 Overwrite all the captured mappings with the latest changes.

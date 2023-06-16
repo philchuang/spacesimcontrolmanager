@@ -9,6 +9,7 @@
 
 ## Changelog
 
+v1.3.0 - added interactive merge
 v1.2.1 - fixed handling of Star Citizen multitap bindings
 v1.2.0 - added support for Star Citizen attributes.xml
 v1.1.1 - fixed a bug with Elite export

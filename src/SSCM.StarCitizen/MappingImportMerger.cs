@@ -66,11 +66,11 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
                 }
                 else if (action.Mode == MappingMergeActionMode.Remove)
                 {
-                    var preserved = false; // TODO need to include the action for these
+                    var preserved = false; // TODO-WIP need to include the action for these
                     if (userInput.YesNo($"Remove{(preserved ? " PRESERVED" : "")} INPUT [{input.Id}]?", !preserved))
                     {
                         current.Inputs.Remove(input);
-                        // TODO have to add remove actions for input settings & mappings
+                        // TODO-WIP have to add remove actions for input settings & mappings
                     }
                 }
                 else if (action.Mode == MappingMergeActionMode.Replace)
@@ -81,7 +81,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             else if (action.Value is SCInputDeviceSetting setting)
             {
                 var target = current.Inputs.Where(i => $"{i.Type}-{i.Instance}-{i.Product}" == setting.Parent).Single();
-                // TODO also add the parent input.Product to messages
+                // TODO-WIP also add the parent input.Product to messages
                 if (action.Mode == MappingMergeActionMode.Add)
                 {
                     if (userInput.YesNo($"Add INPUT SETTING [{setting.Name}] => {DictionaryToString(setting.Properties)} ?"))
@@ -89,13 +89,13 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
                 }
                 else if (action.Mode == MappingMergeActionMode.Remove)
                 {
-                    var preserved = false; // TODO need to include the action for these
+                    var preserved = false; // TODO-WIP need to include the action for these
                     if (userInput.YesNo($"Remove{(preserved ? " PRESERVED" : "")} INPUT SETTING [{setting.Name}] -= {DictionaryToString(setting.Properties)} ?", !preserved))
                         target.Settings.Remove(setting);
                 }
                 else if (action.Mode == MappingMergeActionMode.Replace)
                 {
-                    var preserved = false; // TODO need to include the action for these
+                    var preserved = false; // TODO-WIP need to include the action for these
                     if (userInput.YesNo($"Update{(preserved ? " PRESERVED" : "")} INPUT SETTING [{setting.Name}] => {DictionaryToString(setting.Properties)} ?", !preserved))
                     {
                         var currentSetting = target.Settings.Single(s => s.Name == setting.Name);
@@ -114,13 +114,13 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
                 }
                 else if (action.Mode == MappingMergeActionMode.Remove)
                 {
-                    var preserved = false; // TODO need to include the action for these
+                    var preserved = false; // TODO-WIP need to include the action for these
                     if (userInput.YesNo($"Remove{(preserved ? " PRESERVED" : "")} MAPPING [{mapping.Id}] -= {mapping.InputToString} ?", !preserved))
                         current.Mappings.Remove(mapping);
                 }
                 else if (action.Mode == MappingMergeActionMode.Replace)
                 {
-                    var preserved = false; // TODO need to include the action for these
+                    var preserved = false; // TODO-WIP need to include the action for these
                     if (userInput.YesNo($"Update{(preserved ? " PRESERVED" : "")} MAPPING [{mapping.Id}] => {mapping.InputToString} ?", !preserved))
                     {
                         var currentMapping = current.Mappings.Single(m => m.ActionMap == mapping.ActionMap && m.Action == mapping.Action);
@@ -139,13 +139,13 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
                 }
                 else if (action.Mode == MappingMergeActionMode.Remove)
                 {
-                    var preserved = false; // TODO need to include the action for these
+                    var preserved = false; // TODO-WIP need to include the action for these
                     if (userInput.YesNo($"Remove{(preserved ? " PRESERVED" : "")} ATTRIBUTE [{attribute.Name}] -= {attribute.Value} ?", !preserved))
                         current.Attributes.Remove(attribute);
                 }
                 else if (action.Mode == MappingMergeActionMode.Replace)
                 {
-                    var preserved = false; // TODO need to include the action for these
+                    var preserved = false; // TODO-WIP need to include the action for these
                     if (userInput.YesNo($"Update{(preserved ? " PRESERVED" : "")} ATTRIBUTE [{attribute.Name}] => {attribute.Value} ?", !preserved))
                     {
                         var currentAttribute = current.Attributes.Single(a => a.Name == attribute.Name);
@@ -202,7 +202,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
         this.Result.MergeActions.Clear();
     }
 
-    // TODO with new interactive merge feature:
+    // TODO-WIP with new interactive merge feature:
     // 1. don't stop merge
     // 2. add preserved values as actions but indicate if preserved then handle on the interactive
     private void AnalyzeInputDiffs()

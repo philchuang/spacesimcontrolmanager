@@ -36,4 +36,5 @@
 
 ## TODOs
 
-1. star citizen to elite dangerous cross-game synchronization
+1. star citizen to elite dangerous cross-game synchronization\
+2. fix github pipeline action to correctly generate windows package (no exe right now)
