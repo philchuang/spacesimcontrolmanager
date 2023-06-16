@@ -35,6 +35,7 @@ class Program
             {
                 services.AddSingleton<IConfiguration>(s => config!);
                 services.AddSingleton<IPlatform, Platform>();
+                services.AddSingleton<IUserInput, CliUserInput>();
                 services.AddSingleton<ISscmFolders, SscmFolders>();
                 services.AddSingleton<SSCM.StarCitizen.ISCFolders, SSCM.StarCitizen.SCFolders>();
                 services.AddSingleton<SSCM.Elite.IEDFolders, SSCM.Elite.EDFolders>();
@@ -111,6 +112,14 @@ class Program
             },
             debugOption);
         cmd.AddCommand(overwrite);
+
+        var interactive = new Command("interactive", $"Performs an interactive merge of saved {manager.GameType} mappings with the latest mappings.");
+        interactive.SetHandler(async (debug) => {
+                if (debug) ShowDebugOutput = true;
+                await manager.Import(mode: ImportMode.Interactive);
+            },
+            debugOption);
+        cmd.AddCommand(interactive);
 
         return cmd;
     }

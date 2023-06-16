@@ -31,6 +31,17 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
 
     public EDMappingData Merge(EDMappingData current, EDMappingData updated)
     {
+        return this.Merge(current, updated, new DefaultUserInput());
+    }
+
+    public EDMappingData MergeInteractive(EDMappingData current, EDMappingData updated, IUserInput userInput)
+    {
+        return this.Merge(current, updated, userInput);
+    }
+
+    protected EDMappingData Merge(EDMappingData current, EDMappingData updated, IUserInput userInput)
+    {
+        // TODO implement interactive
         this.CalculateDiffs(current, updated);
 
         if (!this.Result.CanMerge) return current;

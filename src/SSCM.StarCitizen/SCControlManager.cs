@@ -14,7 +14,7 @@ public class SCControlManager : ControlManagerBase<SCMappingData>
 
     private readonly ISCFolders _folders;
 
-    public SCControlManager(IPlatform platform, ISCFolders folders) : base(platform)
+    public SCControlManager(IPlatform platform, ISCFolders folders, IUserInput userInput) : base(platform, userInput)
     {
         this._folders = folders;
     }

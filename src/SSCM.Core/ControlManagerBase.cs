@@ -35,13 +35,15 @@ public abstract class ControlManagerBase<TData> : IControlManager
     protected abstract string GameConfigPath { get; }
     protected abstract string MappingDataSavePath { get; }
     protected IPlatform Platform { get; init; }
+    protected IUserInput UserInput { get; init; }
     
     private readonly Lazy<IMappingDataRepository<TData>> _lazyMappingDataRepository;
     protected IMappingDataRepository<TData> MappingDataRepository => this._lazyMappingDataRepository.Value;
 
-    protected ControlManagerBase(IPlatform platform)
+    protected ControlManagerBase(IPlatform platform, IUserInput userInput)
     {
         this.Platform = platform;
+        this.UserInput = userInput;
         this._lazyMappingDataRepository = new Lazy<IMappingDataRepository<TData>>(() => this.CreateMappingDataRepository());
     }
 
@@ -93,6 +95,29 @@ public abstract class ControlManagerBase<TData> : IControlManager
             WriteLineDebug($"Merging...");
             var mergedData = merger.Merge(currentData, updatedData);
             await this.MappingDataRepository.Save(mergedData);
+            return;
+        }
+
+        if (mode == ImportMode.Interactive)
+        {
+            this.MappingDataRepository.Backup();
+            WriteLineDebug($"Merging...");
+            try
+            {
+                var mergedData = merger.MergeInteractive(currentData, updatedData, this.UserInput);
+                if (mergedData != null)
+                {
+                    await this.MappingDataRepository.Save(mergedData);
+                    return;
+                }
+            }
+            catch (UserInputCancelledException)
+            {
+                // ignore
+            }
+
+            this.WriteLineStandard("Merge cancelled.");
+            return;
         }
     }
 

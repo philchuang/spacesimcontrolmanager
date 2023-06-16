@@ -12,12 +12,10 @@ public class EDControlManager : ControlManagerBase<EDMappingData>
     public override string CommandAlias => "ed";
     public override string GameType => "Elite: Dangerous";
 
-    private readonly IPlatform _platform;
     private readonly IEDFolders _folders;
 
-    public EDControlManager(IPlatform platform, IEDFolders folders) : base(platform)
+    public EDControlManager(IPlatform platform, IEDFolders folders, IUserInput userInput) : base(platform, userInput)
     {
-        this._platform = platform;
         this._folders = folders;
     }
 
