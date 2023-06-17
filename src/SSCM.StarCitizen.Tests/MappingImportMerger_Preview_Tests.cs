@@ -26,14 +26,14 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         this.Create_2_Inputs_Arrange();
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Assert
-        Assert.IsFalse(canMerge);
+        Assert.IsFalse(canAutoMerge);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Any());
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Any());
         Assert.IsFalse(this._merger.ResultSC.HasDifferences);
-        Assert.IsFalse(this._merger.ResultSC.CanMerge);
+        Assert.IsFalse(this._merger.ResultSC.CanAutoMerge);
         Assert.IsFalse(this._merger.ResultSC.MergeActions.Any());
     }
 
@@ -44,17 +44,17 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         this.Detects_Inputs_Added_Arrange();
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Assert
-        Assert.IsTrue(canMerge);
+        Assert.IsTrue(canAutoMerge);
         Assert.AreEqual(1, this._merger.ResultSC.InputDiffs.Added.Count);
         AssertSC.AreEqual(this._updated.Inputs[1], this._merger.ResultSC.InputDiffs.Added[0]);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Removed.Any());
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Changed.Any());
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Any());
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
-        Assert.IsTrue(this._merger.ResultSC.CanMerge);
+        Assert.IsTrue(this._merger.ResultSC.CanAutoMerge);
         Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count);
         AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, this._updated.Inputs[1]), this._merger.ResultSC.MergeActions[0]);
     }
@@ -66,10 +66,10 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         this.Detects_Inputs_Removed_NotPreserved_Arrange();
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Assert
-        Assert.IsTrue(canMerge);
+        Assert.IsTrue(canAutoMerge);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Added.Any());
         Assert.AreEqual(1, this._merger.ResultSC.InputDiffs.Removed.Count);
         AssertSC.AreEqual(this._current.Inputs[1], this._merger.ResultSC.InputDiffs.Removed[0]);
@@ -79,7 +79,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         AssertSC.AreEqual(this._current.Mappings[0], this._merger.ResultSC.MappingDiffs.Removed[0]);
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Changed.Any());
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
-        Assert.IsTrue(this._merger.ResultSC.CanMerge);
+        Assert.IsTrue(this._merger.ResultSC.CanAutoMerge);
         Assert.AreEqual(2, this._merger.ResultSC.MergeActions.Count);
         AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, this._current.Inputs[1]), this._merger.ResultSC.MergeActions[0]);
         AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, this._current.Mappings[0]), this._merger.ResultSC.MergeActions[1]);
@@ -94,10 +94,10 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         this._updated.Mappings.Add(this._current.Mappings[0].JsonCopy());
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Assert
-        Assert.IsFalse(canMerge);
+        Assert.IsFalse(canAutoMerge);
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Added.Any());
         Assert.AreEqual(1, this._merger.ResultSC.InputDiffs.Removed.Count);
@@ -105,8 +105,10 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Changed.Any());
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Any());
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
-        Assert.IsFalse(this._merger.ResultSC.CanMerge);
-        Assert.AreEqual(0, this._merger.ResultSC.MergeActions.Count);
+        Assert.IsFalse(this._merger.ResultSC.CanAutoMerge);
+        Assert.AreEqual(2, this._merger.ResultSC.MergeActions.Count);
+        Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count(m => !m.ExistingIsPreserved));
+        Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count(m => m.ExistingIsPreserved));
     }
 
     [Test]
@@ -119,10 +121,10 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         this._updated.Inputs[1].Instance = 1;
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Assert
-        Assert.IsFalse(canMerge);
+        Assert.IsFalse(canAutoMerge);
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Added.Any());
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Removed.Any());
@@ -133,7 +135,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         AssertSC.AreEqual(this._updated.Inputs[1], this._merger.ResultSC.InputDiffs.Changed[1].Updated);
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Any());
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
-        Assert.IsFalse(this._merger.ResultSC.CanMerge);
+        Assert.IsFalse(this._merger.ResultSC.CanAutoMerge);
         Assert.IsFalse(this._merger.ResultSC.MergeActions.Any());
     }
 
@@ -146,10 +148,10 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         var updatedInput = this._updated.Inputs[0];
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Assert
-        Assert.IsTrue(canMerge);
+        Assert.IsTrue(canAutoMerge);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Added.Any());
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Removed.Any());
         Assert.AreEqual(1, this._merger.ResultSC.InputDiffs.Changed.Count);
@@ -157,7 +159,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         AssertSC.AreEqual(updatedInput, this._merger.ResultSC.InputDiffs.Changed[0].Updated);
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Any());
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
-        Assert.IsTrue(this._merger.ResultSC.CanMerge);
+        Assert.IsTrue(this._merger.ResultSC.CanAutoMerge);
         Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count);
         AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, updatedInput.Settings[0]), this._merger.ResultSC.MergeActions[0]);
     }
@@ -171,10 +173,10 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         var updatedInput = this._updated.Inputs[0];
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Assert
-        Assert.IsTrue(canMerge);
+        Assert.IsTrue(canAutoMerge);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Added.Any());
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Removed.Any());
         Assert.AreEqual(1, this._merger.ResultSC.InputDiffs.Changed.Count);
@@ -182,7 +184,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         AssertSC.AreEqual(updatedInput, this._merger.ResultSC.InputDiffs.Changed[0].Updated);
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Any());
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
-        Assert.IsTrue(this._merger.ResultSC.CanMerge);
+        Assert.IsTrue(this._merger.ResultSC.CanAutoMerge);
         Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count);
         AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, currentInput.Settings[0]), this._merger.ResultSC.MergeActions[0]);
     }
@@ -197,10 +199,10 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         currentInput.Settings[0].Preserve = true;
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Assert
-        Assert.IsFalse(canMerge);
+        Assert.IsFalse(canAutoMerge);
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Added.Any());
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Removed.Any());
@@ -209,8 +211,9 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         AssertSC.AreEqual(updatedInput, this._merger.ResultSC.InputDiffs.Changed[0].Updated);
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Any());
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
-        Assert.IsFalse(this._merger.ResultSC.CanMerge);
-        Assert.IsFalse(this._merger.ResultSC.MergeActions.Any());
+        Assert.IsFalse(this._merger.ResultSC.CanAutoMerge);
+        Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count);
+        Assert.IsFalse(this._merger.ResultSC.MergeActions.Any(m => !m.ExistingIsPreserved));
     }
 
     [Test]
@@ -222,10 +225,10 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         var updatedInput = this._updated.Inputs[0];
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Arrange
-        Assert.IsTrue(canMerge);
+        Assert.IsTrue(canAutoMerge);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Added.Any());
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Removed.Any());
         Assert.AreEqual(1, this._merger.ResultSC.InputDiffs.Changed.Count);
@@ -233,7 +236,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         AssertSC.AreEqual(updatedInput, this._merger.ResultSC.InputDiffs.Changed[0].Updated);
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Any());
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
-        Assert.IsTrue(this._merger.ResultSC.CanMerge);
+        Assert.IsTrue(this._merger.ResultSC.CanAutoMerge);
         Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count);
         AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Replace, updatedInput.Settings[0]), this._merger.ResultSC.MergeActions[0]);
     }
@@ -248,10 +251,10 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         currentInput.Settings[0].Preserve = true;
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Arrange
-        Assert.IsFalse(canMerge);
+        Assert.IsFalse(canAutoMerge);
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Added.Any());
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Removed.Any());
@@ -260,8 +263,9 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         AssertSC.AreEqual(updatedInput, this._merger.ResultSC.InputDiffs.Changed[0].Updated);
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Any());
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
-        Assert.IsFalse(this._merger.ResultSC.CanMerge);
-        Assert.IsFalse(this._merger.ResultSC.MergeActions.Any());
+        Assert.IsFalse(this._merger.ResultSC.CanAutoMerge);
+        Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count);
+        Assert.IsFalse(this._merger.ResultSC.MergeActions.Any(m => !m.ExistingIsPreserved));
     }
 
     [Test]
@@ -272,17 +276,17 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         var addedMapping = this._updated.Mappings.Last();
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Assert
-        Assert.IsTrue(canMerge);
+        Assert.IsTrue(canAutoMerge);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Any());
         Assert.AreEqual(1, this._merger.ResultSC.MappingDiffs.Added.Count);
         AssertSC.AreEqual(addedMapping, this._merger.ResultSC.MappingDiffs.Added[0]);
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Removed.Any());
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Changed.Any());
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
-        Assert.IsTrue(this._merger.ResultSC.CanMerge);
+        Assert.IsTrue(this._merger.ResultSC.CanAutoMerge);
         Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count);
         AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, addedMapping), this._merger.ResultSC.MergeActions[0]);
     }
@@ -295,17 +299,17 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         var removedMapping = this._current.Mappings.Last();
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Assert
-        Assert.IsTrue(canMerge);
+        Assert.IsTrue(canAutoMerge);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Any());
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Added.Any());
         Assert.AreEqual(1, this._merger.ResultSC.MappingDiffs.Removed.Count);
         AssertSC.AreEqual(removedMapping, this._merger.ResultSC.MappingDiffs.Removed[0]);
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Changed.Any());
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
-        Assert.IsTrue(this._merger.ResultSC.CanMerge);
+        Assert.IsTrue(this._merger.ResultSC.CanAutoMerge);
         Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count);
         AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, removedMapping), this._merger.ResultSC.MergeActions[0]);
     }
@@ -320,10 +324,10 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         this._updated.Mappings.RemoveAt(this._updated.Mappings.Count - 1);
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Assert
-        Assert.IsFalse(canMerge);
+        Assert.IsFalse(canAutoMerge);
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Any());
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Added.Any());
@@ -331,8 +335,9 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         AssertSC.AreEqual(removedMapping, this._merger.ResultSC.MappingDiffs.Removed[0]);
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Changed.Any());
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
-        Assert.IsFalse(this._merger.ResultSC.CanMerge);
-        Assert.IsFalse(this._merger.ResultSC.MergeActions.Any());
+        Assert.IsFalse(this._merger.ResultSC.CanAutoMerge);
+        Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count);
+        Assert.IsFalse(this._merger.ResultSC.MergeActions.Any(m => !m.ExistingIsPreserved));
     }
     
     [Test]
@@ -344,10 +349,10 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         var changedMapping = this._updated.Mappings.Last();
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Assert
-        Assert.IsTrue(canMerge);
+        Assert.IsTrue(canAutoMerge);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Any());
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Added.Any());
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Removed.Any());
@@ -355,7 +360,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         AssertSC.AreEqual(originalMapping, this._merger.ResultSC.MappingDiffs.Changed[0].Current);
         AssertSC.AreEqual(changedMapping, this._merger.ResultSC.MappingDiffs.Changed[0].Updated);
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
-        Assert.IsTrue(this._merger.ResultSC.CanMerge);
+        Assert.IsTrue(this._merger.ResultSC.CanAutoMerge);
         Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count);
         AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Replace, changedMapping), this._merger.ResultSC.MergeActions[0]);
     }
@@ -371,10 +376,10 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         this._updated.Mappings.Last().Input = $"js1_{RandomString()}";
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Assert
-        Assert.IsFalse(canMerge);
+        Assert.IsFalse(canAutoMerge);
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Any());
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Added.Any());
@@ -382,8 +387,9 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         Assert.AreEqual(1, this._merger.ResultSC.MappingDiffs.Changed.Count);
         AssertSC.AreEqual(originalMapping, this._merger.ResultSC.MappingDiffs.Changed[0].Current);
         AssertSC.AreEqual(changedMapping, this._merger.ResultSC.MappingDiffs.Changed[0].Updated);
-        Assert.IsFalse(this._merger.ResultSC.CanMerge);
-        Assert.IsFalse(this._merger.ResultSC.MergeActions.Any());
+        Assert.IsFalse(this._merger.ResultSC.CanAutoMerge);
+        Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count);
+        Assert.IsFalse(this._merger.ResultSC.MergeActions.Any(m => !m.ExistingIsPreserved));
     }
 
     [Test]
@@ -393,10 +399,10 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         var addedAttribute = base.Detects_Attribute_Added_Arrange();
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Assert
-        Assert.IsTrue(canMerge);
+        Assert.IsTrue(canAutoMerge);
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Any());
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Any());
@@ -404,7 +410,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         Assert.IsFalse(this._merger.ResultSC.AttributeDiffs.Changed.Any());
         Assert.AreEqual(1, this._merger.ResultSC.AttributeDiffs.Added.Count);
         AssertSC.AreEqual(addedAttribute, this._merger.ResultSC.AttributeDiffs.Added[0]);
-        Assert.IsTrue(this._merger.ResultSC.CanMerge);
+        Assert.IsTrue(this._merger.ResultSC.CanAutoMerge);
         Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count);
         AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, addedAttribute), this._merger.ResultSC.MergeActions[0], (c, u) => AssertSC.AreEqual((SCAttribute) c, (SCAttribute) u));
     }
@@ -416,10 +422,10 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         var removedAttribute = base.Detects_Attribute_Removed_NotPreserved_Arrange();
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Assert
-        Assert.IsTrue(canMerge);
+        Assert.IsTrue(canAutoMerge);
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Any());
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Any());
@@ -427,7 +433,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         Assert.IsFalse(this._merger.ResultSC.AttributeDiffs.Changed.Any());
         Assert.AreEqual(1, this._merger.ResultSC.AttributeDiffs.Removed.Count);
         AssertSC.AreEqual(removedAttribute, this._merger.ResultSC.AttributeDiffs.Removed[0]);
-        Assert.IsTrue(this._merger.ResultSC.CanMerge);
+        Assert.IsTrue(this._merger.ResultSC.CanAutoMerge);
         Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count);
         AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, removedAttribute), this._merger.ResultSC.MergeActions[0], (c, u) => AssertSC.AreEqual((SCAttribute) c, (SCAttribute) u));
     }
@@ -439,10 +445,10 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         var removedAttribute = base.Detects_Attribute_Removed_NotPreserved_Arrange(true);
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Assert
-        Assert.IsFalse(canMerge);
+        Assert.IsFalse(canAutoMerge);
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Any());
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Any());
@@ -450,8 +456,9 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         Assert.IsFalse(this._merger.ResultSC.AttributeDiffs.Changed.Any());
         Assert.AreEqual(1, this._merger.ResultSC.AttributeDiffs.Removed.Count);
         AssertSC.AreEqual(removedAttribute, this._merger.ResultSC.AttributeDiffs.Removed[0]);
-        Assert.IsFalse(this._merger.ResultSC.CanMerge);
-        Assert.IsFalse(this._merger.ResultSC.MergeActions.Any());
+        Assert.IsFalse(this._merger.ResultSC.CanAutoMerge);
+        Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count);
+        Assert.IsFalse(this._merger.ResultSC.MergeActions.Any(m => !m.ExistingIsPreserved));
     }
 
     [Test]
@@ -461,10 +468,10 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         var (currentAttribute, updatedAttribute) = base.Detects_Attribute_Changed_NotPreserved_Arrange();
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Assert
-        Assert.IsTrue(canMerge);
+        Assert.IsTrue(canAutoMerge);
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Any());
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Any());
@@ -473,7 +480,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         Assert.AreEqual(1, this._merger.ResultSC.AttributeDiffs.Changed.Count);
         AssertSC.AreEqual(currentAttribute, this._merger.ResultSC.AttributeDiffs.Changed[0].Current);
         AssertSC.AreEqual(updatedAttribute, this._merger.ResultSC.AttributeDiffs.Changed[0].Updated);
-        Assert.IsTrue(this._merger.ResultSC.CanMerge);
+        Assert.IsTrue(this._merger.ResultSC.CanAutoMerge);
         Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count);
         AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Replace, updatedAttribute), this._merger.ResultSC.MergeActions[0], (c, u) => AssertSC.AreEqual((SCAttribute) c, (SCAttribute) u));
     }
@@ -485,10 +492,10 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         var (currentAttribute, updatedAttribute) = base.Detects_Attribute_Changed_NotPreserved_Arrange(true);
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Assert
-        Assert.IsFalse(canMerge);
+        Assert.IsFalse(canAutoMerge);
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
         Assert.IsFalse(this._merger.ResultSC.InputDiffs.Any());
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Any());
@@ -497,8 +504,9 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         Assert.AreEqual(1, this._merger.ResultSC.AttributeDiffs.Changed.Count);
         AssertSC.AreEqual(currentAttribute, this._merger.ResultSC.AttributeDiffs.Changed[0].Current);
         AssertSC.AreEqual(updatedAttribute, this._merger.ResultSC.AttributeDiffs.Changed[0].Updated);
-        Assert.IsFalse(this._merger.ResultSC.CanMerge);
-        Assert.IsFalse(this._merger.ResultSC.MergeActions.Any());
+        Assert.IsFalse(this._merger.ResultSC.CanAutoMerge);
+        Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count);
+        Assert.IsFalse(this._merger.ResultSC.MergeActions.Any(m => !m.ExistingIsPreserved));
     }
 
     [Test]
@@ -507,46 +515,52 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         // TODO add attributes
         // Arrange
         var (addedInput, removedInput, currentChangingInput, updatedChangingInput, 
-            addedSetting, removedSetting, updatedChangingSetting, 
+            addedSetting, removedSetting, removedSettingButPreserved, updatedChangingSetting, changedSettingButPreserved,
             addedMapping, removedMapping, removedMappingButPreserved, currentChangedMapping, updatedChangedMapping, currentChangedMappingButPreserved, updatedChangedMappingButPreserved) = this.Creates_Merge_Actions_Arrange();
 
         // Act
-        var canMerge = this.Act();
+        var canAutoMerge = this.Act();
 
         // Assert
-        Assert.IsTrue(canMerge);
+        Assert.IsFalse(canAutoMerge);
 
         var mergeActionsIdx = -1;
 
         Assert.AreEqual(1, this._merger.ResultSC.InputDiffs.Added.Count);
         AssertSC.AreEqual(addedInput, this._merger.ResultSC.InputDiffs.Added[0]);
-        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, addedInput), this._merger.ResultSC.MergeActions[++mergeActionsIdx]);
-
         Assert.AreEqual(1, this._merger.ResultSC.InputDiffs.Removed.Count);
         AssertSC.AreEqual(removedInput, this._merger.ResultSC.InputDiffs.Removed[0]);
+
+        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, addedInput), this._merger.ResultSC.MergeActions[++mergeActionsIdx]);
         AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, removedInput), this._merger.ResultSC.MergeActions[++mergeActionsIdx]);
 
         Assert.AreEqual(2, this._merger.ResultSC.InputDiffs.Changed.Count);
         AssertSC.AreEqual(currentChangingInput, this._merger.ResultSC.InputDiffs.Changed[0].Current);
         AssertSC.AreEqual(updatedChangingInput, this._merger.ResultSC.InputDiffs.Changed[0].Updated);
+        
         AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, addedSetting), this._merger.ResultSC.MergeActions[++mergeActionsIdx]);
         AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, removedSetting), this._merger.ResultSC.MergeActions[++mergeActionsIdx]);
         AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Replace, updatedChangingSetting), this._merger.ResultSC.MergeActions[++mergeActionsIdx]);
+        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, removedSettingButPreserved, true), this._merger.ResultSC.MergeActions[++mergeActionsIdx]);
+        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Replace, changedSettingButPreserved, true), this._merger.ResultSC.MergeActions[++mergeActionsIdx]);
 
         Assert.AreEqual(1, this._merger.ResultSC.MappingDiffs.Added.Count);
         AssertSC.AreEqual(addedMapping, this._merger.ResultSC.MappingDiffs.Added[0]);
-        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, addedMapping), this._merger.ResultSC.MergeActions[++mergeActionsIdx]);
 
         Assert.AreEqual(2, this._merger.ResultSC.MappingDiffs.Removed.Count);
         Assert2.DictionaryEquals(new[] { removedMapping, removedMappingButPreserved }.ToDictionary(m => m.Id), this._merger.ResultSC.MappingDiffs.Removed.ToDictionary(m => m.Id), true, AssertSC.AreEqual);
-        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, removedMapping), this._merger.ResultSC.MergeActions[++mergeActionsIdx]);
 
         Assert.AreEqual(2, this._merger.ResultSC.MappingDiffs.Changed.Count);
         AssertSC.AreEqual(currentChangedMapping, this._merger.ResultSC.MappingDiffs.Changed[0].Current);
         AssertSC.AreEqual(updatedChangedMapping, this._merger.ResultSC.MappingDiffs.Changed[0].Updated);
-        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Replace, updatedChangedMapping), this._merger.ResultSC.MergeActions[++mergeActionsIdx]);
         AssertSC.AreEqual(currentChangedMappingButPreserved, this._merger.ResultSC.MappingDiffs.Changed[1].Current);
         AssertSC.AreEqual(updatedChangedMappingButPreserved, this._merger.ResultSC.MappingDiffs.Changed[1].Updated);
+
+        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Add, addedMapping), this._merger.ResultSC.MergeActions[++mergeActionsIdx]);
+        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, removedMapping), this._merger.ResultSC.MergeActions[++mergeActionsIdx]);
+        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Remove, removedMappingButPreserved, true), this._merger.ResultSC.MergeActions[++mergeActionsIdx]);
+        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Replace, updatedChangedMapping), this._merger.ResultSC.MergeActions[++mergeActionsIdx]);
+        AssertSscm.AreEqual(new MappingMergeAction(MappingMergeActionMode.Replace, updatedChangedMappingButPreserved, true), this._merger.ResultSC.MergeActions[++mergeActionsIdx], (e, a) => AssertSC.AreEqual((SCMapping) e, (SCMapping) a));
 
         Assert.AreEqual(mergeActionsIdx + 1, this._merger.ResultSC.MergeActions.Count);
     }

@@ -161,7 +161,7 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
     {
         // Arrange
         var (addedInput, removedInput, currentChangingInput, updatedChangingInput, 
-            addedSetting, removedSetting, updatedChangingSetting, 
+            addedSetting, removedSetting, removedSettingButPreserved, updatedChangingSetting, changedSettingButPreserved,
             addedMapping, removedMapping, removedMappingButPreserved, currentChangedMapping, updatedChangedMapping, currentChangedMappingButPreserved, updatedChangedMappingButPreserved) = this.Creates_Merge_Actions_Arrange();
         this._expected = new SCMappingData {
             Inputs = {
@@ -181,6 +181,6 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
         this.Act();
 
         // Assert
-        this.Assert();
+        this.Assert(); // TODO-WIP-FIX input device setting is not in same order
     }
 }

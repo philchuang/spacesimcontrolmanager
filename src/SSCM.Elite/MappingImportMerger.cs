@@ -26,7 +26,7 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
     {
         this.CalculateDiffs(current, updated);
 
-        return this.Result.HasDifferences && this.Result.CanMerge;
+        return this.Result.HasDifferences && this.Result.CanAutoMerge;
     }
 
     public EDMappingData Merge(EDMappingData current, EDMappingData updated)
@@ -44,7 +44,7 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
         // TODO-WIP implement interactive
         this.CalculateDiffs(current, updated);
 
-        if (!this.Result.CanMerge) return current;
+        if (!this.Result.CanAutoMerge) return current;
 
         foreach (var action in this.Result.MergeActions)
         {
@@ -159,22 +159,20 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
     private void AnalyzeResult()
     {
         this.Result.HasDifferences = this.ResultED.MappingDiffs.Any() || this.ResultED.SettingDiffs.Any();
-        this.Result.CanMerge = true;
+        this.Result.CanAutoMerge = true;
         this.AnalyzeMappingDiffs();
         this.AnalyzeSettingDiffs();
-        this.Result.CanMerge = this.Result.CanMerge && this.Result.MergeActions.Any();
+        this.Result.CanAutoMerge = this.Result.CanAutoMerge && this.Result.MergeActions.Any();
     }
 
     private void StopMerge()
     {
-        this.Result.CanMerge = false;
+        this.Result.CanAutoMerge = false;
         this.Result.MergeActions.Clear();
     }
 
     private void AnalyzeMappingDiffs()
     {
-        if (!this.Result.CanMerge) return;
-
         var addedBindingHelper = (string mappingId, EDBinding? binding, string type) =>
         {
             if (binding == null) return;
