@@ -29,4 +29,9 @@ public static class Extensions
         self.Add(item);
         return true;
     }
+
+    public static string EntriesToString(this IDictionary<string, string> d)
+    {
+        return $"{{{string.Join(",", d.OrderBy(kvp => kvp.Key).Select(kvp => $"{kvp.Key}={kvp.Value}"))}}}";
+    }
 }

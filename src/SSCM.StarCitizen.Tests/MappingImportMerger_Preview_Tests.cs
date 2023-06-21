@@ -63,7 +63,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
     public void Detects_Inputs_Removed_NotPreserved()
     {
         // Arrange
-        this.Detects_Inputs_Removed_NotPreserved_Arrange();
+        this.Detects_Inputs_Removed_Arrange();
 
         // Act
         var canAutoMerge = this.Act();
@@ -89,8 +89,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
     public void Detects_Inputs_Removed_Preserved()
     {
         // Arrange
-        this.Detects_Inputs_Removed_NotPreserved_Arrange();
-        this._current.Mappings[0].Preserve = true;
+        this.Detects_Inputs_Removed_Arrange(true);
         this._updated.Mappings.Add(this._current.Mappings[0].JsonCopy());
 
         // Act
@@ -106,8 +105,8 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
         Assert.IsFalse(this._merger.ResultSC.MappingDiffs.Any());
         Assert.IsTrue(this._merger.ResultSC.HasDifferences);
         Assert.IsFalse(this._merger.ResultSC.CanAutoMerge);
-        Assert.AreEqual(2, this._merger.ResultSC.MergeActions.Count);
-        Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count(m => !m.ExistingIsPreserved));
+        Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count());
+        Assert.AreEqual(0, this._merger.ResultSC.MergeActions.Count(m => !m.ExistingIsPreserved));
         Assert.AreEqual(1, this._merger.ResultSC.MergeActions.Count(m => m.ExistingIsPreserved));
     }
 
@@ -168,7 +167,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
     public void Detects_InputSettings_Removed_NotPreserved()
     {
         // Arrange
-        this.Detects_InputSettings_Removed_NotPreserved_Arrange();
+        this.Detects_InputSettings_Removed_Arrange();
         var currentInput = this._current.Inputs[0];
         var updatedInput = this._updated.Inputs[0];
 
@@ -193,7 +192,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
     public void Detects_InputSettings_Removed_Preserved()
     {
         // Arrange
-        this.Detects_InputSettings_Removed_NotPreserved_Arrange();
+        this.Detects_InputSettings_Removed_Arrange();
         var currentInput = this._current.Inputs[0];
         var updatedInput = this._updated.Inputs[0];
         currentInput.Settings[0].Preserve = true;
@@ -220,7 +219,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
     public void Detects_InputSettings_Changed_NotPreserved()
     {
         // Arrange
-        this.Detects_InputSettings_Changed_NotPreserved_Arrange();
+        this.Detects_InputSettings_Changed_Arrange();
         var currentInput = this._current.Inputs[0];
         var updatedInput = this._updated.Inputs[0];
 
@@ -245,7 +244,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
     public void Detects_InputSettings_Changed_Preserved()
     {
         // Arrange
-        this.Detects_InputSettings_Changed_NotPreserved_Arrange();
+        this.Detects_InputSettings_Changed_Arrange();
         var currentInput = this._current.Inputs[0];
         var updatedInput = this._updated.Inputs[0];
         currentInput.Settings[0].Preserve = true;
@@ -295,7 +294,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
     public void Detects_Mapping_Removed_NotPreserved()
     {
         // Arrange
-        this.Detects_Mapping_Removed_NotPreserved_Arrange();
+        this.Detects_Mapping_Removed_Arrange();
         var removedMapping = this._current.Mappings.Last();
 
         // Act
@@ -344,7 +343,7 @@ public class MappingImportMerger_Preview_Tests : MappingImportMerger_TestBase
     public void Detects_Mapping_Changed_NotPreserved()
     {
         // Arrange
-        this.Detects_Mapping_Changed_NotPreserved_Arrange();
+        this.Detects_Mapping_Changed_Arrange();
         var originalMapping = this._current.Mappings.Last();
         var changedMapping = this._updated.Mappings.Last();
 

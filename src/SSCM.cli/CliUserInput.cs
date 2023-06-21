@@ -38,6 +38,7 @@ public class CliUserInput : IUserInput
             answer = Console.ReadKey(true);
             this.CheckCancelled(answer);
             if (answer.Modifiers != 0) continue;
+            if (answer.Key == ConsoleKey.Enter) return defaultAnswer;
             var key = answer.KeyChar.ToString().ToUpperInvariant();
             if (key != "Y" && key != "N") continue;
             Console.WriteLine(answer.KeyChar);

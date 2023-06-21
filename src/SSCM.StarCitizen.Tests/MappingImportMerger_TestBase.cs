@@ -85,11 +85,12 @@ public abstract class MappingImportMerger_TestBase
         };
     }
 
-    protected void Detects_Inputs_Removed_NotPreserved_Arrange()
+    protected void Detects_Inputs_Removed_Arrange(bool mappingPreserved = false)
     {
         this.Create_2_Inputs_Arrange();
-
-        this._current.Mappings.Add(new SCMapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}", InputType = "joystick", Preserve = false });
+        this._current.Mappings.Add(new SCMapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}", InputType = "joystick", Preserve = mappingPreserved });
+        
+        // updated has no input and no related mapping
         this._updated.Inputs.RemoveAt(1);
     }
 
@@ -101,20 +102,20 @@ public abstract class MappingImportMerger_TestBase
         updatedInput.Settings.Add(new SCInputDeviceSetting { Name = RandomString(), Parent = updatedInput.Id, Preserve = true, Properties = { { RandomString(), RandomString() } } });
     }
 
-    protected void Detects_InputSettings_Removed_NotPreserved_Arrange()
+    protected void Detects_InputSettings_Removed_Arrange(bool settingPreserved = false)
     {
         this.Create_2_Inputs_Arrange();
-        this._current.Inputs[0].Settings.Add(new SCInputDeviceSetting { Name = RandomString(), Parent = this._current.Inputs[0].Id, Preserve = false, Properties = { { "invert", "1" } } });
+        this._current.Inputs[0].Settings.Add(new SCInputDeviceSetting { Name = RandomString(), Parent = this._current.Inputs[0].Id, Preserve = settingPreserved, Properties = { { "invert", "1" } } });
         this._updated.Inputs[0].Settings.Clear();
     }
 
-    protected void Detects_InputSettings_Changed_NotPreserved_Arrange()
+    protected void Detects_InputSettings_Changed_Arrange(bool settingPreserved = false)
     {
         this.Detects_All_Unchanged_Arrange();
         var currentInput = this._current.Inputs[0];
         var updatedInput = this._updated.Inputs[0];
-        currentInput.Settings[0].Preserve = false;
-        var updatedInputSettingProperties = this._updated.Inputs[0].Settings[0].Properties.First();
+        currentInput.Settings[0].Preserve = settingPreserved;
+        var updatedInputSettingProperties = updatedInput.Settings[0].Properties.First();
         updatedInput.Settings[0].Properties[updatedInputSettingProperties.Key] = RandomString();
     }
 
@@ -125,19 +126,19 @@ public abstract class MappingImportMerger_TestBase
         this._updated.Mappings.Add(addedMapping);
     }
 
-    protected void Detects_Mapping_Removed_NotPreserved_Arrange()
+    protected void Detects_Mapping_Removed_Arrange(bool mappingPreserved = false)
     {
         this.Detects_All_Unchanged_Arrange();
         var removedMapping = this._current.Mappings.Last();
-        removedMapping.Preserve = false;
+        removedMapping.Preserve = mappingPreserved;
         this._updated.Mappings.RemoveAt(this._updated.Mappings.Count - 1);
     }
 
-    protected void Detects_Mapping_Changed_NotPreserved_Arrange()
+    protected void Detects_Mapping_Changed_Arrange(bool mappingPreserved = false)
     {
         this.Detects_All_Unchanged_Arrange();
         var originalMapping = this._current.Mappings.Last();
-        originalMapping.Preserve = false;
+        originalMapping.Preserve = mappingPreserved;
         var changedMapping = this._updated.Mappings.Last();
         changedMapping.Input = $"js1_{RandomString()}";
     }
