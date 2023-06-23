@@ -30,6 +30,11 @@ public class MappingExporter : MappingExporterBase<EDMappingData>
         return await this.Export(source, true);
     }
 
+    // public override async Task<bool> UpdateInteractive(EDMappingData source, IUserInput userInput)
+    // {
+    //     return await this.Export(source, true, userInput);
+    // }
+
     private void Validate(EDMappingData source)
     {
     }

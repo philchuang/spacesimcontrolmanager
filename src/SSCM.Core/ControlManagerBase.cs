@@ -12,8 +12,7 @@ public interface IControlManager
     string GameType { get; }
 
     Task Import(ImportMode mode);
-    Task ExportPreview();
-    Task ExportApply();
+    Task Export(ExportMode mode);
     Task<string> Report(ReportingOptions options);
     void Backup();
     void Restore();
@@ -75,7 +74,7 @@ public abstract class ControlManagerBase<TData> : IControlManager
         
         var merger = this.CreateMerger();
 
-        if (mode == ImportMode.Default)
+        if (mode == ImportMode.Preview)
         {
             WriteLineDebug($"Previewing merge...");
             if (merger.Preview(currentData, updatedData))
@@ -121,33 +120,55 @@ public abstract class ControlManagerBase<TData> : IControlManager
         }
     }
 
-    public async Task ExportPreview()
+    public async Task Export(ExportMode mode)
     {
         var data = await this.MappingDataRepository.Load();
         if (data == null) throw new Exception("Could not load saved mappings!");
 
         var exporter = this.CreateExporter();
-        WriteLineStandard($"PREVIEWING EXPORT:");
-        var changed = await exporter.Preview(data);
-        if (changed)
-        {
-            WriteLineStandard($"CONFIGURATION NOT UPDATED: Execute \"export apply\" to apply these changes.");
-        }
-        else
-        {
-            WriteLineStandard($"CONFIGURATION NOT UPDATED: No changes necessary.");
-        }
-    }
 
-    public async Task ExportApply()
-    {
-        var data = await this.MappingDataRepository.Load();
-        if (data == null) throw new Exception("Could not load saved mappings!");
+        if (mode == ExportMode.Preview)
+        {
+            WriteLineStandard($"PREVIEWING EXPORT:");
+            var changed = await exporter.Preview(data);
+            if (changed)
+            {
+                WriteLineStandard($"CONFIGURATION NOT UPDATED: Execute \"export apply\" to apply these changes.");
+            }
+            else
+            {
+                WriteLineStandard($"CONFIGURATION NOT UPDATED: No changes necessary.");
+            }
+            return;
+        }
 
-        var exporter = this.CreateExporter();
-        exporter.Backup();
-        await exporter.Update(data);
-        WriteLineStandard($"CONFIGURATION UPDATED: Changes applied to {this.GameType}.");
+        if (mode == ExportMode.Apply)
+        {
+            exporter.Backup();
+            await exporter.Update(data);
+            WriteLineStandard($"CONFIGURATION UPDATED: Changes applied to {this.GameType}.");
+            return;
+        }
+
+        // if (mode == ExportMode.Interactive)
+        // {
+        //     exporter.Backup();
+        //     try
+        //     {
+        //         if (await exporter.UpdateInteractive(data, this.UserInput))
+        //         {
+        //             WriteLineStandard($"CONFIGURATION UPDATED: Changes applied to {this.GameType}.");
+        //         }
+        //         else
+        //         {
+        //             // TODO handle aborted update
+        //         }
+        //     }
+        //     catch (UserInputCancelledException)
+        //     {
+        //         // ignore
+        //     }
+        // }
     }
 
     public async Task<string> Report(ReportingOptions options)

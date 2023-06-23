@@ -10,4 +10,5 @@ public interface IMappingExporter<TData>
     string RestoreLatest();
     Task<bool> Preview(TData source);
     Task<bool> Update(TData source);
+    // Task<bool> UpdateInteractive(TData data, IUserInput userInput);
 }

@@ -93,7 +93,7 @@ class Program
         cmd.Add(debugOption);
         cmd.SetHandler(async (debug) => {
                 if (debug) ShowDebugOutput = true;
-                await manager.Import(mode: ImportMode.Default);
+                await manager.Import(mode: ImportMode.Preview);
             },
             debugOption);
 
@@ -209,17 +209,25 @@ class Program
         cmd.Add(debugOption);
         cmd.SetHandler(async (debug) => {
                 if (debug) ShowDebugOutput = true;
-                await manager.ExportPreview();
+                await manager.Export(ExportMode.Preview);
             },
             debugOption);
 
         var apply = new Command("apply", $"Updates {manager.GameType} mappings based on the locally saved mappings file.");
         apply.SetHandler(async (debug) => {
                 if (debug) ShowDebugOutput = true;
-                await manager.ExportApply();
+                await manager.Export(ExportMode.Apply);
             },
             debugOption);
         cmd.AddCommand(apply);
+
+        // var interactive = new Command("interactive", $"Performs an interactive update of {manager.GameType} mappings based on the locally saved mappings file.");
+        // interactive.SetHandler(async (debug) => {
+        //         if (debug) ShowDebugOutput = true;
+        //         await manager.Export(ExportMode.Interactive);
+        //     },
+        //     debugOption);
+        // cmd.AddCommand(interactive);
 
         return cmd;
     }

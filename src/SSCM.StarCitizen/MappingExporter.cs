@@ -48,6 +48,12 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
         return await this.Export(source, true);
     }
 
+    // public override async Task<bool> UpdateInteractive(SCMappingData source, IUserInput userInput)
+    // {
+    //     // TODO-WIP implement userInput
+    //     return await this.Export(source, true, userInput);
+    // }
+
     private void Validate(SCMappingData source)
     {
         var inputPrefixes = source.Inputs.Select(i => i.GetInputPrefix()).ToHashSet();

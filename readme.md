@@ -96,6 +96,9 @@ Mappings backed up to [My Documents\SSCM\SC\scmappings.json].
 #### Interactive Merge mappings
 
 TODO-WIP finalize and document
+TODO-WIP SC export interactive
+TODO-WIP ED import merge interactive
+TODO-WIP ED export interactive
 
 #### Overwrite mappings
 
