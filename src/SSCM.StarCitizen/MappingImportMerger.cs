@@ -86,7 +86,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
                 var parentProduct = setting.Parent.Split("-")[2];
                 if (action.Mode == MappingMergeActionMode.Add)
                 {
-                    if (userInput.YesNo($"Add INPUT SETTING {parentProduct} [{setting.Name}] => {setting.Properties.EntriesToString()} ?"))
+                    if (userInput.YesNo($"Add INPUT SETTING {parentProduct} [{setting.Name}] += {setting.Properties.EntriesToString()} ?"))
                        target.Settings.Add(setting);
                 }
                 else if (action.Mode == MappingMergeActionMode.Remove)
@@ -109,7 +109,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             {
                 if (action.Mode == MappingMergeActionMode.Add)
                 {
-                    if (userInput.YesNo($"Add MAPPING [{mapping.Id}] => {mapping.InputToString} ?"))
+                    if (userInput.YesNo($"Add MAPPING [{mapping.Id}] += {mapping.InputToString} ?"))
                         current.Mappings.Add(mapping);
                 }
                 else if (action.Mode == MappingMergeActionMode.Remove)
@@ -133,7 +133,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             {
                 if (action.Mode == MappingMergeActionMode.Add)
                 {
-                    if (userInput.YesNo($"Add ATTRIBUTE [{attribute.Name}] => {attribute.Value} ?"))
+                    if (userInput.YesNo($"Add ATTRIBUTE [{attribute.Name}] += {attribute.Value} ?"))
                         current.Attributes.Add(attribute);
                 }
                 else if (action.Mode == MappingMergeActionMode.Remove)
@@ -259,7 +259,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
         foreach (var setting in settingsDiffs.Added)
         {
             // setting added - add with preserve = true
-            this.StandardOutput($"INPUT SETTING added and will auto-merge: {input.Product} [{setting.Name}] => {setting.Properties.EntriesToString()}");
+            this.StandardOutput($"INPUT SETTING added and will auto-merge: {input.Product} [{setting.Name}] += {setting.Properties.EntriesToString()}");
             setting.Preserve = true;
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Add, setting));
         }
@@ -300,7 +300,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
         foreach (var mapping in this.ResultSC.MappingDiffs.Added)
         {
             // mapping added - add with preserve = true
-            this.StandardOutput($"MAPPING added and will auto-merge: [{mapping.Id}] => {mapping.InputToString}");
+            this.StandardOutput($"MAPPING added and will auto-merge: [{mapping.Id}] += {mapping.InputToString}");
             mapping.Preserve = true;
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Add, mapping));
         }
@@ -314,7 +314,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             }
             else
             {
-                this.StandardOutput($"MAPPING removed and will not auto-merge: [{mapping.Id}] => {mapping.InputToString}");
+                this.StandardOutput($"MAPPING removed and will not auto-merge: [{mapping.Id}] -= {mapping.InputToString}");
                 this.Result.CanAutoMerge = false;
             }
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, mapping, mapping.Preserve));
@@ -341,7 +341,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
         foreach (var attr in this.ResultSC.AttributeDiffs.Added)
         {
             // attribute added - add with preserve = true
-            this.StandardOutput($"ATTRIBUTE added and will auto-merge: [{attr.Name}] => {attr.Value}");
+            this.StandardOutput($"ATTRIBUTE added and will auto-merge: [{attr.Name}] += {attr.Value}");
             attr.Preserve = true;
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Add, attr));
         }
@@ -355,7 +355,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             }
             else
             {
-                this.StandardOutput($"ATTRIBUTE removed and will not auto-merge: [{attr.Name}] => {attr.Value}");
+                this.StandardOutput($"ATTRIBUTE removed and will not auto-merge: [{attr.Name}] -= {attr.Value}");
                 this.Result.CanAutoMerge = false;
             }
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, attr, attr.Preserve));

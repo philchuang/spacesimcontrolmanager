@@ -11,7 +11,11 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
     public MappingMergeResult ResultED {
         get;
         set;
-    } = new MappingMergeResult(new EDMappingData(), new EDMappingData(), new ComparisonResult<EDMapping>(), new ComparisonResult<EDMappingSetting>());
+    } = new MappingMergeResult(
+        new EDMappingData(), 
+        new EDMappingData(), 
+        new ComparisonResult<EDMapping>(), 
+        new ComparisonResult<EDMappingSetting>());
 
     public MappingMergeResultBase<EDMappingData> Result {
         get => this.ResultED;
@@ -41,23 +45,56 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
 
     protected EDMappingData Merge(EDMappingData current, EDMappingData updated, IUserInput userInput)
     {
-        // TODO-WIP implement interactive
         this.CalculateDiffs(current, updated);
 
-        if (!this.Result.CanAutoMerge) return current;
+        // TODO-WIP rethink whether or not CanAutoMerge is meaningful anymore - partial merges, interactive merges, etc.
+        // if (!this.Result.CanAutoMerge) return current;
 
-        foreach (var action in this.Result.MergeActions)
+        if (!userInput.YesNo("\nStart interactive merge?"))
         {
+            throw new UserInputCancelledException();
+        }
+
+        for (var i = 0; i < this.Result.MergeActions.Count; i++)
+        {
+            var action = this.Result.MergeActions[i];
             if (action.Value is EDMapping mapping)
             { // whole mapping added/removed
                 if (action.Mode == MappingMergeActionMode.Add)
                 {
-                    current.Mappings.Add(mapping);
+                    if (userInput.YesNo($"Add MAPPING [{mapping.Id}] += {mapping.PreservedBindings} ?"))
+                        current.Mappings.Add(mapping);
                 }
                 else if (action.Mode == MappingMergeActionMode.Remove)
                 {
-                    var toRemove = current.Mappings.Single(m => m.Name == mapping.Name);
-                    current.Mappings.Remove(toRemove);
+                    if (userInput.YesNo($"Remove{(action.ExistingIsPreserved ? " PRESERVED" : "")} MAPPING [{mapping.Id}] -= {mapping.PreservedBindings} ?", !action.ExistingIsPreserved))
+                    {
+                        var toRemove = current.Mappings.Single(m => m.Name == mapping.Name);
+                        current.Mappings.Remove(toRemove);
+                    }
+                }
+            }
+            else if (action.Value is ValueTuple<EDMapping, string> tuple)
+            { // mapping binding changed
+                var updatedMapping = tuple.Item1;
+                var currentMapping = current.Mappings.Single(m => m.Name == updatedMapping.Name);
+                var bindingType = tuple.Item2;
+                Func<EDMapping, EDBinding> bindingGetter = bindingType switch {
+                    nameof(EDMapping.Binding) => (EDMapping e) => e.Binding,
+                    nameof(EDMapping.Primary) => (EDMapping e) => e.Primary,
+                    nameof(EDMapping.Secondary) => (EDMapping e) => e.Secondary,
+                    _ => throw new ArgumentOutOfRangeException(bindingType)
+                };
+                Action<EDMapping, EDBinding> bindingSetter = bindingType switch {
+                    nameof(EDMapping.Binding) => (EDMapping e, EDBinding b) => e.Binding = b,
+                    nameof(EDMapping.Primary) => (EDMapping e, EDBinding b) => e.Primary = b,
+                    nameof(EDMapping.Secondary) => (EDMapping e, EDBinding b) => e.Secondary = b,
+                    _ => throw new ArgumentOutOfRangeException(bindingType)
+                };
+
+                if (userInput.YesNo($"Update{(action.ExistingIsPreserved ? " PRESERVED" : "")} MAPPING [{currentMapping.Id}-{bindingType}] {bindingGetter(currentMapping)} => {bindingGetter(updatedMapping)} ?", !action.ExistingIsPreserved))
+                {
+                    bindingSetter(currentMapping, bindingGetter(updatedMapping));
                 }
             }
             else if (action.Value is EDMappingSetting setting)
@@ -70,35 +107,26 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
                 };
                 if (action.Mode == MappingMergeActionMode.Add)
                 {
-                    list.Add(setting);
+                    if (userInput.YesNo($"Add SETTING [{setting.Name}] += {setting.Value} ?"))
+                        list.Add(setting);
                 }
                 else if (action.Mode == MappingMergeActionMode.Remove)
                 {
-                    var toRemove = list.Single(s => s.Name == setting.Name);
-                    list.Remove(toRemove);
+                    if (userInput.YesNo($"Remove{(action.ExistingIsPreserved ? " PRESERVED" : "")} SETTING [{setting.Name}] -= {setting.Value} ?", !action.ExistingIsPreserved))
+                    {
+                        var toRemove = list.Single(s => s.Name == setting.Name);
+                        list.Remove(toRemove);
+                    }
                 }
                 else if (action.Mode == MappingMergeActionMode.Replace)
                 {
-                    var toRemove = list.Single(s => s.Name == setting.Name);
-                    var idx = list.IndexOf(toRemove);
-                    list.Insert(idx, setting);
-                    list.RemoveAt(idx + 1);
-                }
-            }
-            else if (action.Value is ValueTuple<EDMapping, string> tuple)
-            { // mapping binding changed
-                var currentMapping = current.Mappings.Single(m => m.Name == tuple.Item1.Name);
-                if (tuple.Item2 == nameof(EDMapping.Binding))
-                {
-                    currentMapping.Binding = tuple.Item1.Binding;
-                }
-                else if (tuple.Item2 == nameof(EDMapping.Primary))
-                {
-                    currentMapping.Primary = tuple.Item1.Primary;
-                }
-                else if (tuple.Item2 == nameof(EDMapping.Secondary))
-                {
-                    currentMapping.Secondary = tuple.Item1.Secondary;
+                    if (userInput.YesNo($"Update{(action.ExistingIsPreserved ? " PRESERVED" : "")} SETTING [{setting.Name}] => {setting.Value} ?", !action.ExistingIsPreserved))
+                    {
+                        var toRemove = list.Single(s => s.Name == setting.Name);
+                        var idx = list.IndexOf(toRemove);
+                        list.Insert(idx, setting);
+                        list.RemoveAt(idx + 1);
+                    }
                 }
             }
         }
@@ -176,7 +204,7 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
         var addedBindingHelper = (string mappingId, EDBinding? binding, string type) =>
         {
             if (binding == null) return;
-            this.StandardOutput($"MAPPING added and will merge: [{mappingId}-{type}] => {binding}");
+            this.StandardOutput($"MAPPING added and will auto-merge: [{mappingId}-{type}] => {binding}");
             binding.Preserve = true;
         };
 
@@ -194,12 +222,13 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
             // mapping removed - remove if current preserve == false - else keep current
             if (!mapping.AnyPreserve)
             {
-                this.StandardOutput($"MAPPING removed and will merge: [{mapping.Id}] -= {mapping.PreservedBindings}");
+                this.StandardOutput($"MAPPING removed and will auto-merge: [{mapping.Id}] -= {mapping.PreservedBindings}");
                 this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, mapping));
             }
             else
             {
-                this.StandardOutput($"MAPPING removed and will not merge: [{mapping.Id}] => {mapping.PreservedBindings}");
+                this.StandardOutput($"MAPPING removed and will not auto-merge: [{mapping.Id}] => {mapping.PreservedBindings}");
+                this.Result.CanAutoMerge = false;
             }
         }
 
@@ -209,12 +238,13 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
             if (EquateBindings(current, updated)) return; // wasn't this binding
             if (!current.Preserve)
             {
-                this.StandardOutput($"MAPPING changed and will merge: [{mapping.Id}-{type}] {current} => {updated}");
+                this.StandardOutput($"MAPPING changed and will auto-merge: [{mapping.Id}-{type}] {current} => {updated}");
                 this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Replace, (mapping, type)));
             }
             else
             {
-                this.StandardOutput($"MAPPING changed and will not merge: [{mapping.Id}-{type}] => {current} != {updated}");
+                this.StandardOutput($"MAPPING changed and will not auto-merge: [{mapping.Id}-{type}] => {current} != {updated}");
+                this.Result.CanAutoMerge = false;
             }
         };
 
@@ -232,7 +262,7 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
         foreach (var setting in this.ResultED.SettingDiffs.Added)
         {
             // setting added - add with preserve = true
-            this.StandardOutput($"SETTING added and will merge: [{setting.Id}] => {setting.Value}");
+            this.StandardOutput($"SETTING added and will auto-merge: [{setting.Id}] => {setting.Value}");
             setting.Preserve = true;
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Add, setting));
         }
@@ -242,12 +272,13 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
             // setting removed - remove if current preserve == false - else keep current
             if (!setting.Preserve)
             {
-                this.StandardOutput($"SETTING removed and will merge: [{setting.Id}] -= {setting.Value}");
+                this.StandardOutput($"SETTING removed and will auto-merge: [{setting.Id}] -= {setting.Value}");
                 this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, setting));
             }
             else
             {
-                this.StandardOutput($"SETTING removed and will not merge: [{setting.Id}] => {setting.Value}");
+                this.StandardOutput($"SETTING removed and will not auto-merge: [{setting.Id}] => {setting.Value}");
+                this.Result.CanAutoMerge = false;
             }
         }
 
@@ -256,12 +287,13 @@ public class MappingImportMerger : IMappingImportMerger<EDMappingData>
             // setting changed - update if preserve == false - else keep current
             if (!pair.Current.Preserve)
             {
-                this.StandardOutput($"SETTING changed and will merge: [{pair.Current.Id}] {pair.Current.Value} => {pair.Updated.Value}");
+                this.StandardOutput($"SETTING changed and will auto-merge: [{pair.Current.Id}] {pair.Current.Value} => {pair.Updated.Value}");
                 this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Replace, pair.Updated));
             }
             else
             {
-                this.StandardOutput($"SETTING changed and will not merge: [{pair.Current.Id}] => {pair.Current.Value} != {pair.Updated.Value}");
+                this.StandardOutput($"SETTING changed and will not auto-merge: [{pair.Current.Id}] => {pair.Current.Value} != {pair.Updated.Value}");
+                this.Result.CanAutoMerge = false;
             }
         }
     }

@@ -178,7 +178,7 @@ public class MappingImportMerger_MergeInteractive_Tests : MappingImportMerger_Te
         this.Detects_InputSettings_Added_Arrange();
         var setting = this._updated.Inputs[0].Settings.Last();
         var parentProduct = setting.Parent.Split("-")[2];
-        this._userinput.Answers[$"Add INPUT SETTING {parentProduct} [{setting.Name}] => {setting.Properties.EntriesToString()} ?"] = string.Empty;
+        this._userinput.Answers[$"Add INPUT SETTING {parentProduct} [{setting.Name}] += {setting.Properties.EntriesToString()} ?"] = string.Empty;
         this._expected = this._updated;
 
         // Act
@@ -195,7 +195,7 @@ public class MappingImportMerger_MergeInteractive_Tests : MappingImportMerger_Te
         this.Detects_InputSettings_Added_Arrange();
         var setting = this._updated.Inputs[0].Settings.Last();
         var parentProduct = setting.Parent.Split("-")[2];
-        this._userinput.Answers[$"Add INPUT SETTING {parentProduct} [{setting.Name}] => {setting.Properties.EntriesToString()} ?"] = "N";
+        this._userinput.Answers[$"Add INPUT SETTING {parentProduct} [{setting.Name}] += {setting.Properties.EntriesToString()} ?"] = "N";
         this._expected = this._current;
 
         // Act
@@ -212,7 +212,7 @@ public class MappingImportMerger_MergeInteractive_Tests : MappingImportMerger_Te
         this.Detects_InputSettings_Added_Arrange();
         var setting = this._updated.Inputs[0].Settings.Last();
         var parentProduct = setting.Parent.Split("-")[2];
-        this._userinput.Answers[$"Add INPUT SETTING {parentProduct} [{setting.Name}] => {setting.Properties.EntriesToString()} ?"] = "Y";
+        this._userinput.Answers[$"Add INPUT SETTING {parentProduct} [{setting.Name}] += {setting.Properties.EntriesToString()} ?"] = "Y";
         this._expected = this._updated;
 
         // Act
@@ -433,7 +433,7 @@ public class MappingImportMerger_MergeInteractive_Tests : MappingImportMerger_Te
          // Arrange
         this.Detects_Mapping_Added_Arrange();
         var mapping = this._updated.Mappings.Last();
-        this._userinput.Answers[$"Add MAPPING [{mapping.Id}] => {mapping.InputToString} ?"] = string.Empty;
+        this._userinput.Answers[$"Add MAPPING [{mapping.Id}] += {mapping.InputToString} ?"] = string.Empty;
         this._expected = this._updated;
 
         // Act
@@ -449,7 +449,7 @@ public class MappingImportMerger_MergeInteractive_Tests : MappingImportMerger_Te
          // Arrange
         this.Detects_Mapping_Added_Arrange();
         var mapping = this._updated.Mappings.Last();
-        this._userinput.Answers[$"Add MAPPING [{mapping.Id}] => {mapping.InputToString} ?"] = "N";
+        this._userinput.Answers[$"Add MAPPING [{mapping.Id}] += {mapping.InputToString} ?"] = "N";
         this._expected = this._current;
 
         // Act
@@ -465,7 +465,7 @@ public class MappingImportMerger_MergeInteractive_Tests : MappingImportMerger_Te
          // Arrange
         this.Detects_Mapping_Added_Arrange();
         var mapping = this._updated.Mappings.Last();
-        this._userinput.Answers[$"Add MAPPING [{mapping.Id}] => {mapping.InputToString} ?"] = "Y";
+        this._userinput.Answers[$"Add MAPPING [{mapping.Id}] += {mapping.InputToString} ?"] = "Y";
         this._expected = this._updated;
 
         // Act

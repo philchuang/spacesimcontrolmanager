@@ -59,5 +59,5 @@ public abstract class MappingExporterBase<TData> : IMappingExporter<TData>
 
     public abstract Task<bool> Update(TData source);
     
-    public abstract Task<bool> UpdateInteractive(TData source, IUserInput userInput);
+    // public abstract Task<bool> UpdateInteractive(TData source, IUserInput userInput);
 }

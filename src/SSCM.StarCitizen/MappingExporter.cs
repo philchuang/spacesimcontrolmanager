@@ -50,7 +50,6 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
 
     // public override async Task<bool> UpdateInteractive(SCMappingData source, IUserInput userInput)
     // {
-    //     // TODO-WIP implement userInput
     //     return await this.Export(source, true, userInput);
     // }
 
