@@ -41,6 +41,7 @@ public class MappingExporter : MappingExporterBase<EDMappingData>
 
     private async Task<bool> Export(EDMappingData source, bool apply)
     {
+        // TODO implement ExportOptions
         this.Validate(source);
 
         this._xml = await CustomBindsXmlHelper.Load(this._folders.GameConfigPath);

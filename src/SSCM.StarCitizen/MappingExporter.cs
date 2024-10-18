@@ -99,6 +99,7 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
 
     private async Task<bool> Export(SCMappingData source, bool apply)
     {
+        // TODO write tests for ExportOptions.OnlyMatches
         this.Validate(source);
 
         this._mappingsXml = await ActionMapsXmlHelper.Load(this.GameMappingsPath, "default");
@@ -204,6 +205,7 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
 
     private bool ExportInputDevices(IEnumerable<SCInputDevice> inputs)
     {
+        // TODO consider ExportOptions.OnlyMatches behavior
         var changed = this.RestoreInputs(inputs);
 
         foreach (var input in inputs)
@@ -264,7 +266,8 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
         {
             var actionElement = this._mappingsXml.GetActionForMapping(mapping);
             if (actionElement == null)
-            {
+            { // mapping not present
+                if (this.ExportOptions.OnlyMatches) continue;
                 var actionmapElement = this._mappingsXml.GetActionmapForMapping(mapping);
                 if (actionmapElement == null)
                 {
@@ -339,6 +342,7 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
             var xe = this._attributesXml!.XPathSelectElement($"/Attributes/Attr[@name='{a.Name}']");
             if (xe == null)
             {
+                if (this.ExportOptions.OnlyMatches) continue;
                 xe = new XElement("Attr", new XAttribute("name", a.Name));
                 base._DebugOutput($"Creating <Attr name=\"{a.Name}\" />...");
                 this._attributesXml!.Root!.Add(xe);

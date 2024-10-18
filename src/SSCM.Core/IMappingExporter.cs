@@ -6,6 +6,8 @@ public interface IMappingExporter<TData>
     event Action<string> WarningOutput;
     event Action<string> DebugOutput;
 
+    ExportOptions ExportOptions { get; set; }
+
     string Backup();
     string RestoreLatest();
     Task<bool> Preview(TData source);

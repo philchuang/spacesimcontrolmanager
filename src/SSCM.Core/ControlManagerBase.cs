@@ -12,7 +12,7 @@ public interface IControlManager
     string GameType { get; }
 
     Task Import(ImportMode mode);
-    Task Export(ExportMode mode);
+    Task Export(ExportMode mode, ExportOptions options);
     Task<string> Report(ReportingOptions options);
     void Backup();
     void Restore();
@@ -120,12 +120,13 @@ public abstract class ControlManagerBase<TData> : IControlManager
         }
     }
 
-    public async Task Export(ExportMode mode)
+    public async Task Export(ExportMode mode, ExportOptions? options = null)
     {
         var data = await this.MappingDataRepository.Load();
         if (data == null) throw new Exception("Could not load saved mappings!");
 
         var exporter = this.CreateExporter();
+        exporter.ExportOptions = options ?? ExportOptions.Default;
 
         if (mode == ExportMode.Preview)
         {

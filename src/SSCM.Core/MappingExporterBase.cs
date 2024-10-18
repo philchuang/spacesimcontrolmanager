@@ -13,11 +13,14 @@ public abstract class MappingExporterBase<TData> : IMappingExporter<TData>
     public event Action<string> DebugOutput = delegate {};
     protected void _DebugOutput(string s) => this.DebugOutput(s);
 
+    public ExportOptions ExportOptions { get; set; }
+
     protected readonly IPlatform _platform;
     
     protected MappingExporterBase(IPlatform platform)
     {
         this._platform = platform;
+        this.ExportOptions = ExportOptions.Default;
     }
 
     public abstract string Backup();

@@ -205,22 +205,37 @@ class Program
 
     private static Command BuildExportCommand(IControlManager manager, Option<bool> debugOption)
     {
+        var onlyMatchesOption = new Option<bool>(
+            aliases: new [] { "--matches", "-m" },
+            description: "Only export settings that are already mapped."
+        );
+
         var cmd = new Command("export", $"Previews updates to the {manager.GameType} mappings based on the locally saved mappings file.");
         cmd.Add(debugOption);
-        cmd.SetHandler(async (debug) => {
+        cmd.Add(onlyMatchesOption);
+        cmd.SetHandler(async (debug, onlyMatches) => {
                 if (debug) ShowDebugOutput = true;
-                await manager.Export(ExportMode.Preview);
+                var options = new ExportOptions {
+                    OnlyMatches = onlyMatches,
+                };
+                await manager.Export(ExportMode.Preview, options);
             },
-            debugOption);
+            debugOption, onlyMatchesOption);
 
         var apply = new Command("apply", $"Updates {manager.GameType} mappings based on the locally saved mappings file.");
-        apply.SetHandler(async (debug) => {
+        apply.Add(debugOption);
+        apply.Add(onlyMatchesOption);
+        apply.SetHandler(async (debug, onlyMatches) => {
                 if (debug) ShowDebugOutput = true;
-                await manager.Export(ExportMode.Apply);
+                var options = new ExportOptions {
+                    OnlyMatches = onlyMatches,
+                };
+                await manager.Export(ExportMode.Apply, options);
             },
-            debugOption);
+            debugOption, onlyMatchesOption);
         cmd.AddCommand(apply);
 
+        // TODO implement
         // var interactive = new Command("interactive", $"Performs an interactive update of {manager.GameType} mappings based on the locally saved mappings file.");
         // interactive.SetHandler(async (debug) => {
         //         if (debug) ShowDebugOutput = true;
