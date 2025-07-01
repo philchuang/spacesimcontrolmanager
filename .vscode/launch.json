@@ -10,9 +10,9 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/SSCM.cli/bin/Debug/net7.0/sscm.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}/src/SSCM.cli",
+            "program": "SpaceSimControlManager.exe",
+            "args": ["sc", "upgrade"],
+            "cwd": "${workspaceFolder}/src/SSCM.cli/bin/Debug/net7.0",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
             "stopAtEntry": false

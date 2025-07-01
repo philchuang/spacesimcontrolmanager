@@ -77,6 +77,7 @@ class Program
     {
         var mgr = new Command(manager.CommandAlias, $"Manage {manager.GameType} mappings");
         mgr.AddCommand(BuildImportCommand(manager, debugOption));
+        mgr.AddCommand(BuildUpgradeCommand(manager, debugOption));
         mgr.AddCommand(BuildReportCommand(manager));
         mgr.AddCommand(BuildEditCommand(manager));
         mgr.AddCommand(BuildEditGameCommand(manager));
@@ -120,6 +121,27 @@ class Program
             },
             debugOption);
         cmd.AddCommand(interactive);
+
+        return cmd;
+    }
+
+    private static Command BuildUpgradeCommand(IControlManager manager, Option<bool> debugOption)
+    {
+        var cmd = new Command("upgrade", $"Upgrades the saved {manager.GameType} mappings.");
+        cmd.Add(debugOption);
+        cmd.SetHandler(async (debug) => {
+                if (debug) ShowDebugOutput = true;
+                await manager.Upgrade(mode: UpgradeMode.Preview);
+            },
+            debugOption);
+
+        var apply = new Command("apply", $"Upgrades the saved {manager.GameType} mappings.");
+        apply.SetHandler(async (debug) => {
+                if (debug) ShowDebugOutput = true;
+                await manager.Upgrade(mode: UpgradeMode.Apply);
+            },
+            debugOption);
+        cmd.AddCommand(apply);
 
         return cmd;
     }

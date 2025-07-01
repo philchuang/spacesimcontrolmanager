@@ -12,6 +12,7 @@ public interface IControlManager
     string GameType { get; }
 
     Task Import(ImportMode mode);
+    Task Upgrade(UpgradeMode mode);
     Task Export(ExportMode mode, ExportOptions options);
     Task<string> Report(ReportingOptions options);
     void Backup();
@@ -49,6 +50,7 @@ public abstract class ControlManagerBase<TData> : IControlManager
     protected abstract IMappingDataRepository<TData> CreateMappingDataRepository();
     protected abstract IMappingImporter<TData> CreateImporter();
     protected abstract IMappingImportMerger<TData> CreateMerger();
+    protected abstract IMappingUpgrader<TData> CreateUpgrader();
     protected abstract IMappingExporter<TData> CreateExporter();
     protected abstract IMappingReporter<TData> CreateReporter();
 
@@ -116,6 +118,42 @@ public abstract class ControlManagerBase<TData> : IControlManager
             }
 
             this.WriteLineStandard("Merge cancelled.");
+            return;
+        }
+    }
+
+    public async Task Upgrade(UpgradeMode mode)
+    {
+        var upgrader = this.CreateUpgrader();
+
+        var currentData = await this.MappingDataRepository.Load();
+        if (currentData == null)
+        {
+            if (currentData == null) WriteLineDebug($"currentData is null");
+            return;
+        }
+        this.WriteLineStandard("");
+        
+        if (mode == UpgradeMode.Preview)
+        {
+            WriteLineDebug($"PREVIEWING UPGRADE:");
+            if (await upgrader.Preview(currentData))
+            {
+                this.WriteLineStandard($"{upgrader.Result.MergeActions.Count} changes NOT saved! Run in apply mode to save changes.");
+            }
+            else
+            {
+                this.WriteLineStandard("No changes to make.");
+            }
+            return;
+        }
+
+        if (mode == UpgradeMode.Apply)
+        {
+            this.MappingDataRepository.Backup();
+            WriteLineDebug($"UPGRADING...");
+            var upgradedData = await upgrader.Upgrade(currentData);
+            await this.MappingDataRepository.Save(upgradedData);
             return;
         }
     }

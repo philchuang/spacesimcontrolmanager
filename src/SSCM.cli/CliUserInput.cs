@@ -32,7 +32,7 @@ public class CliUserInput : IUserInput
     {
         Console.WriteLine(message);
         if (defaultAnswer) Console.Write("[Y/n]? ");
-        else Console.Write("[n/Y]? ");
+        else Console.Write("[N/y]? ");
         ConsoleKeyInfo answer;
         do {
             answer = Console.ReadKey(true);

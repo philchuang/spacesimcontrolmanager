@@ -111,9 +111,9 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
 
         if (apply)
         {
-            base._StandardOutput("Saving updated actionmaps.xml...");
+            base._StandardOutput("SAVING: updated actionmaps.xml...");
             this._mappingsXml.Save(this.GameMappingsPath);
-            base._StandardOutput("Saving updated attributes.xml...");
+            base._StandardOutput("SAVING: updated attributes.xml...");
             this._attributesXml!.Save(this.GameAttributesPath);
             base._StandardOutput("Saved, run \"restore\" command to revert.");
             base._StandardOutput("MUST RESTART STAR CITIZEN FOR CHANGES TO TAKE EFFECT.");
@@ -167,10 +167,10 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
         foreach (var prefix in inputPrefixesToRemove.Where(p => !inputsToRemap.ContainsKey(p)))
         {
             changed = true;
-            base._StandardOutput($"Removing mappings like [{prefix}]...");
+            base._StandardOutput($"REMOVING: mappings like [{prefix}]...");
             this._mappingsXml.GetAllActionRebindsForInputPrefix(prefix).ForEach(rebind => rebind.Remove());
             var (type, instance) = ActionMapsXmlHelper.GetOptionsTypeAndInstanceForPrefix(prefix);
-            base._StandardOutput($"Removing input for {type} {instance}...");
+            base._StandardOutput($"REMOVING: input for {type} {instance}...");
             this._mappingsXml.GetOptionsElementForInputTypeAndInstance(type, instance).Remove();
         }
 
@@ -181,7 +181,7 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
             var oldPrefix = oldPrefixAndElements.Key;
             var (exportedInput, optionsElementToUpdate, rebindElementsToUpdate) = oldPrefixAndElements.Value;
             var newPrefix = exportedInput.GetInputPrefix();
-            base._StandardOutput($"Rebinding mappings from [{oldPrefix}] to [{newPrefix}]...");
+            base._StandardOutput($"UPDATING: mappings from [{oldPrefix}] to [{newPrefix}]...");
             foreach (var rebind in rebindElementsToUpdate)
             {
                 rebind.SetAttributeValue("input", rebind.GetAttribute("input").Replace(oldPrefix, newPrefix));
@@ -195,8 +195,8 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
         {
             changed = true;
             var options = new XElement("options", new XAttribute("type", input.Type), new XAttribute("instance", input.Instance.ToString()), new XAttribute("Product", input.Product));
-            base._DebugOutput($"Creating {options.ToString()}...");
-            base._StandardOutput($"Restoring {input.Type}-{input.Instance} input [{input.Product}]");
+            base._DebugOutput($"CREATING: {options.ToString()}...");
+            base._StandardOutput($"RESTORING: {input.Type}-{input.Instance} input [{input.Product}]");
             this._mappingsXml.AddOptionsElement(options);
         }
 
@@ -222,7 +222,7 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
                     }
 
                     changed = true;
-                    base._DebugOutput($"Creating <{setting.Name}>...");
+                    base._DebugOutput($"CREATING: <{setting.Name}>...");
                     // create setting element
                     settingElement = new XElement(setting.Name);
                     inputElement.Add(settingElement);
@@ -241,7 +241,7 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
                         }
                         
                         changed = true;
-                        base._StandardOutput($"Updating {input.Product}/{setting.Name}/{prop.Value}...");
+                        base._StandardOutput($"UPDATING: {input.Product}/{setting.Name}/{prop.Value}...");
                         settingValueElement = XElement.Parse(prop.Value);
                         settingElement.Add(settingValueElement);
                     }
@@ -249,7 +249,7 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
                     {
                         changed = true;
                         // handle attribute property
-                        base._StandardOutput($"Updating {input.Product}/{setting.Name}/{prop.Key} to {prop.Value}...");
+                        base._StandardOutput($"UPDATING: {input.Product}/{setting.Name}/{prop.Key} to {prop.Value}...");
                         settingElement.SetAttributeValue(prop.Key, prop.Value);                    
                     }
                 }
@@ -264,14 +264,23 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
         var anyChanged = false;
         foreach (var mapping in mappings.Where(m => m.Preserve))
         {
+            // if (mapping.Input.EndsWith("_ "))
+            // {
+            //     base._DebugOutput($"SKIPPING: {mapping.ActionMap}/{mapping.Action} binding of {mapping.Input} appears to be empty.");
+            //     continue;
+            // }
             var actionElement = this._mappingsXml.GetActionForMapping(mapping);
             if (actionElement == null)
             { // mapping not present
-                if (this.ExportOptions.OnlyMatches) continue;
+                if (this.ExportOptions.OnlyMatches)
+                {
+                    base._StandardOutput($"SKIPPING: {mapping.ActionMap}/{mapping.Action} not present in mappings file.");
+                    continue;
+                }
                 var actionmapElement = this._mappingsXml.GetActionmapForMapping(mapping);
                 if (actionmapElement == null)
                 {
-                    base._DebugOutput($"Creating <actionmap name=\"{mapping.ActionMap}\">...");
+                    base._DebugOutput($"CREATING: <actionmap name=\"{mapping.ActionMap}\">...");
                     // create <actionmap>
                     actionmapElement = new XElement("actionmap");
                     actionmapElement.SetAttributeValue("name", mapping.ActionMap);
@@ -279,7 +288,7 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
                 }
 
                 anyChanged = true;
-                base._DebugOutput($"Creating <action name=\"{mapping.Action}\">...");
+                base._DebugOutput($"CREATING: <action name=\"{mapping.Action}\">...");
                 // create <action>
                 actionElement = new XElement("action");
                 actionElement.SetAttributeValue("name", mapping.Action);
@@ -290,8 +299,8 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
             if (rebindElement == null)
             {
                 anyChanged = true;
-                base._DebugOutput($"Creating <rebind input=\"{mapping.Input}\" />...");
-                base._StandardOutput($"Adding {mapping.Id} for {mapping.InputToString}...");
+                base._DebugOutput($"CREATING: <rebind input=\"{mapping.Input}\" />...");
+                base._StandardOutput($"ADDING: {mapping.Id} for {mapping.InputToString}...");
                 rebindElement = new XElement("rebind");
                 rebindElement.SetAttributeValue("input", mapping.Input);
                 if (mapping.MultiTap != null)
@@ -326,7 +335,7 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
                 if (thisChanged)
                 {
                     var prevValue = $"{inputAttrValue}{(!string.IsNullOrWhiteSpace(multiTapAttrValue) ? $":{multiTapAttrValue}" : "")}";
-                    base._StandardOutput($"Updating {mapping.Id} from {prevValue} to {mapping.InputToString}...");
+                    base._StandardOutput($"UPDATING: {mapping.Id} from {prevValue} to {mapping.InputToString}...");
                 }
             }
         }
@@ -342,9 +351,13 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
             var xe = this._attributesXml!.XPathSelectElement($"/Attributes/Attr[@name='{a.Name}']");
             if (xe == null)
             {
-                if (this.ExportOptions.OnlyMatches) continue;
+                if (this.ExportOptions.OnlyMatches)
+                {
+                    base._StandardOutput($"SKIPPING: {a.Name} not present in attributes file.");
+                    continue;
+                }
                 xe = new XElement("Attr", new XAttribute("name", a.Name));
-                base._DebugOutput($"Creating <Attr name=\"{a.Name}\" />...");
+                base._DebugOutput($"CREATING: <Attr name=\"{a.Name}\" />...");
                 this._attributesXml!.Root!.Add(xe);
             }
             changed |= ApplyAttribute(xe, a);
@@ -358,7 +371,7 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
         if (string.Equals(attr.Value, value)) return false;
         
         attrElement.SetAttributeValue("value", attr.Value);
-        base._StandardOutput($"Updating attribute {attr.Name} from [{value}] to [{attr.Value}]...");
+        base._StandardOutput($"UPDATING: attribute {attr.Name} from [{value}] to [{attr.Value}]...");
         return true;
     }
 }

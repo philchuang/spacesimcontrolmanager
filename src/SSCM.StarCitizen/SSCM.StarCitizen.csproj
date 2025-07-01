@@ -11,4 +11,10 @@
     <ProjectReference Include="..\SSCM.Core\SSCM.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="SCUpgradeMappings.jsonc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

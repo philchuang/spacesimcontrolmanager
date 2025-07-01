@@ -109,6 +109,9 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             {
                 if (action.Mode == MappingMergeActionMode.Add)
                 {
+                    // TODO make this an option
+                    // if (mapping.Input.EndsWith("_ ")) continue;
+
                     if (userInput.YesNo($"Add MAPPING [{mapping.Id}] += {mapping.InputToString} ?"))
                         current.Mappings.Add(mapping);
                 }

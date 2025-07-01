@@ -37,6 +37,15 @@ public class EDControlManager : ControlManagerBase<EDMappingData>
         return importer;
     }
 
+    protected override IMappingUpgrader<EDMappingData> CreateUpgrader()
+    {
+        var upgrader = new NullMappingUpgrader<EDMappingData>(this.Platform);
+        upgrader.StandardOutput += WriteLineStandard;
+        upgrader.WarningOutput += WriteLineWarning;
+        upgrader.DebugOutput += WriteLineDebug;
+        return upgrader;
+    }
+
     protected override IMappingImportMerger<EDMappingData> CreateMerger()
     {
         var merger = new MappingImportMerger();

@@ -37,6 +37,15 @@ public class SCControlManager : ControlManagerBase<SCMappingData>
         return importer;
     }
 
+    protected override IMappingUpgrader<SCMappingData> CreateUpgrader()
+    {
+        var upgrader = new MappingUpgrader(this.Platform, this._folders);
+        upgrader.StandardOutput += WriteLineStandard;
+        upgrader.WarningOutput += WriteLineWarning;
+        upgrader.DebugOutput += WriteLineDebug;
+        return upgrader;
+    }
+
     protected override IMappingImportMerger<SCMappingData> CreateMerger()
     {
         var merger = new MappingImportMerger();
