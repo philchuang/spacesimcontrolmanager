@@ -15,6 +15,9 @@
     <None Include="SCUpgradeMappings.jsonc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="defaultProfile.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

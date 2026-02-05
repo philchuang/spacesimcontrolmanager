@@ -23,13 +23,20 @@ public class MappingUpgrader : MappingUpgraderBase<SCMappingData>
     }
 
     private readonly ISCFolders _folders;
+    private readonly ISCDefaultProfileLoader _defaultProfileLoader;
+    private Dictionary<string, UpgradeMapping> _upgradeMappings = new Dictionary<string, UpgradeMapping>();
+    private Dictionary<string, SCMapping> _defaultMappings = new Dictionary<string, SCMapping>();
 
-    private Dictionary<string, UpgradeMapping> _mappings = new Dictionary<string, UpgradeMapping>();
+    public MappingUpgrader(IPlatform platform, ISCFolders folders) : this(platform, folders, new SCDefaultProfileLoader(platform))
+    {
+    }
 
-    public MappingUpgrader(IPlatform platform, ISCFolders folders) : base(platform)
+    public MappingUpgrader(IPlatform platform, ISCFolders folders, ISCDefaultProfileLoader defaultProfileLoader) : base(platform)
     {
         this._folders = folders;
+        this._defaultProfileLoader = defaultProfileLoader;
         this.LoadMappings();
+        this.LoadDefaultMappings();
     }
 
     private void LoadMappings()
@@ -38,11 +45,20 @@ public class MappingUpgrader : MappingUpgraderBase<SCMappingData>
         try
         {
             var mappings = UpgradeMapping.Load(path).Result;
-            this._mappings = mappings.ToDictionary(m => $"{m.Type}-{m.Source}".ToLowerInvariant());
+            this._upgradeMappings = mappings.ToDictionary(m => $"{m.Type}-{m.Source}".ToLowerInvariant());
         }
         catch // (Exception ex)
         {
             base._StandardOutput($"ERROR: Failed to load SC upgrade mappings from [{path}]!");
+        }
+    }
+
+    private void LoadDefaultMappings()
+    {
+        var mappings = this._defaultProfileLoader.Load().Result;
+        foreach (var mapping in mappings)
+        {
+            this._defaultMappings[$"mapping-{mapping.ActionMap}-{mapping.Action}".ToLowerInvariant()] = mapping;
         }
     }
 
@@ -54,7 +70,7 @@ public class MappingUpgrader : MappingUpgraderBase<SCMappingData>
         {
             foreach (var setting in input.Settings.ToList())
             {
-                if (!this._mappings.TryGetValue($"setting-{setting.Name}".ToLowerInvariant(), out var map)) continue;
+                if (!this._upgradeMappings.TryGetValue($"setting-{setting.Name}".ToLowerInvariant(), out var map)) continue;
 
                 if (map.Target == null)
                 {
@@ -72,21 +88,27 @@ public class MappingUpgrader : MappingUpgraderBase<SCMappingData>
 
         foreach (var mapping in updated.Mappings.ToList())
         {
-            if (!this._mappings.TryGetValue($"mapping-{mapping.ActionMap}-{mapping.Action}".ToLowerInvariant(), out var map)) continue;
-
-            if (map.Target == null)
+            if (this._upgradeMappings.TryGetValue($"mapping-{mapping.ActionMap}-{mapping.Action}".ToLowerInvariant(), out var upgradeMapping))
             {
-                base._StandardOutput($"REMOVING: {mapping.ActionMap}-{mapping.Action}...");
-                updated.Mappings.Remove(mapping);
-                this.ResultSC.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, mapping));
+                if (upgradeMapping.Target == null)
+                {
+                    base._StandardOutput($"REMOVING: {mapping.ActionMap}-{mapping.Action}...");
+                    updated.Mappings.Remove(mapping);
+                    this.ResultSC.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, mapping));
+                    continue;
+                }
+
+                base._StandardOutput($"RENAMING: {mapping.ActionMap}-{mapping.Action} to {upgradeMapping.Target}...");
+                var s = upgradeMapping.Target.Split("-");
+                mapping.ActionMap = s[0];
+                mapping.Action = s[1];
+                this.ResultSC.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Replace, mapping));
+            }
+            else if (!this._defaultMappings.TryGetValue($"mapping-{mapping.ActionMap}-{mapping.Action}".ToLowerInvariant(), out var defaultMapping))
+            {
+                base._StandardOutput($"WARNING: {mapping.ActionMap}-{mapping.Action} not found in default mappings...");
                 continue;
             }
-
-            base._StandardOutput($"RENAMING: {mapping.ActionMap}-{mapping.Action} to {map.Target}...");
-            var s = map.Target.Split("-");
-            mapping.ActionMap = s[0];
-            mapping.Action = s[1];
-            this.ResultSC.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Replace, mapping));
         }
 
         this.ResultSC.HasDifferences = this.ResultSC.MergeActions.Any();

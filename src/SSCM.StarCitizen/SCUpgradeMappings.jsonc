@@ -118,5 +118,11 @@
         "source": "vehicle_general-v_attack_group2",
         "target": null,
         "comment": "v4.2"
+    },
+    {
+        "type": "mapping",
+        "source": "spaceship_movement-v_ifcs_toggle_gravity_compensation",
+        "target": "spaceship_movement-v_ifcs_gravity_compensation_toggle",
+        "comment": "v4.6"
     }
 ]

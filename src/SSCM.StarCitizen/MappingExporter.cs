@@ -100,6 +100,7 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
     private async Task<bool> Export(SCMappingData source, bool apply)
     {
         // TODO write tests for ExportOptions.OnlyMatches
+        // TODO implement interactive mode
         this.Validate(source);
 
         this._mappingsXml = await ActionMapsXmlHelper.Load(this.GameMappingsPath, "default");

@@ -48,6 +48,8 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
     {
         this.CalculateDiffs(current, updated);
 
+        // TODO add input options: prev/next, finish, cancel. If revisiting a processed mapping, display the decided action.
+
         // TODO-WIP rethink whether or not CanAutoMerge is meaningful anymore - partial merges, interactive merges, etc.
         // if (!this.Result.CanAutoMerge) return current;
 
