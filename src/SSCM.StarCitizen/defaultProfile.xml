@@ -1,4 +1,4 @@
-<!-- extracted from v4.7.0 -->
+<!-- extracted from v4.8.0 -->
 <profile version="1" optionsVersion="2" rebindVersion="2">
   <platforms>
     <PC keyboard="1" mouse="1" gamepad="1" joystick="1" />
@@ -281,6 +281,7 @@
     <action name="v_view_look_behind" activationMode="delayed_hold_no_retrigger" keyboard="comma" joystick=" " gamepad="shoulderl+a" UILabel="@ui_CILookBehind" UIDescription="@ui_CILookBehindDesc" />
     <action name="v_toggle_mining_mode" activationMode="press" keyboard="m" gamepad=" " joystick=" " UILabel="@ui_CIMiningMode" UIDescription="@ui_CIMiningModeDesc" Category="ShipSystems" />
     <action name="v_toggle_salvage_mode" activationMode="press" keyboard="m" gamepad=" " joystick=" " UILabel="@ui_CISalvageMode" UIDescription="@ui_CISalvageModeDesc" Category="ShipSystems" />
+    <action name="v_toggle_refuel_mode" activationMode="press" keyboard="m" gamepad=" " joystick=" " UILabel="@ui_CIRefuelMode" UIDescription="@ui_CIRefuelModeDesc" Category="ShipSystems" />
     <action name="v_toggle_scan_mode" activationMode="press" keyboard="v" gamepad="dpad_right" joystick=" " UILabel="@ui_CIScanningMode" UIDescription="@ui_CIScanningModeDesc" Category="ShipSystems" />
     <action name="v_toggle_quantum_mode" activationMode="press" keyboard=" " gamepad=" " joystick=" " UILabel="@ui_CIQuantumTravelSystemToggle" UIDescription="@ui_CIQuantumTravelSystemToggleDesc" Category="ShipSystems" />
     <action name="v_toggle_missile_mode" activationMode="press" keyboard=" " gamepad=" " joystick=" " UILabel="@ui_CIMissileMode" UIDescription="@ui_CIMissileModeDesc" Category="ShipSystems" />
@@ -288,6 +289,7 @@
     <action name="v_toggle_flight_mode" activationMode="press" keyboard=" " gamepad=" " joystick=" " UILabel="@ui_v_toggle_flight_mode" UIDescription="@ui_v_toggle_flight_mode_desc" Category="ShipSystems" />
     <action name="v_set_mining_mode" activationMode="press" keyboard=" " gamepad=" " joystick=" " UILabel="@ui_v_set_mining_mode" UIDescription="@ui_v_set_mining_mode_desc" />
     <action name="v_set_salvage_mode" activationMode="press" keyboard=" " gamepad=" " joystick=" " UILabel="@ui_v_set_salvage_mode" UIDescription="@ui_v_set_salvage_mode_desc" />
+    <action name="v_set_refuel_mode" activationMode="press" keyboard=" " gamepad=" " joystick=" " UILabel="@ui_v_set_refuel_mode" UIDescription="@ui_v_set_refuel_mode_desc" />
     <action name="v_set_scan_mode" activationMode="press" keyboard=" " gamepad=" " joystick=" " UILabel="@ui_v_set_scan_mode" UIDescription="@ui_v_set_scan_mode_desc" />
     <action name="v_set_quantum_mode" activationMode="press" keyboard=" " gamepad=" " joystick=" " UILabel="@ui_v_set_quantum_mode" UIDescription="@ui_v_set_quantum_mode_desc" />
     <action name="v_set_missile_mode" activationMode="press" keyboard=" " gamepad=" " joystick=" " UILabel="@ui_v_set_missile_mode" UIDescription="@ui_v_set_missile_mode_desc" />
@@ -505,6 +507,10 @@
       <states>
         <state name="retracted" UILabel="@ui_CIToggleLandingSystem_Deploy" />
         <state name="deployed" UILabel="@ui_CIToggleLandingSystem_Retract" />
+      </states>
+    </action>
+    <action name="v_toggle_docking_request" activationMode="tap" keyboard="ralt+n" gamepad="" joystick="" UILabel="@ui_CIToggleLandingSystem_Dock" UIDescription="ui_CIToggleLandingSystem_DockDesc">
+      <states>
         <state name="can_dock" UILabel="@ui_CIToggleLandingSystem_Dock" />
         <state name="docking" UILabel="@ui_CIToggleLandingSystem_CancelDocking" />
         <state name="docked" UILabel="@ui_CIToggleLandingSystem_Undock" />
