@@ -127,7 +127,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
                     // TODO is there a way to display current value?
                     if (userInput.YesNo($"Update{(action.ExistingIsPreserved ? " PRESERVED" : "")} MAPPING [{mapping.Id}] => {mapping.InputToString} ?", !action.ExistingIsPreserved))
                     {
-                        var currentMapping = current.Mappings.Single(m => m.ActionMap == mapping.ActionMap && m.Action == mapping.Action);
+                        var currentMapping = current.Mappings.Single(m => m.ActionMap == mapping.ActionMap && m.Action == mapping.Action && m.InputType == mapping.InputType);
                         var idx = current.Mappings.IndexOf(currentMapping);
                         current.Mappings.Insert(idx, mapping);
                         current.Mappings.RemoveAt(idx + 1);
