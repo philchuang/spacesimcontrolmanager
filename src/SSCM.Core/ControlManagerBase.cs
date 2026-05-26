@@ -99,7 +99,7 @@ public abstract class ControlManagerBase<TData> : IControlManager
             return;
         }
 
-        if (mode == ImportMode.Interactive)
+        if (mode == ImportMode.Serial)
         {
             this.MappingDataRepository.Backup();
             WriteLineDebug($"Merging...");
@@ -121,7 +121,7 @@ public abstract class ControlManagerBase<TData> : IControlManager
             return;
         }
 
-        if (mode == ImportMode.Select)
+        if (mode == ImportMode.Tui)
         {
             if (selector == null) throw new ArgumentNullException(nameof(selector));
 
@@ -212,7 +212,7 @@ public abstract class ControlManagerBase<TData> : IControlManager
             return;
         }
 
-        if (mode == ExportMode.Interactive)
+        if (mode == ExportMode.Serial)
         {
             exporter.Backup();
             try
@@ -233,7 +233,7 @@ public abstract class ControlManagerBase<TData> : IControlManager
             return;
         }
 
-        if (mode == ExportMode.Select)
+        if (mode == ExportMode.Tui)
         {
             if (selector == null) throw new ArgumentNullException(nameof(selector));
 

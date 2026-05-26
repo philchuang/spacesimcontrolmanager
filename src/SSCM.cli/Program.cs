@@ -94,9 +94,17 @@ class Program
         cmd.Add(debugOption);
         cmd.SetHandler(async (debug) => {
                 if (debug) ShowDebugOutput = true;
+                await manager.Import(ImportMode.Tui, new SpectreInteractiveChangeSelector());
+            },
+            debugOption);
+
+        var preview = new Command("preview", $"Previews the latest {manager.GameType} mappings without saving changes.");
+        preview.SetHandler(async (debug) => {
+                if (debug) ShowDebugOutput = true;
                 await manager.Import(mode: ImportMode.Preview);
             },
             debugOption);
+        cmd.AddCommand(preview);
 
         var merge = new Command("merge", $"Merges the latest {manager.GameType} mappings into the saved mappings.");
         merge.SetHandler(async (debug) => {
@@ -114,21 +122,21 @@ class Program
             debugOption);
         cmd.AddCommand(overwrite);
 
-        var interactive = new Command("interactive", $"Performs an interactive merge of saved {manager.GameType} mappings with the latest mappings.");
-        interactive.SetHandler(async (debug) => {
+        var serial = new Command("serial", $"Performs a serial merge of saved {manager.GameType} mappings with the latest mappings.");
+        serial.SetHandler(async (debug) => {
                 if (debug) ShowDebugOutput = true;
-                await manager.Import(mode: ImportMode.Interactive);
+                await manager.Import(mode: ImportMode.Serial);
             },
             debugOption);
-        cmd.AddCommand(interactive);
+        cmd.AddCommand(serial);
 
-        var select = new Command("select", $"Selects {manager.GameType} import changes from a terminal UI.");
-        select.SetHandler(async (debug) => {
+        var tui = new Command("tui", $"Selects {manager.GameType} import changes from a terminal UI.");
+        tui.SetHandler(async (debug) => {
                 if (debug) ShowDebugOutput = true;
-                await manager.Import(ImportMode.Select, new SpectreInteractiveChangeSelector());
+                await manager.Import(ImportMode.Tui, new SpectreInteractiveChangeSelector());
             },
             debugOption);
-        cmd.AddCommand(select);
+        cmd.AddCommand(tui);
 
         return cmd;
     }
@@ -240,7 +248,7 @@ class Program
             description: "Only export settings that are already mapped."
         );
 
-        var cmd = new Command("export", $"Previews updates to the {manager.GameType} mappings based on the locally saved mappings file.");
+        var cmd = new Command("export", $"Updates {manager.GameType} mappings from the locally saved mappings file using a terminal UI.");
         cmd.Add(debugOption);
         cmd.Add(onlyMatchesOption);
         cmd.SetHandler(async (debug, onlyMatches) => {
@@ -248,9 +256,22 @@ class Program
                 var options = new ExportOptions {
                     OnlyMatches = onlyMatches,
                 };
+                await manager.Export(ExportMode.Tui, options, new SpectreInteractiveChangeSelector());
+            },
+            debugOption, onlyMatchesOption);
+
+        var preview = new Command("preview", $"Previews updates to the {manager.GameType} mappings based on the locally saved mappings file.");
+        preview.Add(debugOption);
+        preview.Add(onlyMatchesOption);
+        preview.SetHandler(async (debug, onlyMatches) => {
+                if (debug) ShowDebugOutput = true;
+                var options = new ExportOptions {
+                    OnlyMatches = onlyMatches,
+                };
                 await manager.Export(ExportMode.Preview, options);
             },
             debugOption, onlyMatchesOption);
+        cmd.AddCommand(preview);
 
         var apply = new Command("apply", $"Updates {manager.GameType} mappings based on the locally saved mappings file.");
         apply.Add(debugOption);
@@ -265,31 +286,31 @@ class Program
             debugOption, onlyMatchesOption);
         cmd.AddCommand(apply);
 
-        var interactive = new Command("interactive", $"Performs an interactive update of {manager.GameType} mappings based on the locally saved mappings file.");
-        interactive.Add(debugOption);
-        interactive.Add(onlyMatchesOption);
-        interactive.SetHandler(async (debug, onlyMatches) => {
+        var serial = new Command("serial", $"Performs a serial update of {manager.GameType} mappings based on the locally saved mappings file.");
+        serial.Add(debugOption);
+        serial.Add(onlyMatchesOption);
+        serial.SetHandler(async (debug, onlyMatches) => {
                 if (debug) ShowDebugOutput = true;
                 var options = new ExportOptions {
                     OnlyMatches = onlyMatches,
                 };
-                await manager.Export(ExportMode.Interactive, options);
+                await manager.Export(ExportMode.Serial, options);
             },
             debugOption, onlyMatchesOption);
-        cmd.AddCommand(interactive);
+        cmd.AddCommand(serial);
 
-        var select = new Command("select", $"Selects {manager.GameType} export changes from a terminal UI.");
-        select.Add(debugOption);
-        select.Add(onlyMatchesOption);
-        select.SetHandler(async (debug, onlyMatches) => {
+        var tui = new Command("tui", $"Selects {manager.GameType} export changes from a terminal UI.");
+        tui.Add(debugOption);
+        tui.Add(onlyMatchesOption);
+        tui.SetHandler(async (debug, onlyMatches) => {
                 if (debug) ShowDebugOutput = true;
                 var options = new ExportOptions {
                     OnlyMatches = onlyMatches,
                 };
-                await manager.Export(ExportMode.Select, options, new SpectreInteractiveChangeSelector());
+                await manager.Export(ExportMode.Tui, options, new SpectreInteractiveChangeSelector());
             },
             debugOption, onlyMatchesOption);
-        cmd.AddCommand(select);
+        cmd.AddCommand(tui);
 
         return cmd;
     }

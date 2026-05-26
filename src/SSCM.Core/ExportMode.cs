@@ -2,8 +2,8 @@ namespace SSCM.Core;
 
 public enum ExportMode
 {
-    Preview = 0,
+    Tui = 0,
     Apply = 1,
-    Interactive = 4,
-    Select = 8,
+    Serial = 4,
+    Preview = 8,
 }

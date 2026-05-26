@@ -2,9 +2,9 @@ namespace SSCM.Core;
 
 public enum ImportMode
 {
-    Preview = 0,
+    Tui = 0,
     Merge = 1,
     Overwrite =  2,
-    Interactive = 4,
-    Select = 8,
+    Serial = 4,
+    Preview = 8,
 }
