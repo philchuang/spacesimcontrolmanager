@@ -94,7 +94,7 @@ class Program
         cmd.Add(debugOption);
         cmd.SetHandler(async (debug) => {
                 if (debug) ShowDebugOutput = true;
-                await manager.Import(ImportMode.Tui, new SpectreInteractiveChangeSelector());
+                await manager.Import(ImportMode.Tui, new SpectreInteractiveChangeSelector(manager.GameType));
             },
             debugOption);
 
@@ -133,7 +133,7 @@ class Program
         var tui = new Command("tui", $"Selects {manager.GameType} import changes from a terminal UI.");
         tui.SetHandler(async (debug) => {
                 if (debug) ShowDebugOutput = true;
-                await manager.Import(ImportMode.Tui, new SpectreInteractiveChangeSelector());
+                await manager.Import(ImportMode.Tui, new SpectreInteractiveChangeSelector(manager.GameType));
             },
             debugOption);
         cmd.AddCommand(tui);
@@ -256,7 +256,7 @@ class Program
                 var options = new ExportOptions {
                     OnlyMatches = onlyMatches,
                 };
-                await manager.Export(ExportMode.Tui, options, new SpectreInteractiveChangeSelector());
+                await manager.Export(ExportMode.Tui, options, new SpectreInteractiveChangeSelector(manager.GameType));
             },
             debugOption, onlyMatchesOption);
 
@@ -307,7 +307,7 @@ class Program
                 var options = new ExportOptions {
                     OnlyMatches = onlyMatches,
                 };
-                await manager.Export(ExportMode.Tui, options, new SpectreInteractiveChangeSelector());
+                await manager.Export(ExportMode.Tui, options, new SpectreInteractiveChangeSelector(manager.GameType));
             },
             debugOption, onlyMatchesOption);
         cmd.AddCommand(tui);

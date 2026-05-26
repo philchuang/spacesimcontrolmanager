@@ -6,15 +6,18 @@ namespace SSCM.cli;
 
 public class SpectreInteractiveChangeSelector : IInteractiveChangeSelector
 {
-    private const int TableAndFooterRowCount = 5;
+    private const int TableAndFooterRowCount = 6;
 
+    private readonly string _gameType;
     private readonly int? _rowCount;
     private int _cursor;
 
-    public SpectreInteractiveChangeSelector(int? rowCount = null)
+    public SpectreInteractiveChangeSelector(string gameType, int? rowCount = null)
     {
+        if (string.IsNullOrWhiteSpace(gameType)) throw new ArgumentException("Game type is required.", nameof(gameType));
         if (rowCount <= 0) throw new ArgumentOutOfRangeException(nameof(rowCount), "Row count must be greater than zero.");
 
+        this._gameType = gameType;
         this._rowCount = rowCount;
     }
 
@@ -72,7 +75,7 @@ public class SpectreInteractiveChangeSelector : IInteractiveChangeSelector
         var table = new Table()
             .Expand()
             .Border(TableBorder.Rounded)
-            .AddColumn(new TableColumn("").NoWrap())
+            .AddColumn(new TableColumn("Sel").NoWrap())
             .AddColumn(new TableColumn("Action").NoWrap())
             .AddColumn(new TableColumn("Current").NoWrap())
             .AddColumn(new TableColumn("New").NoWrap());
@@ -94,12 +97,18 @@ public class SpectreInteractiveChangeSelector : IInteractiveChangeSelector
         var visibleEnd = Math.Min(startIndex + rowCount, rows.Count);
         var selectedCount = rows.Count(r => r.IsSelected);
 
-        var legend = "Up/Down move  Space select  A all  N none  Enter apply  Esc/Q cancel";
+        var legend = "[↑/↓] move  [SPACE] select  [A]ll  [N]one  [ENTER] apply  [ESC/Q]uit";
         var status = $"Rows {visibleStart}-{visibleEnd} of {rows.Count}  Selected {selectedCount}";
         var spacing = Math.Max(1, Console.WindowWidth - legend.Length - status.Length);
         var footer = $"{legend}{new string(' ', spacing)}{status}";
+        var titleText = $"SpaceSim Control Manager - {this._gameType}";
+        var title = new Panel(new Markup($"[bold white on blue] {Markup.Escape(titleText)} [/]"))
+            .Expand()
+            .Border(BoxBorder.None)
+            .Padding(0, 0);
 
         return new Rows(
+            title,
             table,
             new Markup($"[grey]{Markup.Escape(footer)}[/]"));
     }
