@@ -11,9 +11,9 @@ public interface IControlManager
     string CommandAlias { get; }
     string GameType { get; }
 
-    Task Import(ImportMode mode);
+    Task Import(ImportMode mode, IInteractiveChangeSelector? selector = null);
     Task Upgrade(UpgradeMode mode);
-    Task Export(ExportMode mode, ExportOptions options);
+    Task Export(ExportMode mode, ExportOptions options, IInteractiveChangeSelector? selector = null);
     Task<string> Report(ReportingOptions options);
     void Backup();
     void Restore();
@@ -54,7 +54,7 @@ public abstract class ControlManagerBase<TData> : IControlManager
     protected abstract IMappingExporter<TData> CreateExporter();
     protected abstract IMappingReporter<TData> CreateReporter();
 
-    public async Task Import(ImportMode mode)
+    public async Task Import(ImportMode mode, IInteractiveChangeSelector? selector = null)
     {
         var importer = this.CreateImporter();
 
@@ -120,6 +120,29 @@ public abstract class ControlManagerBase<TData> : IControlManager
             this.WriteLineStandard("Merge cancelled.");
             return;
         }
+
+        if (mode == ImportMode.Select)
+        {
+            if (selector == null) throw new ArgumentNullException(nameof(selector));
+
+            var session = merger.CreateInteractiveSession(currentData, updatedData);
+            if (!session.HasRows)
+            {
+                this.WriteLineStandard("No changes to make.");
+                return;
+            }
+
+            this.MappingDataRepository.Backup();
+            if (selector.SelectAndApply(session))
+            {
+                await this.MappingDataRepository.Save(currentData);
+                this.WriteLineStandard("Mappings updated.");
+            }
+            else
+            {
+                this.WriteLineStandard("Merge cancelled.");
+            }
+        }
     }
 
     public async Task Upgrade(UpgradeMode mode)
@@ -158,7 +181,7 @@ public abstract class ControlManagerBase<TData> : IControlManager
         }
     }
 
-    public async Task Export(ExportMode mode, ExportOptions? options = null)
+    public async Task Export(ExportMode mode, ExportOptions? options = null, IInteractiveChangeSelector? selector = null)
     {
         var data = await this.MappingDataRepository.Load();
         if (data == null) throw new Exception("Could not load saved mappings!");
@@ -189,25 +212,49 @@ public abstract class ControlManagerBase<TData> : IControlManager
             return;
         }
 
-        // if (mode == ExportMode.Interactive)
-        // {
-        //     exporter.Backup();
-        //     try
-        //     {
-        //         if (await exporter.UpdateInteractive(data, this.UserInput))
-        //         {
-        //             WriteLineStandard($"CONFIGURATION UPDATED: Changes applied to {this.GameType}.");
-        //         }
-        //         else
-        //         {
-        //             // TODO handle aborted update
-        //         }
-        //     }
-        //     catch (UserInputCancelledException)
-        //     {
-        //         // ignore
-        //     }
-        // }
+        if (mode == ExportMode.Interactive)
+        {
+            exporter.Backup();
+            try
+            {
+                if (await exporter.UpdateInteractive(data, this.UserInput))
+                {
+                    WriteLineStandard($"CONFIGURATION UPDATED: Changes applied to {this.GameType}.");
+                }
+                else
+                {
+                    WriteLineStandard($"CONFIGURATION NOT UPDATED: No changes necessary.");
+                }
+            }
+            catch (UserInputCancelledException)
+            {
+                WriteLineStandard("Export cancelled.");
+            }
+            return;
+        }
+
+        if (mode == ExportMode.Select)
+        {
+            if (selector == null) throw new ArgumentNullException(nameof(selector));
+
+            var session = await exporter.CreateInteractiveSession(data);
+            if (!session.HasRows)
+            {
+                this.WriteLineStandard("CONFIGURATION NOT UPDATED: No changes necessary.");
+                return;
+            }
+
+            exporter.Backup();
+            if (selector.SelectAndApply(session))
+            {
+                await exporter.SaveInteractive();
+                this.WriteLineStandard($"CONFIGURATION UPDATED: Changes applied to {this.GameType}.");
+            }
+            else
+            {
+                this.WriteLineStandard("Export cancelled.");
+            }
+        }
     }
 
     public async Task<string> Report(ReportingOptions options)

@@ -2,12 +2,8 @@ using SSCM.Core;
 
 namespace SSCM.StarCitizen;
 
-public class MappingImportMerger : IMappingImportMerger<SCMappingData>
+public class MappingImportMerger : MappingImportMergerBase<SCMappingData>
 {
-    public event Action<string> StandardOutput = delegate {};
-    public event Action<string> WarningOutput = delegate {};
-    public event Action<string> DebugOutput = delegate {};
-
     public MappingMergeResult ResultSC {
         get;
         set;
@@ -18,33 +14,72 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
         new ComparisonResult<SCMapping>(),
         new ComparisonResult<SCAttribute>());
 
-    public MappingMergeResultBase<SCMappingData> Result {
+    public override MappingMergeResultBase<SCMappingData> Result {
         get => this.ResultSC;
         set => this.ResultSC = (MappingMergeResult) value;
     }
 
-    public MappingImportMerger()
+    protected override InteractiveChangeRow CreateInteractiveRow(SCMappingData current, MappingMergeAction action)
     {
+        if (action.Value is SCInputDevice input)
+        {
+            return this.CreateInteractiveRow(action, input.Id, action.Mode == MappingMergeActionMode.Add ? "" : input.Id, input.Id, () => this.ApplyInputAction(current, action, input));
+        }
+        if (action.Value is SCInputDeviceSetting setting)
+        {
+            var currentSetting = current.Inputs.SingleOrDefault(i => i.Id == setting.Parent)?.Settings.SingleOrDefault(s => s.Name == setting.Name);
+            var currentValue = currentSetting == null ? "" : currentSetting.Properties.EntriesToString();
+            return this.CreateInteractiveRow(action, $"{setting.Parent}.{setting.Name}", currentValue, setting.Properties.EntriesToString(), () => this.ApplyInputSettingAction(current, action, setting));
+        }
+        if (action.Value is SCMapping mapping)
+        {
+            var currentMapping = current.Mappings.SingleOrDefault(m => m.ActionMap == mapping.ActionMap && m.Action == mapping.Action && m.InputType == mapping.InputType);
+            var currentValue = currentMapping?.InputToString ?? "";
+            return this.CreateInteractiveRow(action, mapping.Id, currentValue, mapping.InputToString, () => this.ApplyMappingAction(current, action, mapping), $"{mapping.Id}.{mapping.InputType}");
+        }
+        if (action.Value is SCAttribute attribute)
+        {
+            var currentAttribute = current.Attributes.SingleOrDefault(a => a.Name == attribute.Name);
+            var currentValue = currentAttribute?.Value ?? "";
+            return this.CreateInteractiveRow(action, attribute.Name, currentValue, attribute.Value, () => this.ApplyAttributeAction(current, action, attribute));
+        }
+
+        throw UnsupportedActionValue(action);
     }
 
-    public bool Preview(SCMappingData current, SCMappingData updated)
+    private bool ApplyInputAction(SCMappingData current, MappingMergeAction action, SCInputDevice input)
     {
-        this.CalculateDiffs(current, updated);
-
-        return this.Result.HasDifferences && this.Result.CanAutoMerge;
+        if (action.Mode == MappingMergeActionMode.Add)
+        {
+            current.Inputs.Add(input);
+            return true;
+        }
+        if (action.Mode == MappingMergeActionMode.Remove)
+        {
+            current.Inputs.Remove(input);
+            current.Mappings.Where(m => m.Input == input.Id).ToList().ForEach(m => current.Mappings.Remove(m));
+            return true;
+        }
+        throw new InvalidOperationException($"Invalid combination of MappingMergeActionMode.Replace and InputDevice.");
     }
 
-    public SCMappingData Merge(SCMappingData current, SCMappingData updated)
+    private bool ApplyInputSettingAction(SCMappingData current, MappingMergeAction action, SCInputDeviceSetting setting)
     {
-        return this.Merge(current, updated, new DefaultUserInput());
+        var target = current.Inputs.Single(i => i.Id == setting.Parent);
+        return ApplyListAction(target.Settings, action, setting, s => s.Name == setting.Name);
     }
 
-    public SCMappingData MergeInteractive(SCMappingData current, SCMappingData updated, IUserInput userInput)
+    private bool ApplyMappingAction(SCMappingData current, MappingMergeAction action, SCMapping mapping)
     {
-        return this.Merge(current, updated, userInput);
+        return ApplyListAction(current.Mappings, action, mapping, m => m.ActionMap == mapping.ActionMap && m.Action == mapping.Action && m.InputType == mapping.InputType);
     }
 
-    protected SCMappingData Merge(SCMappingData current, SCMappingData updated, IUserInput userInput)
+    private bool ApplyAttributeAction(SCMappingData current, MappingMergeAction action, SCAttribute attribute)
+    {
+        return ApplyListAction(current.Attributes, action, attribute, a => a.Name == attribute.Name);
+    }
+
+    protected override SCMappingData Merge(SCMappingData current, SCMappingData updated, IUserInput userInput)
     {
         this.CalculateDiffs(current, updated);
 
@@ -167,7 +202,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
         return current;
     }
 
-    private void CalculateDiffs(SCMappingData current, SCMappingData updated)
+    protected override void CalculateDiffs(SCMappingData current, SCMappingData updated)
     {
         // capture differences
         this.Result = new MappingMergeResult(
@@ -214,7 +249,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
         if (this.ResultSC.InputDiffs.HasChangedInputInstanceId())
         {
             // input device changed - if instance changed, can't merge because that would change all the bindings
-            this.StandardOutput("WARNING: Input Instance IDs have changed and prevents a merge. Please manually resolve or execute import overwrite.");
+            this.WriteLineStandard("WARNING: Input Instance IDs have changed and prevents a merge. Please manually resolve or execute import overwrite.");
             this.StopMerge();
             return;
         }
@@ -222,7 +257,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
         foreach (var input in this.ResultSC.InputDiffs.Added)
         {
             // input device added - add to current
-            this.StandardOutput($"INPUT added and will auto-merge: [{input.Id}]");
+            this.WriteLineStandard($"INPUT added and will auto-merge: [{input.Id}]");
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Add, input));
         }
 
@@ -231,13 +266,13 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             // input device removed - if referenced by preserved binding, can't merge - else remove current
             if (this.Result.Current.GetRelatedMappings(input).Any(m => m.Preserve))
             {
-                this.StandardOutput($"INPUT removed but will not auto-merge: [{input.Id}] has preserved mappings.");
+                this.WriteLineStandard($"INPUT removed but will not auto-merge: [{input.Id}] has preserved mappings.");
                 this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, input, true));
                 this.Result.CanAutoMerge = false;
             }
             else
             {
-                this.StandardOutput($"INPUT removed and will auto-merge: [{input.Id}]");
+                this.WriteLineStandard($"INPUT removed and will auto-merge: [{input.Id}]");
                 this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, input));
 
                 // remove all related mappings (they probably won't be in the updated MappingData anyway)
@@ -264,7 +299,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
         foreach (var setting in settingsDiffs.Added)
         {
             // setting added - add with preserve = true
-            this.StandardOutput($"INPUT SETTING added and will auto-merge: {input.Product} [{setting.Name}] += {setting.Properties.EntriesToString()}");
+            this.WriteLineStandard($"INPUT SETTING added and will auto-merge: {input.Product} [{setting.Name}] += {setting.Properties.EntriesToString()}");
             setting.Preserve = true;
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Add, setting));
         }
@@ -274,11 +309,11 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             // setting removed - auto-remove if current preserve == false - else keep current
             if (!setting.Preserve)
             {
-                this.StandardOutput($"INPUT SETTING removed and will auto-merge: {input.Product} [{setting.Name}] -= {setting.Properties.EntriesToString()}");
+                this.WriteLineStandard($"INPUT SETTING removed and will auto-merge: {input.Product} [{setting.Name}] -= {setting.Properties.EntriesToString()}");
             }
             else
             {
-                this.StandardOutput($"INPUT SETTING removed and will not auto-merge: {input.Product} [{setting.Name}] => {setting.Properties.EntriesToString()}");
+                this.WriteLineStandard($"INPUT SETTING removed and will not auto-merge: {input.Product} [{setting.Name}] => {setting.Properties.EntriesToString()}");
                 this.Result.CanAutoMerge = false;
             }
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, setting, setting.Preserve));
@@ -289,11 +324,11 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             // setting changed - update if preserve == false - else keep current
             if (!pair.Current.Preserve)
             {
-                this.StandardOutput($"INPUT SETTING changed and will auto-merge: {input.Product} [{pair.Current.Name}] {pair.Current.Properties.EntriesToString()} => {pair.Updated.Properties.EntriesToString()}");
+                this.WriteLineStandard($"INPUT SETTING changed and will auto-merge: {input.Product} [{pair.Current.Name}] {pair.Current.Properties.EntriesToString()} => {pair.Updated.Properties.EntriesToString()}");
             }
             else
             {
-                this.StandardOutput($"INPUT SETTING changed and will not auto-merge: {input.Product} [{pair.Current.Name}] => {pair.Current.Properties.EntriesToString()} != {pair.Updated.Properties.EntriesToString()}");
+                this.WriteLineStandard($"INPUT SETTING changed and will not auto-merge: {input.Product} [{pair.Current.Name}] => {pair.Current.Properties.EntriesToString()} != {pair.Updated.Properties.EntriesToString()}");
                 this.Result.CanAutoMerge = false;
             }
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Replace, pair.Updated, pair.Current.Preserve));
@@ -305,7 +340,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
         foreach (var mapping in this.ResultSC.MappingDiffs.Added)
         {
             // mapping added - add with preserve = true
-            this.StandardOutput($"MAPPING added and will auto-merge: [{mapping.Id}] += {mapping.InputToString}");
+            this.WriteLineStandard($"MAPPING added and will auto-merge: [{mapping.Id}] += {mapping.InputToString}");
             mapping.Preserve = true;
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Add, mapping));
         }
@@ -315,11 +350,11 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             // mapping removed - remove if current preserve == false - else keep current
             if (!mapping.Preserve)
             {
-                this.StandardOutput($"MAPPING removed and will auto-merge: [{mapping.Id}] -= {mapping.InputToString}");
+                this.WriteLineStandard($"MAPPING removed and will auto-merge: [{mapping.Id}] -= {mapping.InputToString}");
             }
             else
             {
-                this.StandardOutput($"MAPPING removed and will not auto-merge: [{mapping.Id}] -= {mapping.InputToString}");
+                this.WriteLineStandard($"MAPPING removed and will not auto-merge: [{mapping.Id}] -= {mapping.InputToString}");
                 this.Result.CanAutoMerge = false;
             }
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, mapping, mapping.Preserve));
@@ -330,11 +365,11 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             // setting changed - update if preserve == false - else keep current
             if (!pair.Current.Preserve)
             {
-                this.StandardOutput($"MAPPING changed and will auto-merge: [{pair.Current.Id}] {pair.Current.InputToString} => {pair.Updated.InputToString}");
+                this.WriteLineStandard($"MAPPING changed and will auto-merge: [{pair.Current.Id}] {pair.Current.InputToString} => {pair.Updated.InputToString}");
             }
             else
             {
-                this.StandardOutput($"MAPPING changed and will not auto-merge: [{pair.Current.Id}] => {pair.Current.InputToString} != {pair.Updated.InputToString}");
+                this.WriteLineStandard($"MAPPING changed and will not auto-merge: [{pair.Current.Id}] => {pair.Current.InputToString} != {pair.Updated.InputToString}");
                 this.Result.CanAutoMerge = false;
             }
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Replace, pair.Updated, pair.Current.Preserve));
@@ -346,7 +381,7 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
         foreach (var attr in this.ResultSC.AttributeDiffs.Added)
         {
             // attribute added - add with preserve = true
-            this.StandardOutput($"ATTRIBUTE added and will auto-merge: [{attr.Name}] += {attr.Value}");
+            this.WriteLineStandard($"ATTRIBUTE added and will auto-merge: [{attr.Name}] += {attr.Value}");
             attr.Preserve = true;
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Add, attr));
         }
@@ -356,11 +391,11 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             // attribute removed - remove if current preserve == false - else keep current
             if (!attr.Preserve)
             {
-                this.StandardOutput($"ATTRIBUTE removed and will auto-merge: [{attr.Name}] -= {attr.Value}");
+                this.WriteLineStandard($"ATTRIBUTE removed and will auto-merge: [{attr.Name}] -= {attr.Value}");
             }
             else
             {
-                this.StandardOutput($"ATTRIBUTE removed and will not auto-merge: [{attr.Name}] -= {attr.Value}");
+                this.WriteLineStandard($"ATTRIBUTE removed and will not auto-merge: [{attr.Name}] -= {attr.Value}");
                 this.Result.CanAutoMerge = false;
             }
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Remove, attr, attr.Preserve));
@@ -371,11 +406,11 @@ public class MappingImportMerger : IMappingImportMerger<SCMappingData>
             // setting changed - update if preserve == false - else keep current
             if (!pair.Current.Preserve)
             {
-                this.StandardOutput($"ATTRIBUTE changed and will auto-merge: [{pair.Current.Name}] {pair.Current.Value} => {pair.Updated.Value}");
+                this.WriteLineStandard($"ATTRIBUTE changed and will auto-merge: [{pair.Current.Name}] {pair.Current.Value} => {pair.Updated.Value}");
             }
             else
             {
-                this.StandardOutput($"ATTRIBUTE changed and will not auto-merge: [{pair.Current.Name}] => {pair.Current.Value} != {pair.Updated.Value}");
+                this.WriteLineStandard($"ATTRIBUTE changed and will not auto-merge: [{pair.Current.Name}] => {pair.Current.Value} != {pair.Updated.Value}");
                 this.Result.CanAutoMerge = false;
             }
             this.Result.MergeActions.Add(new MappingMergeAction(MappingMergeActionMode.Replace, pair.Updated, pair.Current.Preserve));

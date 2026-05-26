@@ -61,6 +61,40 @@ public abstract class MappingExporterBase<TData> : IMappingExporter<TData>
     public abstract Task<bool> Preview(TData source);
 
     public abstract Task<bool> Update(TData source);
-    
-    // public abstract Task<bool> UpdateInteractive(TData source, IUserInput userInput);
+
+    public virtual async Task<bool> UpdateInteractive(TData source, IUserInput userInput)
+    {
+        var session = await this.CreateInteractiveSession(source);
+        if (!session.HasRows) return false;
+
+        if (!userInput.YesNo("\nStart interactive export?"))
+        {
+            throw new UserInputCancelledException();
+        }
+
+        var changed = false;
+        foreach (var row in session.Rows)
+        {
+            var currentValue = string.IsNullOrWhiteSpace(row.CurrentValue) ? "<none>" : row.CurrentValue;
+            var newValue = string.IsNullOrWhiteSpace(row.NewValue) ? "<none>" : row.NewValue;
+            if (userInput.YesNo($"{row.ChangeKind} [{row.ItemId}] {currentValue} => {newValue} ?"))
+            {
+                changed |= row.Apply();
+            }
+        }
+
+        if (!changed) return false;
+
+        if (!userInput.YesNo("\nFinish interactive export and save changes?"))
+        {
+            throw new UserInputCancelledException();
+        }
+
+        await this.SaveInteractive();
+        return true;
+    }
+
+    public abstract Task<InteractiveChangeSession> CreateInteractiveSession(TData source);
+
+    public abstract Task SaveInteractive();
 }

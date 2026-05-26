@@ -6,4 +6,5 @@ public enum ImportMode
     Merge = 1,
     Overwrite =  2,
     Interactive = 4,
+    Select = 8,
 }

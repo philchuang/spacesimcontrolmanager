@@ -122,6 +122,14 @@ class Program
             debugOption);
         cmd.AddCommand(interactive);
 
+        var select = new Command("select", $"Selects {manager.GameType} import changes from a terminal UI.");
+        select.SetHandler(async (debug) => {
+                if (debug) ShowDebugOutput = true;
+                await manager.Import(ImportMode.Select, new SpectreInteractiveChangeSelector());
+            },
+            debugOption);
+        cmd.AddCommand(select);
+
         return cmd;
     }
 
@@ -257,14 +265,31 @@ class Program
             debugOption, onlyMatchesOption);
         cmd.AddCommand(apply);
 
-        // TODO implement
-        // var interactive = new Command("interactive", $"Performs an interactive update of {manager.GameType} mappings based on the locally saved mappings file.");
-        // interactive.SetHandler(async (debug) => {
-        //         if (debug) ShowDebugOutput = true;
-        //         await manager.Export(ExportMode.Interactive);
-        //     },
-        //     debugOption);
-        // cmd.AddCommand(interactive);
+        var interactive = new Command("interactive", $"Performs an interactive update of {manager.GameType} mappings based on the locally saved mappings file.");
+        interactive.Add(debugOption);
+        interactive.Add(onlyMatchesOption);
+        interactive.SetHandler(async (debug, onlyMatches) => {
+                if (debug) ShowDebugOutput = true;
+                var options = new ExportOptions {
+                    OnlyMatches = onlyMatches,
+                };
+                await manager.Export(ExportMode.Interactive, options);
+            },
+            debugOption, onlyMatchesOption);
+        cmd.AddCommand(interactive);
+
+        var select = new Command("select", $"Selects {manager.GameType} export changes from a terminal UI.");
+        select.Add(debugOption);
+        select.Add(onlyMatchesOption);
+        select.SetHandler(async (debug, onlyMatches) => {
+                if (debug) ShowDebugOutput = true;
+                var options = new ExportOptions {
+                    OnlyMatches = onlyMatches,
+                };
+                await manager.Export(ExportMode.Select, options, new SpectreInteractiveChangeSelector());
+            },
+            debugOption, onlyMatchesOption);
+        cmd.AddCommand(select);
 
         return cmd;
     }
