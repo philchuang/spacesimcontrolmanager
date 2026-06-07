@@ -1,4 +1,4 @@
-<!-- extracted from v4.8.0 -->
+<!-- extracted from v4.8.1 -->
 <profile version="1" optionsVersion="2" rebindVersion="2">
   <platforms>
     <PC keyboard="1" mouse="1" gamepad="1" joystick="1" />

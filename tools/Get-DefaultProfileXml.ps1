@@ -1,4 +1,5 @@
 $unp4kDir = "$PSScriptRoot\unp4k"
+$destPath = "$unp4kDir\..\..\src\SSCM.StarCitizen\defaultProfile.xml"
 
 cd $unp4kDir
 
@@ -20,8 +21,30 @@ if (-not (Test-Path $xmlPath)) {
 Write-Host "Converting defaultProfile.xml..."
 .\unforge.cli.exe $xmlPath
 
+Write-Host "Post-processing defaultProfile.xml..."
+
+$content = [System.IO.File]::ReadAllText($xmlPath)
+$content = $content -replace '(?s)<!\[CDATA\[\s*/?\>\s*\]\]>', ''
+
+$xmlDoc = New-Object System.Xml.XmlDocument
+$xmlDoc.PreserveWhitespace = $false
+$xmlDoc.LoadXml($content)
+
+$settings = New-Object System.Xml.XmlWriterSettings
+$settings.Indent = $true
+$settings.IndentChars = '  '
+$settings.NewLineChars = "`n"
+$settings.OmitXmlDeclaration = $true
+
+$sw = New-Object System.IO.StringWriter
+$writer = [System.Xml.XmlWriter]::Create($sw, $settings)
+$xmlDoc.Save($writer)
+$writer.Close()
+
+[System.IO.File]::WriteAllText($xmlPath, $sw.ToString())
+
 Write-Host "Copying defaultProfile.xml to SSCM.StarCitizen project..."
-copy $xmlPath "$unp4kDir\..\..\src\SSCM.StarCitizen\defaultProfile.xml" -Force
+copy $xmlPath $destPath -Force
 
 Write-Host "Deleting temporary data directory..."
 del "$unp4kDir\Data" -Recurse -Force
