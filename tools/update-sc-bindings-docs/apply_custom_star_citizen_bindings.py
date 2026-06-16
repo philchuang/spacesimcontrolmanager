@@ -4,14 +4,11 @@ import re
 
 from sc_bindings_core import (
     CUSTOM_JSON_PATH,
-    DOCS_DIR,
+    JOYSTICK_BINDINGS_PATH,
     ensure_required_files,
     read_binding_document,
     write_binding_document,
 )
-
-
-JOYSTICK_BINDINGS_PATH = DOCS_DIR / "joystick-bindings.md"
 
 
 def dedupe(values: list[str]) -> list[str]:

@@ -37,6 +37,9 @@ msbuild.wrn
 # Visual Studio 2015
 .vs/
 
+# generated files
+docs/starcitizen/bindings
+
 # temp files
 */SSCM.cli/scmappings.json
 */SSCM.cli/actionmaps.xml.*

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -8,8 +9,20 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent.parent
 DOCS_DIR = REPO_ROOT / "docs"
+STAR_CITIZEN_ENVIRONMENT = os.environ.get("SC_BINDINGS_ENVIRONMENT", "HOTFIX").upper()
+STAR_CITIZEN_ROOT = Path(r"C:\Program Files\Roberts Space Industries\StarCitizen")
+STAR_CITIZEN_ENV_DIR = STAR_CITIZEN_ROOT / STAR_CITIZEN_ENVIRONMENT
+BINDINGS_OUTPUT_DIR = DOCS_DIR / "starcitizen" / "bindings"
 
-CUSTOM_JSON_PATH = DOCS_DIR / "starcitizen" / "bindings.json"
+DEFAULT_PROFILE_PATH = REPO_ROOT / "src" / "SSCM.StarCitizen" / "defaultProfile.xml"
+GLOBAL_INI_PATH = STAR_CITIZEN_ENV_DIR / "data" / "Localization" / "english" / "global.ini"
+ACTIONMAPS_PATH = STAR_CITIZEN_ENV_DIR / "USER" / "Client" / "0" / "Profiles" / "default" / "actionmaps.xml"
+JOYSTICK_BINDINGS_PATH = DOCS_DIR / "joystick-bindings.md"
+HTML_TEMPLATE_PATH = SCRIPT_DIR / "star-citizen-bindings.template.html"
+CUSTOM_JSON_PATH = BINDINGS_OUTPUT_DIR / "bindings.json"
+MARKDOWN_OUTPUT_PATH = BINDINGS_OUTPUT_DIR / "bindings.md"
+TSV_OUTPUT_PATH = BINDINGS_OUTPUT_DIR / "bindings.tsv"
+HTML_OUTPUT_PATH = BINDINGS_OUTPUT_DIR / "bindings.html"
 
 
 def ensure_required_files(paths: list[Path]) -> None:
@@ -53,6 +66,11 @@ def current_timestamp() -> str:
     return datetime.now().astimezone().isoformat(timespec="seconds")
 
 
+def write_text(output_path: Path, content: str) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(content, encoding="utf-8")
+
+
 def write_binding_document(
     actions: list[dict[str, object]],
     output_path: Path,
@@ -63,7 +81,7 @@ def write_binding_document(
         "generatedAt": generated_at or current_timestamp(),
         "actions": actions,
     }
-    output_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    write_text(output_path, json.dumps(payload, indent=2, ensure_ascii=False) + "\n")
 
 
 def read_binding_document(path: Path) -> dict[str, object]:

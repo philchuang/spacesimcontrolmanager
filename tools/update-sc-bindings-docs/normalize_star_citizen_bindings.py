@@ -1,22 +1,14 @@
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
-from pathlib import Path
 
 from sc_bindings_core import (
+    ACTIONMAPS_PATH,
     CUSTOM_JSON_PATH,
-    REPO_ROOT,
+    DEFAULT_PROFILE_PATH,
+    GLOBAL_INI_PATH,
     ensure_required_files,
     write_binding_document,
-)
-
-
-DEFAULT_PROFILE_PATH = REPO_ROOT / "src" / "SSCM.StarCitizen" / "defaultProfile.xml"
-GLOBAL_INI_PATH = Path(
-    r"C:\Program Files\Roberts Space Industries\StarCitizen\HOTFIX\data\Localization\english\global.ini"
-)
-ACTIONMAPS_PATH = Path(
-    r"C:\Program Files\Roberts Space Industries\StarCitizen\HOTFIX\USER\Client\0\Profiles\default\actionmaps.xml"
 )
 
 

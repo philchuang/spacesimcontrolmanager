@@ -5,15 +5,14 @@ from pathlib import Path
 
 from sc_bindings_core import (
     CUSTOM_JSON_PATH,
-    DOCS_DIR,
-    SCRIPT_DIR,
+    HTML_OUTPUT_PATH,
+    HTML_TEMPLATE_PATH,
     ensure_required_files,
     read_binding_document,
+    write_text,
 )
 
 
-HTML_OUTPUT_PATH = DOCS_DIR / "starcitizen" / "bindings.html"
-HTML_TEMPLATE_PATH = SCRIPT_DIR / "star-citizen-bindings.template.html"
 BINDINGS_JSON_PLACEHOLDER = "__BINDINGS_JSON__"
 
 
@@ -50,10 +49,7 @@ def write_interactive_html(
     if BINDINGS_JSON_PLACEHOLDER not in html_template:
         raise ValueError(f"Missing {BINDINGS_JSON_PLACEHOLDER} placeholder in {HTML_TEMPLATE_PATH}")
 
-    output_path.write_text(
-        html_template.replace(BINDINGS_JSON_PLACEHOLDER, data_json),
-        encoding="utf-8",
-    )
+    write_text(output_path, html_template.replace(BINDINGS_JSON_PLACEHOLDER, data_json))
 
 
 def main() -> None:

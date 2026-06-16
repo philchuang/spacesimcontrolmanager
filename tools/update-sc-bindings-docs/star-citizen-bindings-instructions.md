@@ -16,11 +16,12 @@ INSTRUCTIONS:
          6. Copy the parent actionMap UILabel as categoryLabel
          7. Generate an ID as `{categoryName}-{name}`
    2. Create a flat list of action data as `actionData`
-2. Read `C:\Program Files\Roberts Space Industries\StarCitizen\LIVE\data\Localization\english\global.ini`
+2. Read `C:\Program Files\Roberts Space Industries\StarCitizen\{SC_BINDINGS_ENVIRONMENT}\data\Localization\english\global.ini`
+   1. `SC_BINDINGS_ENVIRONMENT` defaults to `HOTFIX` in `sc_bindings_core.py` and can be overridden from the environment.
    1. This is a keyed list of strings, with one key-value pair per line, delimited by the first `=` character
    2. Iterate over the actions list from the previous step
       1. For each `label` and `categoryLabel`, look up the key in the global.ini, and if found replace it with the value
-3. Read `C:\Program Files\Roberts Space Industries\StarCitizen\LIVE\USER\Client\0\Profiles\default\actionmaps.xml`
+3. Read `C:\Program Files\Roberts Space Industries\StarCitizen\{SC_BINDINGS_ENVIRONMENT}\USER\Client\0\Profiles\default\actionmaps.xml`
    1. Iterate on `<actionMap>` elements
       1. Capture the `@name` attribute as categoryName
       2. Iterate on `<action>` elements
@@ -43,9 +44,10 @@ INSTRUCTIONS:
          2. If the input is not a button, then analyze the input value against the binding names and build mapping logic into the script
          3. Copy the binding name to the actionData as `joystickDesc`
 5. Generate output documents
-   1. Create a table in `bindings.md` under the `GENERATED BINDINGS` section, where each row is an actionData item.
-   2. Create a TSV file with all rows
-   3. Create an interactive HTML document
+   1. Create `docs\starcitizen\bindings\bindings.json`.
+   2. Create `docs\starcitizen\bindings\bindings.md` with a table under the `GENERATED BINDINGS` section, where each row is an actionData item.
+   3. Create `docs\starcitizen\bindings\bindings.tsv` with all rows.
+   4. Create `docs\starcitizen\bindings\bindings.html`.
 
 
 ## TODO

@@ -4,15 +4,15 @@ from pathlib import Path
 
 from sc_bindings_core import (
     CUSTOM_JSON_PATH,
-    DOCS_DIR,
+    MARKDOWN_OUTPUT_PATH,
     build_output_rows,
     ensure_required_files,
     read_json,
+    write_text,
 )
 
 
 COLUMNS = ["id", "category", "description", "keyboard", "joystick", "joystickDesc"]
-MARKDOWN_OUTPUT_PATH = DOCS_DIR / "starcitizen" / "bindings.md"
 
 
 def write_markdown(rows: list[dict[str, str]], output_path: Path = MARKDOWN_OUTPUT_PATH) -> None:
@@ -24,7 +24,7 @@ def write_markdown(rows: list[dict[str, str]], output_path: Path = MARKDOWN_OUTP
     lines.append("|" + "|".join(["---"] * len(COLUMNS)) + "|")
     for row in rows:
         lines.append("|" + "|".join(md_escape(row[column]) for column in COLUMNS) + "|")
-    output_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    write_text(output_path, "\n".join(lines) + "\n")
 
 
 def main() -> None:

@@ -4,15 +4,15 @@ from pathlib import Path
 
 from sc_bindings_core import (
     CUSTOM_JSON_PATH,
-    DOCS_DIR,
+    TSV_OUTPUT_PATH,
     build_output_rows,
     ensure_required_files,
     read_json,
+    write_text,
 )
 
 
 COLUMNS = ["id", "category", "description", "keyboard", "joystick", "joystickDesc"]
-TSV_OUTPUT_PATH = DOCS_DIR / "starcitizen" / "bindings.tsv"
 
 
 def write_tsv(rows: list[dict[str, str]], output_path: Path = TSV_OUTPUT_PATH) -> None:
@@ -22,7 +22,7 @@ def write_tsv(rows: list[dict[str, str]], output_path: Path = TSV_OUTPUT_PATH) -
     lines = ["\t".join(COLUMNS)]
     for row in rows:
         lines.append("\t".join(tsv_escape(row[column]) for column in COLUMNS))
-    output_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    write_text(output_path, "\n".join(lines) + "\n")
 
 
 def main() -> None:
