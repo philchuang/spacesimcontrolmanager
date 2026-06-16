@@ -99,14 +99,15 @@ function Publish($srcFolder, $outputPath, $options, $metadataPath, $zip)
     New-Item -Path $releasesFolder -ItemType Directory -Force | Out-Null
 
     Write-Host "Writing metadata..."
+    cd $repoRoot
     $metadata = GetMetadata
     WriteMetadata $metadata $metadataPath
     $suffix = if ($AddHash) { "-$($metadata.commit_hash)" } else { "" }
 
-    Publish $srcFolder "$releasesFolder/sscm-win$suffix" "" $metadataPath $Zipped
+    Publish $srcFolder "$releasesFolder/sscm-win$suffix" "-r win-x64" $metadataPath $Zipped
 
     if ($AllTargets) {
-        Publish $srcFolder "$releasesFolder/sscm-win-full$suffix" "--sc" $metadataPath $Zipped
+        Publish $srcFolder "$releasesFolder/sscm-win-full$suffix" "-r win-x64 --sc" $metadataPath $Zipped
         Publish $srcFolder "$releasesFolder/sscm-linux$suffix" "--os linux" $metadataPath $Zipped
         Publish $srcFolder "$releasesFolder/sscm-linux-full$suffix" "--os linux --sc" $metadataPath $Zipped
     }

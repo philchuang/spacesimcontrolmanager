@@ -11,12 +11,33 @@ public class SCControlManager : ControlManagerBase<SCMappingData>
 
     public override string CommandAlias => "sc";
     public override string GameType => "Star Citizen";
+    public override string GameTypeTitle => $"{this.GameType} [{this._folders.Environment}]";
+
+    public override List<CommandOption> GlobalOptions { get; }
 
     private readonly ISCFolders _folders;
 
     public SCControlManager(IPlatform platform, ISCFolders folders, IUserInput userInput) : base(platform, userInput)
     {
         this._folders = folders;
+        this.GlobalOptions = new()
+        {
+            new CommandOption
+            {
+                Name = "environment",
+                ShortName = "e",
+                Description = "Star Citizen environment",
+                DefaultValue = this._folders.Environment,
+            }
+        };
+    }
+
+    protected override void ApplyOptions(Dictionary<string, string> options)
+    {
+        if (options.TryGetValue("environment", out var environment) && !string.IsNullOrWhiteSpace(environment))
+        {
+            this._folders.Environment = environment;
+        }
     }
 
     protected override IMappingDataRepository<SCMappingData> CreateMappingDataRepository()

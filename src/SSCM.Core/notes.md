@@ -33,17 +33,3 @@
 
 - current vs updated
 - original vs final
-
-## TODOs
-
-[ ] new interactive mode, with terminal UI
-    * separate from current interactive mode that only operates one mapping at a time and only works forward
-    * display all possible changes, with up/down row cursor
-    * current row is contrast highlighted
-    * each row will display "[ ]" for selection, id (setting id, mapping id, or attribute name, etc), current saved value, new value
-    * use full terminal width, full data width for all columns except use ellipses to truncate final column
-    * spacebar to select a row
-    * import/export command will act on all selected
-    * remove acted rows afterwards
-[ ] star citizen to elite dangerous cross-game synchronization
-[ ] fix github pipeline action to correctly generate windows package (no exe right now)

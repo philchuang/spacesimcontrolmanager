@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.CommandLine;
@@ -6,7 +6,7 @@ using SSCM.Core;
 
 namespace SSCM.cli;
 
-class Program
+internal class Program
 {
     private static bool ShowDebugOutput = false;
 
@@ -16,7 +16,7 @@ class Program
 
         var managers = CreateManagers(host);
         var root = BuildRootCommand(managers);
-        return await root.InvokeAsync(args);
+        return await root.Parse(args).InvokeAsync(new InvocationConfiguration());
     }
 
     // TODO working on a config subcommand where the user can set variables (dirs, etc.)
@@ -59,16 +59,16 @@ class Program
         return managers;
     }
 
-    private static Command BuildRootCommand(List<IControlManager> managers)
+    internal static Command BuildRootCommand(List<IControlManager> managers)
     {
-        var debugOption = new Option<bool>(
-            aliases: new [] { "--debug", "-d" },
-            description: "Display debug output"
-        );
+        var debugOption = new Option<bool>("--debug", "-d")
+        {
+            Description = "Display debug output",
+            Recursive = true
+        };
 
         var root = new RootCommand("Space Sim Control Manager");
-        root.Name = "sscm";
-        root.AddGlobalOption(debugOption);
+        root.Add(debugOption);
         managers.ForEach(m => AddCommands(m, root, debugOption));
         return root;
     }
@@ -76,116 +76,133 @@ class Program
     private static void AddCommands(IControlManager manager, RootCommand root, Option<bool> debugOption)
     {
         var mgr = new Command(manager.CommandAlias, $"Manage {manager.GameType} mappings");
-        mgr.AddCommand(BuildImportCommand(manager, debugOption));
-        mgr.AddCommand(BuildUpgradeCommand(manager, debugOption));
-        mgr.AddCommand(BuildReportCommand(manager));
-        mgr.AddCommand(BuildEditCommand(manager));
-        mgr.AddCommand(BuildEditGameCommand(manager));
-        mgr.AddCommand(BuildExportCommand(manager, debugOption));
-        mgr.AddCommand(BuildBackupCommand(manager, debugOption));
-        mgr.AddCommand(BuildRestoreCommand(manager, debugOption));
+        var globalOptions = AddGlobalOptions(manager, mgr);
+
+        foreach (var command in new[] {
+            BuildImportCommand(manager, debugOption, globalOptions),
+            BuildUpgradeCommand(manager, debugOption, globalOptions),
+            BuildReportCommand(manager, globalOptions),
+            BuildEditCommand(manager, globalOptions),
+            BuildEditGameCommand(manager, globalOptions),
+            BuildExportCommand(manager, debugOption, globalOptions),
+            BuildBackupCommand(manager, debugOption, globalOptions),
+            BuildRestoreCommand(manager, debugOption, globalOptions)})
+        {
+            mgr.Add(command);
+        }
+
         // mgr.AddCommand(BuildConfigCommand(manager));
-        root.AddCommand(mgr);
+        root.Add(mgr);
     }
 
-    private static Command BuildImportCommand(IControlManager manager, Option<bool> debugOption)
+    private static IList<Option<string>> AddGlobalOptions(IControlManager manager, Command command)
     {
+        var options = new List<Option<string>> ();
+        foreach (var commandOption in manager.GlobalOptions)
+        {
+            var aliases = string.IsNullOrWhiteSpace(commandOption.ShortName) ? [] : new[] { $"-{commandOption.ShortName.ToLowerInvariant()}" };
+            var cliOption = new Option<string>($"--{commandOption.Name.ToLowerInvariant()}", aliases)
+            {
+                Description = commandOption.Description,
+                DefaultValueFactory = _ => commandOption.DefaultValue ?? string.Empty,
+                Recursive = true
+            };
+            command.Add(cliOption);
+            options.Add(cliOption);
+        }
+
+        return options;
+    }
+
+    private static Dictionary<string, string> PrepareOptions(ParseResult parseResult, Option<bool>? debugOption, IList<Option<string>> globalOptions)
+    {
+        var options = new Dictionary<string, string>();
+        foreach (var cliOption in globalOptions)
+        {
+            var value = parseResult.GetValue(cliOption);
+            if (value != null) options[cliOption.Name.TrimStart('-')] = value;
+        }
+
+        var debug = debugOption != null && parseResult.GetValue(debugOption);
+        if (debug) ShowDebugOutput = true;
+        return options;
+    }
+
+    private static Command BuildImportCommand(IControlManager manager, Option<bool> debugOption, IList<Option<string>> globalOptions)
+    {
+        Task Import(ParseResult parseResult, ImportMode mode, bool useTuiSelector = false)
+        {
+            var options = PrepareOptions(parseResult, debugOption, globalOptions);
+            var selector = useTuiSelector ? new SpectreInteractiveChangeSelector(() => manager.GameTypeTitle) : null;
+            return manager.Import(mode, options, selector);
+        }
+
+        Command CreateImportModeCommand(string name, string description, ImportMode mode, bool useTuiSelector = false)
+        {
+            var modeCommand = new Command(name, description);
+            modeCommand.SetAction(parseResult => Import(parseResult, mode, useTuiSelector));
+            return modeCommand;
+        }
+
         var cmd = new Command("import", $"Imports the {manager.GameType} mappings and saves it locally.");
-        cmd.Add(debugOption);
-        cmd.SetHandler(async (debug) => {
-                if (debug) ShowDebugOutput = true;
-                await manager.Import(ImportMode.Tui, new SpectreInteractiveChangeSelector(manager.GameType));
-            },
-            debugOption);
+        cmd.SetAction(parseResult => Import(parseResult, ImportMode.Tui, useTuiSelector: true));
 
-        var preview = new Command("preview", $"Previews the latest {manager.GameType} mappings without saving changes.");
-        preview.SetHandler(async (debug) => {
-                if (debug) ShowDebugOutput = true;
-                await manager.Import(mode: ImportMode.Preview);
-            },
-            debugOption);
-        cmd.AddCommand(preview);
-
-        var merge = new Command("merge", $"Merges the latest {manager.GameType} mappings into the saved mappings.");
-        merge.SetHandler(async (debug) => {
-                if (debug) ShowDebugOutput = true;
-                await manager.Import(mode: ImportMode.Merge);
-            },
-            debugOption);
-        cmd.AddCommand(merge);
-
-        var overwrite = new Command("overwrite", $"Overwrites the saved {manager.GameType} mappings with the latest mappings.");
-        overwrite.SetHandler(async (debug) => {
-                if (debug) ShowDebugOutput = true;
-                await manager.Import(mode: ImportMode.Overwrite);
-            },
-            debugOption);
-        cmd.AddCommand(overwrite);
-
-        var serial = new Command("serial", $"Performs a serial merge of saved {manager.GameType} mappings with the latest mappings.");
-        serial.SetHandler(async (debug) => {
-                if (debug) ShowDebugOutput = true;
-                await manager.Import(mode: ImportMode.Serial);
-            },
-            debugOption);
-        cmd.AddCommand(serial);
-
-        var tui = new Command("tui", $"Selects {manager.GameType} import changes from a terminal UI.");
-        tui.SetHandler(async (debug) => {
-                if (debug) ShowDebugOutput = true;
-                await manager.Import(ImportMode.Tui, new SpectreInteractiveChangeSelector(manager.GameType));
-            },
-            debugOption);
-        cmd.AddCommand(tui);
+        cmd.Add(CreateImportModeCommand("preview", $"Previews the latest {manager.GameType} mappings without saving changes.", ImportMode.Preview));
+        cmd.Add(CreateImportModeCommand("merge", $"Merges the latest {manager.GameType} mappings into the saved mappings.", ImportMode.Merge));
+        cmd.Add(CreateImportModeCommand("overwrite", $"Overwrites the saved {manager.GameType} mappings with the latest mappings.", ImportMode.Overwrite));
+        cmd.Add(CreateImportModeCommand("serial", $"Performs a serial merge of saved {manager.GameType} mappings with the latest mappings.", ImportMode.Serial));
+        cmd.Add(CreateImportModeCommand("tui", $"Selects {manager.GameType} import changes from a terminal UI.", ImportMode.Tui, useTuiSelector: true));
 
         return cmd;
     }
 
-    private static Command BuildUpgradeCommand(IControlManager manager, Option<bool> debugOption)
+    private static Command BuildUpgradeCommand(IControlManager manager, Option<bool> debugOption, IList<Option<string>> globalOptions)
     {
         var cmd = new Command("upgrade", $"Upgrades the saved {manager.GameType} mappings.");
-        cmd.Add(debugOption);
-        cmd.SetHandler(async (debug) => {
-                if (debug) ShowDebugOutput = true;
-                await manager.Upgrade(mode: UpgradeMode.Preview);
-            },
-            debugOption);
+        cmd.SetAction(async (parseResult) => {
+                var options = PrepareOptions(parseResult, debugOption, globalOptions);
+                await manager.Upgrade(mode: UpgradeMode.Preview, options);
+            });
 
         var apply = new Command("apply", $"Upgrades the saved {manager.GameType} mappings.");
-        apply.SetHandler(async (debug) => {
-                if (debug) ShowDebugOutput = true;
-                await manager.Upgrade(mode: UpgradeMode.Apply);
-            },
-            debugOption);
-        cmd.AddCommand(apply);
+        apply.SetAction(async (parseResult) => {
+                var options = PrepareOptions(parseResult, debugOption, globalOptions);
+                await manager.Upgrade(mode: UpgradeMode.Apply, options);
+            });
+        cmd.Add(apply);
 
         return cmd;
     }
 
-    private static Command BuildReportCommand(IControlManager manager)
+    private static Command BuildReportCommand(IControlManager manager, IList<Option<string>> globalOptions)
     {
-        var preservedOnlyOption = new Option<bool>(
-            aliases: new [] { "--preserved", "-p" },
-            description: "Only output mappings marked for preservation"
-        );
+        var preservedOnlyOption = new Option<bool>("--preserved", "-p")
+        {
+            Description = "Only output mappings marked for preservation"
+        };
 
-        var headersOnlyOption = new Option<bool>(
-            aliases: new [] { "--names", "-n" },
-            description: "Only output mapping names, not values"
-        );
+        var headersOnlyOption = new Option<bool>("--names", "-n")
+        {
+            Description = "Only output mapping names, not values"
+        };
 
-        var formatOption = new Option<string>(
-            aliases: new [] { "--format", "-f" },
-            description: "Output in a specific format",
-            getDefaultValue: () => "md"
-        ).FromAmong("md", "csv", "json");
+        var formatOption = new Option<string>("--format", "-f")
+        {
+            Description = "Output in a specific format",
+            DefaultValueFactory = _ => "md"
+        };
+        formatOption.AcceptOnlyFromAmong("md", "csv", "json");
 
         var cmd = new Command("report", "Outputs saved mappings in text format.");
-        cmd.AddOption(preservedOnlyOption);
-        cmd.AddOption(headersOnlyOption);
-        cmd.AddOption(formatOption);
-        cmd.SetHandler(async (preservedOnly, headersOnly, format) => {
-            var options = new ReportingOptions {
+        cmd.Add(preservedOnlyOption);
+        cmd.Add(headersOnlyOption);
+        cmd.Add(formatOption);
+        cmd.SetAction(async (parseResult) => {
+            var managerOptions = PrepareOptions(parseResult, null, globalOptions);
+            var preservedOnly = parseResult.GetValue(preservedOnlyOption);
+            var headersOnly = parseResult.GetValue(headersOnlyOption);
+            var format = parseResult.GetValue(formatOption) ?? "md";
+            var reportingOptions = new ReportingOptions {
                 Format = format switch {
                     "md" => ReportingFormat.Markdown,
                     "markdown" => ReportingFormat.Markdown,
@@ -196,9 +213,8 @@ class Program
                 HeadersOnly = headersOnly,
                 PreservedOnly = preservedOnly,
             };
-            Console.WriteLine(await manager.Report(options));
-        },
-        preservedOnlyOption, headersOnlyOption, formatOption);
+            Console.WriteLine(await manager.Report(reportingOptions, managerOptions));
+        });
 
         // TODO re-add, maybe have module-specific CLI configuration logic
         // ONLY FOR SC 
@@ -221,120 +237,83 @@ class Program
         return cmd;
     }
 
-    private static Command BuildEditCommand(IControlManager manager)
+    private static Command BuildEditCommand(IControlManager manager, IList<Option<string>> globalOptions)
     {
         var cmd = new Command("edit", "Opens the mappings JSON file in the system default editor. Edit the \"Preserve\" property to affect the export behavior.");
-        cmd.AddAlias("open");
-        cmd.SetHandler(() => {
-            manager.Open();
+        cmd.Aliases.Add("open");
+        cmd.SetAction((parseResult) => {
+            var options = PrepareOptions(parseResult, null, globalOptions);
+            manager.Open(options);
         });
         return cmd;
     }
 
-    private static Command BuildEditGameCommand(IControlManager manager)
+    private static Command BuildEditGameCommand(IControlManager manager, IList<Option<string>> globalOptions)
     {
         var cmd = new Command("editgame", $"Opens the {manager.GameType} mappings file in the system default editor.");
-        cmd.AddAlias("opengame");
-        cmd.SetHandler(() => {
-            manager.OpenGameConfig();
+        cmd.Aliases.Add("opengame");
+        cmd.SetAction((parseResult) => {
+            var options = PrepareOptions(parseResult, null, globalOptions);
+            manager.OpenGameConfig(options);
         });
         return cmd;
     }
 
-    private static Command BuildExportCommand(IControlManager manager, Option<bool> debugOption)
+    private static Command BuildExportCommand(IControlManager manager, Option<bool> debugOption, IList<Option<string>> globalOptions)
     {
-        var onlyMatchesOption = new Option<bool>(
-            aliases: new [] { "--matches", "-m" },
-            description: "Only export settings that are already mapped."
-        );
+        var onlyMatchesOption = new Option<bool>("--matches", "-m")
+        {
+            Description = "Only export settings that are already mapped.",
+            Recursive = true
+        };
+
+        Task Export(ParseResult parseResult, ExportMode mode, bool useTuiSelector = false)
+        {
+            var managerOptions = PrepareOptions(parseResult, debugOption, globalOptions);
+            var exportOptions = new ExportOptions
+            {
+                OnlyMatches = parseResult.GetValue(onlyMatchesOption),
+            };
+            var selector = useTuiSelector ? new SpectreInteractiveChangeSelector(() => manager.GameTypeTitle) : null;
+            return manager.Export(mode, exportOptions, managerOptions, selector);
+        }
+
+        Command CreateExportModeCommand(string name, string description, ExportMode mode, bool useTuiSelector = false)
+        {
+            var modeCommand = new Command(name, description);
+            modeCommand.SetAction(parseResult => Export(parseResult, mode, useTuiSelector));
+            return modeCommand;
+        }
 
         var cmd = new Command("export", $"Updates {manager.GameType} mappings from the locally saved mappings file using a terminal UI.");
-        cmd.Add(debugOption);
         cmd.Add(onlyMatchesOption);
-        cmd.SetHandler(async (debug, onlyMatches) => {
-                if (debug) ShowDebugOutput = true;
-                var options = new ExportOptions {
-                    OnlyMatches = onlyMatches,
-                };
-                await manager.Export(ExportMode.Tui, options, new SpectreInteractiveChangeSelector(manager.GameType));
-            },
-            debugOption, onlyMatchesOption);
+        cmd.SetAction(parseResult => Export(parseResult, ExportMode.Tui, useTuiSelector: true));
 
-        var preview = new Command("preview", $"Previews updates to the {manager.GameType} mappings based on the locally saved mappings file.");
-        preview.Add(debugOption);
-        preview.Add(onlyMatchesOption);
-        preview.SetHandler(async (debug, onlyMatches) => {
-                if (debug) ShowDebugOutput = true;
-                var options = new ExportOptions {
-                    OnlyMatches = onlyMatches,
-                };
-                await manager.Export(ExportMode.Preview, options);
-            },
-            debugOption, onlyMatchesOption);
-        cmd.AddCommand(preview);
-
-        var apply = new Command("apply", $"Updates {manager.GameType} mappings based on the locally saved mappings file.");
-        apply.Add(debugOption);
-        apply.Add(onlyMatchesOption);
-        apply.SetHandler(async (debug, onlyMatches) => {
-                if (debug) ShowDebugOutput = true;
-                var options = new ExportOptions {
-                    OnlyMatches = onlyMatches,
-                };
-                await manager.Export(ExportMode.Apply, options);
-            },
-            debugOption, onlyMatchesOption);
-        cmd.AddCommand(apply);
-
-        var serial = new Command("serial", $"Performs a serial update of {manager.GameType} mappings based on the locally saved mappings file.");
-        serial.Add(debugOption);
-        serial.Add(onlyMatchesOption);
-        serial.SetHandler(async (debug, onlyMatches) => {
-                if (debug) ShowDebugOutput = true;
-                var options = new ExportOptions {
-                    OnlyMatches = onlyMatches,
-                };
-                await manager.Export(ExportMode.Serial, options);
-            },
-            debugOption, onlyMatchesOption);
-        cmd.AddCommand(serial);
-
-        var tui = new Command("tui", $"Selects {manager.GameType} export changes from a terminal UI.");
-        tui.Add(debugOption);
-        tui.Add(onlyMatchesOption);
-        tui.SetHandler(async (debug, onlyMatches) => {
-                if (debug) ShowDebugOutput = true;
-                var options = new ExportOptions {
-                    OnlyMatches = onlyMatches,
-                };
-                await manager.Export(ExportMode.Tui, options, new SpectreInteractiveChangeSelector(manager.GameType));
-            },
-            debugOption, onlyMatchesOption);
-        cmd.AddCommand(tui);
+        cmd.Add(CreateExportModeCommand("preview", $"Previews updates to the {manager.GameType} mappings based on the locally saved mappings file.", ExportMode.Preview));
+        cmd.Add(CreateExportModeCommand("apply", $"Updates {manager.GameType} mappings based on the locally saved mappings file.", ExportMode.Apply));
+        cmd.Add(CreateExportModeCommand("serial", $"Performs a serial update of {manager.GameType} mappings based on the locally saved mappings file.", ExportMode.Serial));
+        cmd.Add(CreateExportModeCommand("tui", $"Selects {manager.GameType} export changes from a terminal UI.", ExportMode.Tui, useTuiSelector: true));
 
         return cmd;
     }
 
-    private static Command BuildBackupCommand(IControlManager manager, Option<bool> debugOption)
+    private static Command BuildBackupCommand(IControlManager manager, Option<bool> debugOption, IList<Option<string>> globalOptions)
     {
         var cmd = new Command("backup", $"Makes a local copy of the {manager.GameType} mappings file which can be restored later.");
-        cmd.Add(debugOption);
-        cmd.SetHandler((debug) => {
-            if (debug) ShowDebugOutput = true;
-            manager.Backup();
-        },
-        debugOption);
+        cmd.SetAction((parseResult) => {
+            var options = PrepareOptions(parseResult, debugOption, globalOptions);
+            manager.Backup(options);
+        });
         return cmd;
     }
 
-    private static Command BuildRestoreCommand(IControlManager manager, Option<bool> debugOption)
+    private static Command BuildRestoreCommand(IControlManager manager, Option<bool> debugOption, IList<Option<string>> globalOptions)
     {
         var cmd = new Command("restore", $"Restores the latest local backup of the {manager.GameType} mappings file.");
-        cmd.SetHandler((debug) => {
-            if (debug) ShowDebugOutput = true;
-            manager.Restore();
-        },
-        debugOption);
+        cmd.SetAction((parseResult) => {
+            var options = PrepareOptions(parseResult, debugOption, globalOptions);
+            manager.Restore(options);
+        });
         return cmd;
     }
 

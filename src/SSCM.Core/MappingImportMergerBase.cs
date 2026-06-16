@@ -6,7 +6,10 @@ public abstract class MappingImportMergerBase<TData> : IMappingImportMerger<TDat
     public event Action<string> WarningOutput = delegate {};
     public event Action<string> DebugOutput = delegate {};
 
-    protected void WriteLineStandard(string s) => this.StandardOutput(s);
+    private bool _suppressStandardOutput;
+    protected void WriteLineStandard(string s) {
+        if (!this._suppressStandardOutput) this.StandardOutput(s);
+    }
     protected void WriteLineWarning(string s) => this.WarningOutput(s);
     protected void WriteLineDebug(string s) => this.DebugOutput(s);
 
@@ -31,7 +34,16 @@ public abstract class MappingImportMergerBase<TData> : IMappingImportMerger<TDat
 
     public InteractiveChangeSession CreateInteractiveSession(TData current, TData updated)
     {
-        this.CalculateDiffs(current, updated);
+        this._suppressStandardOutput = true;
+        try
+        {
+            this.CalculateDiffs(current, updated);
+        }
+        finally
+        {
+            this._suppressStandardOutput = false;
+        }
+
         var rows = this.Result.MergeActions.Select(action => this.CreateInteractiveRow(current, action)).ToList();
         return new InteractiveChangeSession(rows);
     }

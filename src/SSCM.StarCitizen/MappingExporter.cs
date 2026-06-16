@@ -9,7 +9,6 @@ namespace SSCM.StarCitizen;
 public class MappingExporter : MappingExporterBase<SCMappingData>
 {
     private string GameAttributesPath => this._folders.GameAttributesPath;
-    private string GameConfigDir => this._folders.GameConfigDir;
     private string GameMappingsPath => this._folders.GameMappingsPath;
 
     private static Regex XML_REGEX = new Regex(@"<(\w[\w\d_]+)[^>]*>.+</\1>");

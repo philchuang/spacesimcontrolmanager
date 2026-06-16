@@ -8,16 +8,15 @@ public class SpectreInteractiveChangeSelector : IInteractiveChangeSelector
 {
     private const int TableAndFooterRowCount = 6;
 
-    private readonly string _gameType;
+    private readonly Func<string> _gameTypeFunc;
     private readonly int? _rowCount;
     private int _cursor;
 
-    public SpectreInteractiveChangeSelector(string gameType, int? rowCount = null)
+    public SpectreInteractiveChangeSelector(Func<string> gameTypeFunc, int? rowCount = null)
     {
-        if (string.IsNullOrWhiteSpace(gameType)) throw new ArgumentException("Game type is required.", nameof(gameType));
         if (rowCount <= 0) throw new ArgumentOutOfRangeException(nameof(rowCount), "Row count must be greater than zero.");
 
-        this._gameType = gameType;
+        this._gameTypeFunc = gameTypeFunc ?? throw new ArgumentException("Game type is required.", nameof(gameTypeFunc));;
         this._rowCount = rowCount;
     }
 
@@ -101,7 +100,7 @@ public class SpectreInteractiveChangeSelector : IInteractiveChangeSelector
         var status = $"Rows {visibleStart}-{visibleEnd} of {rows.Count}  Selected {selectedCount}";
         var spacing = Math.Max(1, Console.WindowWidth - legend.Length - status.Length);
         var footer = $"{legend}{new string(' ', spacing)}{status}";
-        var titleText = $"SpaceSim Control Manager - {this._gameType}";
+        var titleText = $"SpaceSim Control Manager - {this._gameTypeFunc()}";
         var title = new Panel(new Markup($"[bold white on blue] {Markup.Escape(titleText)} [/]"))
             .Expand()
             .Border(BoxBorder.None)

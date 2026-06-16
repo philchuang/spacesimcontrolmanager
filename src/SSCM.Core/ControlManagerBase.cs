@@ -1,7 +1,5 @@
 namespace SSCM.Core;
 
-// TODO write tests for this class
-
 public interface IControlManager
 {
     event Action<string> StandardOutput;
@@ -10,15 +8,17 @@ public interface IControlManager
 
     string CommandAlias { get; }
     string GameType { get; }
+    string GameTypeTitle { get; }
+    List<CommandOption> GlobalOptions { get; }
 
-    Task Import(ImportMode mode, IInteractiveChangeSelector? selector = null);
-    Task Upgrade(UpgradeMode mode);
-    Task Export(ExportMode mode, ExportOptions options, IInteractiveChangeSelector? selector = null);
-    Task<string> Report(ReportingOptions options);
-    void Backup();
-    void Restore();
-    void Open();
-    void OpenGameConfig();
+    Task Import(ImportMode mode, Dictionary<string, string>? options = null, IInteractiveChangeSelector? selector = null);
+    Task Upgrade(UpgradeMode mode, Dictionary<string, string>? options = null);
+    Task Export(ExportMode mode, ExportOptions exportOptions, Dictionary<string, string>? options = null, IInteractiveChangeSelector? selector = null);
+    Task<string> Report(ReportingOptions reportingOptions, Dictionary<string, string>? options = null);
+    void Backup(Dictionary<string, string>? options = null);
+    void Restore(Dictionary<string, string>? options = null);
+    void Open(Dictionary<string, string>? options = null);
+    void OpenGameConfig(Dictionary<string, string>? options = null);
 }
 
 public abstract class ControlManagerBase<TData> : IControlManager
@@ -32,6 +32,8 @@ public abstract class ControlManagerBase<TData> : IControlManager
 
     public abstract string CommandAlias { get; }
     public abstract string GameType { get; }
+    public virtual string GameTypeTitle => this.GameType;
+    public virtual List<CommandOption> GlobalOptions { get; } = new();
     protected abstract string GameConfigPath { get; }
     protected abstract string MappingDataSavePath { get; }
     protected IPlatform Platform { get; init; }
@@ -53,9 +55,13 @@ public abstract class ControlManagerBase<TData> : IControlManager
     protected abstract IMappingUpgrader<TData> CreateUpgrader();
     protected abstract IMappingExporter<TData> CreateExporter();
     protected abstract IMappingReporter<TData> CreateReporter();
+    protected virtual void ApplyOptions(Dictionary<string, string> options) {}
 
-    public async Task Import(ImportMode mode, IInteractiveChangeSelector? selector = null)
+    private Dictionary<string, string> NormalizeOptions(Dictionary<string, string>? options = null) => options ?? new Dictionary<string, string>();
+
+    public async Task Import(ImportMode mode, Dictionary<string, string>? options = null, IInteractiveChangeSelector? selector = null)
     {
+        this.ApplyOptions(this.NormalizeOptions(options));
         var importer = this.CreateImporter();
 
         var updatedData = await importer.Read();
@@ -145,8 +151,9 @@ public abstract class ControlManagerBase<TData> : IControlManager
         }
     }
 
-    public async Task Upgrade(UpgradeMode mode)
+    public async Task Upgrade(UpgradeMode mode, Dictionary<string, string>? options = null)
     {
+        this.ApplyOptions(this.NormalizeOptions(options));
         var upgrader = this.CreateUpgrader();
 
         var currentData = await this.MappingDataRepository.Load();
@@ -181,13 +188,14 @@ public abstract class ControlManagerBase<TData> : IControlManager
         }
     }
 
-    public async Task Export(ExportMode mode, ExportOptions? options = null, IInteractiveChangeSelector? selector = null)
+    public async Task Export(ExportMode mode, ExportOptions exportOptions, Dictionary<string, string>? options = null, IInteractiveChangeSelector? selector = null)
     {
+        this.ApplyOptions(this.NormalizeOptions(options));
         var data = await this.MappingDataRepository.Load();
         if (data == null) throw new Exception("Could not load saved mappings!");
 
         var exporter = this.CreateExporter();
-        exporter.ExportOptions = options ?? ExportOptions.Default;
+        exporter.ExportOptions = exportOptions ?? ExportOptions.Default;
 
         if (mode == ExportMode.Preview)
         {
@@ -257,30 +265,33 @@ public abstract class ControlManagerBase<TData> : IControlManager
         }
     }
 
-    public async Task<string> Report(ReportingOptions options)
+    public async Task<string> Report(ReportingOptions reportingOptions, Dictionary<string, string>? options = null)
     {
+        this.ApplyOptions(this.NormalizeOptions(options));
         var reporter = this.CreateReporter();
         var data = await this.MappingDataRepository.Load();
-        return reporter.Report(data ?? this.MappingDataRepository.CreateNew(), options);
+        return reporter.Report(data ?? this.MappingDataRepository.CreateNew(), reportingOptions);
     }
 
-    public void Backup()
+    public void Backup(Dictionary<string, string>? options = null)
     {
+        this.ApplyOptions(this.NormalizeOptions(options));
         var exporter = this.CreateExporter();
         var backup = exporter.Backup();
         WriteLineStandard($"{this.GameType} config backed up to [{backup}].");
     }
 
-    public void Restore()
+    public void Restore(Dictionary<string, string>? options = null)
     {
+        this.ApplyOptions(this.NormalizeOptions(options));
         var exporter = this.CreateExporter();
         var backup = exporter.RestoreLatest();
         WriteLineStandard($"{this.GameType} config restored from [{backup}].");
     }
 
-    public void Open()
+    public void Open(Dictionary<string, string>? options = null)
     {
-        // TODO write simple test
+        this.ApplyOptions(this.NormalizeOptions(options));
         try
         {
             this.Platform.Open(this.MappingDataSavePath);
@@ -292,9 +303,9 @@ public abstract class ControlManagerBase<TData> : IControlManager
         }
     }
 
-    public void OpenGameConfig()
+    public void OpenGameConfig(Dictionary<string, string>? options = null)
     {
-        // TODO write simple test
+        this.ApplyOptions(this.NormalizeOptions(options));
         try
         {
             this.Platform.Open(this.GameConfigPath);
