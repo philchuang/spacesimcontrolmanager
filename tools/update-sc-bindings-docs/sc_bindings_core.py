@@ -9,7 +9,7 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent.parent
 DOCS_DIR = REPO_ROOT / "docs"
-STAR_CITIZEN_ENVIRONMENT = os.environ.get("SC_BINDINGS_ENVIRONMENT", "HOTFIX").upper()
+STAR_CITIZEN_ENVIRONMENT = "LIVE"
 STAR_CITIZEN_ROOT = Path(r"C:\Program Files\Roberts Space Industries\StarCitizen")
 STAR_CITIZEN_ENV_DIR = STAR_CITIZEN_ROOT / STAR_CITIZEN_ENVIRONMENT
 BINDINGS_OUTPUT_DIR = DOCS_DIR / "starcitizen" / "bindings"

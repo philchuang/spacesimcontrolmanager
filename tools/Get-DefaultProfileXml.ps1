@@ -1,5 +1,7 @@
 $unp4kDir = "$PSScriptRoot\unp4k"
 $destPath = "$unp4kDir\..\..\src\SSCM.StarCitizen\defaultProfile.xml"
+$scPath = "$env:ProgramFiles\Roberts Space Industries\StarCitizen"
+$scEnvironment = "LIVE"
 
 cd $unp4kDir
 
@@ -9,7 +11,7 @@ if (Test-Path "$unp4kDir\Data") {
 }
 
 Write-Host "Extracting defaultProfile.xml from Star Citizen data.p4k..."
-.\unp4k.exe "$env:ProgramFiles\Roberts Space Industries\StarCitizen\LIVE\Data.p4k" 'Data/Libs/Config/defaultProfile.xml'
+.\unp4k.exe "$scPath\$scEnvironment\Data.p4k" 'Data/Libs/Config/defaultProfile.xml'
 
 $xmlPath = "$unp4kDir\Data\Libs\Config\defaultProfile.xml"
 
