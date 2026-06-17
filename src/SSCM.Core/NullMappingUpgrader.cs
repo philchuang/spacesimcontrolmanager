@@ -2,9 +2,11 @@ namespace SSCM.Core;
 
 public class NullMappingUpgrader<TData> : MappingUpgraderBase<TData>
 {
+    private MappingMergeResultBase<TData>? _result;
+
     public override MappingMergeResultBase<TData> Result
     {
-        get => null;
+        get => this._result ?? throw new InvalidOperationException("No upgrade result has been created.");
         set { }
     }
 
@@ -12,8 +14,13 @@ public class NullMappingUpgrader<TData> : MappingUpgraderBase<TData>
     {
     }
 
-    public override async Task<TData> Upgrade(TData current)
+    public override Task<TData> Upgrade(TData current)
     {
-        return default(TData);
+        this._result = new NullMappingMergeResult<TData>(current);
+        return Task.FromResult(current);
+    }
+
+    private sealed class NullMappingMergeResult<T>(T current) : MappingMergeResultBase<T>(current, current)
+    {
     }
 }

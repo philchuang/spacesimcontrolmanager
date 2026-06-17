@@ -16,6 +16,9 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
     private readonly ISCFolders _folders;
     private ActionMapsXmlHelper? _mappingsXml;
     private XDocument? _attributesXml;
+    private ActionMapsXmlHelper MappingsXml => this._mappingsXml ?? throw new InvalidOperationException("No mappings export session has been created.");
+    private XDocument AttributesXml => this._attributesXml ?? throw new InvalidOperationException("No attributes export session has been created.");
+    private XElement AttributesRoot => this.AttributesXml.Root ?? throw new InvalidDataException("Expected an <Attributes> root element.");
 
     public MappingExporter(IPlatform platform, ISCFolders folders) : base(platform)
     {
@@ -286,11 +289,11 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
             var current = xe?.GetAttribute("value") ?? "";
             if (string.Equals(a.Value, current)) continue;
             rows.Add(new InteractiveChangeRow(a.Name, xe == null ? "Add" : "Update", a.Name, current, a.Value, true, () => {
-                var target = this._attributesXml!.XPathSelectElement($"/Attributes/Attr[@name='{a.Name}']");
+                var target = this.AttributesXml.XPathSelectElement($"/Attributes/Attr[@name='{a.Name}']");
                 if (target == null)
                 {
                     target = new XElement("Attr", new XAttribute("name", a.Name));
-                    this._attributesXml.Root!.Add(target);
+                    this.AttributesRoot.Add(target);
                 }
                 return ApplyAttribute(target, a);
             }));
@@ -334,8 +337,8 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
         var inputPrefixesToRemove = new List<string>();
         foreach (var exportedInput in preservedInputs)
         {
-            var targetInputByInstance = this._mappingsXml.GetOptionsElementForInputTypeAndInstance(exportedInput);
-            var targetInputByProduct = this._mappingsXml.GetOptionsElementForInputTypeAndProduct(exportedInput);
+            var targetInputByInstance = this.MappingsXml.GetOptionsElementForInputTypeAndInstance(exportedInput);
+            var targetInputByProduct = this.MappingsXml.GetOptionsElementForInputTypeAndProduct(exportedInput);
 
             if (targetInputByProduct != null)
             { // exported input exists
@@ -347,7 +350,7 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
 
                 // 1-0: exported input has a different instance ID
                 // remap bindings
-                inputsToRemap[ActionMapsXmlHelper.GetInputPrefixForOptionsElement(targetInputByProduct)] = (exportedInput, targetInputByProduct, this._mappingsXml.GetAllActionRebindsForOptions(targetInputByProduct));
+                inputsToRemap[ActionMapsXmlHelper.GetInputPrefixForOptionsElement(targetInputByProduct)] = (exportedInput, targetInputByProduct, this.MappingsXml.GetAllActionRebindsForOptions(targetInputByProduct));
                 // delete bindings that are in the way of the exported input instance
                 inputPrefixesToRemove.Add(exportedInput.GetInputPrefix());
                 continue;
@@ -369,10 +372,10 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
         {
             changed = true;
             base._StandardOutput($"REMOVING: mappings like [{prefix}]...");
-            this._mappingsXml.GetAllActionRebindsForInputPrefix(prefix).ForEach(rebind => rebind.Remove());
+            this.MappingsXml.GetAllActionRebindsForInputPrefix(prefix).ForEach(rebind => rebind.Remove());
             var (type, instance) = ActionMapsXmlHelper.GetOptionsTypeAndInstanceForPrefix(prefix);
             base._StandardOutput($"REMOVING: input for {type} {instance}...");
-            this._mappingsXml.GetOptionsElementForInputTypeAndInstance(type, instance).Remove();
+            this.MappingsXml.GetOptionsElementForInputTypeAndInstance(type, instance)?.Remove();
         }
 
         // remap via remapOptionsMap
@@ -398,7 +401,7 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
             var options = new XElement("options", new XAttribute("type", input.Type), new XAttribute("instance", input.Instance.ToString()), new XAttribute("Product", input.Product));
             base._DebugOutput($"CREATING: {options.ToString()}...");
             base._StandardOutput($"RESTORING: {input.Type}-{input.Instance} input [{input.Product}]");
-            this._mappingsXml.AddOptionsElement(options);
+            this.MappingsXml.AddOptionsElement(options);
         }
 
         return changed;
@@ -413,10 +416,10 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
         {
             foreach (var setting in input.Settings.Where(s => s.Preserve))
             {
-                var settingElement = this._mappingsXml.GetElementForInputSetting(input, setting.Name);
+                var settingElement = this.MappingsXml.GetElementForInputSetting(input, setting.Name);
                 if (settingElement == null)
                 {
-                    var inputElement = this._mappingsXml.GetOptionsElementForInputDevice(input);
+                    var inputElement = this.MappingsXml.GetOptionsElementForInputDevice(input);
                     if (inputElement == null)
                     {
                         throw new SscmException($"Could not find <options> element for type [{input.Type}] instance [{input.Instance}] Product [{input.Product}].");
@@ -470,7 +473,7 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
             //     base._DebugOutput($"SKIPPING: {mapping.ActionMap}/{mapping.Action} binding of {mapping.Input} appears to be empty.");
             //     continue;
             // }
-            var actionElement = this._mappingsXml.GetActionForMapping(mapping);
+            var actionElement = this.MappingsXml.GetActionForMapping(mapping);
             if (actionElement == null)
             { // mapping not present
                 if (this.ExportOptions.OnlyMatches)
@@ -478,14 +481,14 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
                     base._StandardOutput($"SKIPPING: {mapping.ActionMap}/{mapping.Action} not present in mappings file.");
                     continue;
                 }
-                var actionmapElement = this._mappingsXml.GetActionmapForMapping(mapping);
+                var actionmapElement = this.MappingsXml.GetActionmapForMapping(mapping);
                 if (actionmapElement == null)
                 {
                     base._DebugOutput($"CREATING: <actionmap name=\"{mapping.ActionMap}\">...");
                     // create <actionmap>
                     actionmapElement = new XElement("actionmap");
                     actionmapElement.SetAttributeValue("name", mapping.ActionMap);
-                    this._mappingsXml.AddActionmapElement(actionmapElement);
+                    this.MappingsXml.AddActionmapElement(actionmapElement);
                 }
 
                 anyChanged = true;

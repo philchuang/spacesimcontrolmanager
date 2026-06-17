@@ -145,13 +145,15 @@ public class ActionMapsXmlHelper
 
     public void AddOptionsElement(XElement options)
     {
-        var profile = this.Xml.XPathSelectElement($"{this.ActionProfilesXPath}");
+        var profile = this.Xml.XPathSelectElement($"{this.ActionProfilesXPath}")
+            ?? throw new InvalidDataException($"Could not find <ActionProfiles> with profileName [{this.ActionMapsProfileName}].");
         profile.Add(options);
     }
 
     public void AddActionmapElement(XElement actionmap)
     {
-        var profile = this.Xml.XPathSelectElement($"{this.ActionProfilesXPath}");
+        var profile = this.Xml.XPathSelectElement($"{this.ActionProfilesXPath}")
+            ?? throw new InvalidDataException($"Could not find <ActionProfiles> with profileName [{this.ActionMapsProfileName}].");
         profile.Add(actionmap);
     }
     #endregion
