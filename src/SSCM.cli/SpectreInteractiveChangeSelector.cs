@@ -96,7 +96,7 @@ public class SpectreInteractiveChangeSelector : IInteractiveChangeSelector
         var visibleEnd = Math.Min(startIndex + rowCount, rows.Count);
         var selectedCount = rows.Count(r => r.IsSelected);
 
-        var legend = "[↑/↓] move  [SPACE] select  [A]ll  [N]one  [ENTER] apply  [ESC/Q]uit";
+        var legend = "[UP/DN] move  [SPACE] select  [A]ll  [N]one  [ENTER] apply  [ESC/Q]uit";
         var status = $"Rows {visibleStart}-{visibleEnd} of {rows.Count}  Selected {selectedCount}";
         var spacing = Math.Max(1, Console.WindowWidth - legend.Length - status.Length);
         var footer = $"{legend}{new string(' ', spacing)}{status}";
