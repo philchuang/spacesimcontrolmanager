@@ -22,28 +22,28 @@ public abstract class MappingImportMerger_TestBase
         this._current = new SCMappingData
         {
             Inputs = {
-                new SCInputDevice { Type = "joystick", Instance = 1, Product = RandomString(), Settings = { 
-                    new SCInputDeviceSetting { Name = RandomString(), Preserve = false, Properties = { { RandomString(), RandomString() } } },
-                    new SCInputDeviceSetting { Name = RandomString(), Preserve = false, Properties = { { RandomString(), RandomString() } } },
+                new SCInputDevice { Type = "joystick", Instance = 1, Product = $"A{RandomString()}", Settings = { 
+                    new SCInputDeviceSetting { Name = $"A{RandomString()}", Preserve = false, Properties = { { RandomString(), RandomString() } } },
+                    new SCInputDeviceSetting { Name = $"B{RandomString()}", Preserve = false, Properties = { { RandomString(), RandomString() } } },
                     }
                 },
-                new SCInputDevice { Type = "joystick", Instance = 2, Product = RandomString(), Settings = {
-                    new SCInputDeviceSetting { Name = RandomString(), Preserve = false, Properties = { { RandomString(), RandomString() } } },
-                    new SCInputDeviceSetting { Name = RandomString(), Preserve = false, Properties = { { RandomString(), RandomString() } } },
+                new SCInputDevice { Type = "joystick", Instance = 2, Product = $"B{RandomString()}", Settings = {
+                    new SCInputDeviceSetting { Name = $"A{RandomString()}", Preserve = false, Properties = { { RandomString(), RandomString() } } },
+                    new SCInputDeviceSetting { Name = $"B{RandomString()}", Preserve = false, Properties = { { RandomString(), RandomString() } } },
                     }
                 },
             },
             Mappings = {
-                new SCMapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick" },
-                new SCMapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick" },
-                new SCMapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}", InputType = "joystick" },
-                new SCMapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}", InputType = "joystick" },
+                new SCMapping { ActionMap = $"A{RandomString()}", Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick" },
+                new SCMapping { ActionMap = $"B{RandomString()}", Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick" },
+                new SCMapping { ActionMap = $"C{RandomString()}", Action = RandomString(), Input = $"js2_{RandomString()}", InputType = "joystick" },
+                new SCMapping { ActionMap = $"D{RandomString()}", Action = RandomString(), Input = $"js2_{RandomString()}", InputType = "joystick" },
             },
             Attributes = {
-                new SCAttribute { Name = RandomString(), Value = RandomString() },
-                new SCAttribute { Name = RandomString(), Value = RandomString() },
-                new SCAttribute { Name = RandomString(), Value = RandomString() },
-                new SCAttribute { Name = RandomString(), Value = RandomString() },
+                new SCAttribute { Name = $"A{RandomString()}", Value = RandomString() },
+                new SCAttribute { Name = $"B{RandomString()}", Value = RandomString() },
+                new SCAttribute { Name = $"C{RandomString()}", Value = RandomString() },
+                new SCAttribute { Name = $"D{RandomString()}", Value = RandomString() },
             }
         };
 
@@ -85,11 +85,12 @@ public abstract class MappingImportMerger_TestBase
         };
     }
 
-    protected void Detects_Inputs_Removed_NotPreserved_Arrange()
+    protected void Detects_Inputs_Removed_Arrange(bool mappingPreserved = false)
     {
         this.Create_2_Inputs_Arrange();
-
-        this._current.Mappings.Add(new SCMapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}", InputType = "joystick", Preserve = false });
+        this._current.Mappings.Add(new SCMapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js2_{RandomString()}", InputType = "joystick", Preserve = mappingPreserved });
+        
+        // updated has no input and no related mapping
         this._updated.Inputs.RemoveAt(1);
     }
 
@@ -101,20 +102,20 @@ public abstract class MappingImportMerger_TestBase
         updatedInput.Settings.Add(new SCInputDeviceSetting { Name = RandomString(), Parent = updatedInput.Id, Preserve = true, Properties = { { RandomString(), RandomString() } } });
     }
 
-    protected void Detects_InputSettings_Removed_NotPreserved_Arrange()
+    protected void Detects_InputSettings_Removed_Arrange(bool settingPreserved = false)
     {
         this.Create_2_Inputs_Arrange();
-        this._current.Inputs[0].Settings.Add(new SCInputDeviceSetting { Name = RandomString(), Parent = this._current.Inputs[0].Id, Preserve = false, Properties = { { "invert", "1" } } });
+        this._current.Inputs[0].Settings.Add(new SCInputDeviceSetting { Name = RandomString(), Parent = this._current.Inputs[0].Id, Preserve = settingPreserved, Properties = { { "invert", "1" } } });
         this._updated.Inputs[0].Settings.Clear();
     }
 
-    protected void Detects_InputSettings_Changed_NotPreserved_Arrange()
+    protected void Detects_InputSettings_Changed_Arrange(bool settingPreserved = false)
     {
         this.Detects_All_Unchanged_Arrange();
         var currentInput = this._current.Inputs[0];
         var updatedInput = this._updated.Inputs[0];
-        currentInput.Settings[0].Preserve = false;
-        var updatedInputSettingProperties = this._updated.Inputs[0].Settings[0].Properties.First();
+        currentInput.Settings[0].Preserve = settingPreserved;
+        var updatedInputSettingProperties = updatedInput.Settings[0].Properties.First();
         updatedInput.Settings[0].Properties[updatedInputSettingProperties.Key] = RandomString();
     }
 
@@ -125,19 +126,19 @@ public abstract class MappingImportMerger_TestBase
         this._updated.Mappings.Add(addedMapping);
     }
 
-    protected void Detects_Mapping_Removed_NotPreserved_Arrange()
+    protected void Detects_Mapping_Removed_Arrange(bool mappingPreserved = false)
     {
         this.Detects_All_Unchanged_Arrange();
         var removedMapping = this._current.Mappings.Last();
-        removedMapping.Preserve = false;
+        removedMapping.Preserve = mappingPreserved;
         this._updated.Mappings.RemoveAt(this._updated.Mappings.Count - 1);
     }
 
-    protected void Detects_Mapping_Changed_NotPreserved_Arrange()
+    protected void Detects_Mapping_Changed_Arrange(bool mappingPreserved = false)
     {
         this.Detects_All_Unchanged_Arrange();
         var originalMapping = this._current.Mappings.Last();
-        originalMapping.Preserve = false;
+        originalMapping.Preserve = mappingPreserved;
         var changedMapping = this._updated.Mappings.Last();
         changedMapping.Input = $"js1_{RandomString()}";
     }
@@ -172,7 +173,7 @@ public abstract class MappingImportMerger_TestBase
     }
 
     protected (SCInputDevice, SCInputDevice, SCInputDevice, SCInputDevice, 
-            SCInputDeviceSetting, SCInputDeviceSetting, SCInputDeviceSetting, 
+            SCInputDeviceSetting, SCInputDeviceSetting, SCInputDeviceSetting, SCInputDeviceSetting, SCInputDeviceSetting, 
             SCMapping, SCMapping, SCMapping, SCMapping, SCMapping, SCMapping, SCMapping) Creates_Merge_Actions_Arrange()
     {
         this.Detects_All_Unchanged_Arrange();
@@ -184,7 +185,7 @@ public abstract class MappingImportMerger_TestBase
         var updatedChangingSetting = updatedChangingInput.Settings[1];
         updatedChangingSetting.Properties = new Dictionary<string, string> { { RandomString(), RandomString() } };
         // add input setting - asserted
-        var addedSetting = new SCInputDeviceSetting { Name = RandomString(), Parent = updatedChangingInput.Id, Preserve = true, Properties = { { RandomString(), RandomString() } } };
+        var addedSetting = new SCInputDeviceSetting { Name = $"Z{RandomString()}", Parent = updatedChangingInput.Id, Preserve = true, Properties = { { RandomString(), RandomString() } } };
         updatedChangingInput.Settings.Add(addedSetting);
         // remove input setting - asserted
         var removedSetting = currentChangingInput.Settings[0];
@@ -225,11 +226,11 @@ public abstract class MappingImportMerger_TestBase
         this._updated.Mappings.RemoveAt(1);
         this._updated.Mappings.RemoveAt(0);
         // add mapping - asserted
-        var addedMapping = new SCMapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick", Preserve = true };
+        var addedMapping = new SCMapping { ActionMap = $"Z{RandomString()}", Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick", Preserve = true };
         this._updated.Mappings.Add(addedMapping);
 
         return (addedInput, removedInput, currentChangingInput, updatedChangingInput, 
-            addedSetting, removedSetting, updatedChangingSetting, 
+            addedSetting, removedSetting, removedSettingButPreserved, updatedChangingSetting, changedSettingButPreserved,
             addedMapping, removedMapping, removedMappingButPreserved, currentChangedMapping, updatedChangedMapping, currentChangedMappingButPreserved, updatedChangedMappingButPreserved);
     }
 }

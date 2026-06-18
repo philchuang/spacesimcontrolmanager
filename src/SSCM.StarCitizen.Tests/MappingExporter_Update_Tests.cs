@@ -42,6 +42,7 @@ public class MappingExporter_Update_Tests : TestBase
     [SetUp]
     protected async Task Init()
     {
+        this._source = new SCMappingData();
         this._folders.GameMappingsPath = this.GameMappingsPath;
         this._folders.GameAttributesPath = this.GameAttributesPath;
         this._exporter = new MappingExporter(this._platform, this._folders);
@@ -67,6 +68,15 @@ public class MappingExporter_Update_Tests : TestBase
         this._outputAttributesXml = await this.LoadXml(this.GameAttributesPath);
 
         return changed;
+    }
+
+    private async Task<InteractiveChangeSession> CreateInteractiveSessionAct()
+    {
+        // write _originalXml
+        await this._inputMappingsXml.WriteToAsync(this.GameMappingsPath);
+        await this._inputAttributesXml.WriteToAsync(this.GameAttributesPath);
+
+        return await this._exporter.CreateInteractiveSession(this._source);
     }
 
     private void AssertBasics()
@@ -318,6 +328,132 @@ public class MappingExporter_Update_Tests : TestBase
         var addedActionRebindElement = this.GetActionRebindElement(this._outputMappingsXml, mapping);
         Assert.NotNull(addedActionRebindElement, nameof(addedActionRebindElement));
         Assert.AreEqual(mapping.Input, addedActionRebindElement.GetAttribute("input"));
+    }
+
+    [Test]
+    public async Task Update_OnlyMatches_skips_missing_actionmap_and_action()
+    {
+        // Arrange
+        this._exporter.ExportOptions = new ExportOptions { OnlyMatches = true };
+        var mapping = new SCMapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick", Preserve = true };
+        this._source.Inputs.Add(new SCInputDevice { Type = "joystick", Instance = 1, Product = RandomString(), Preserve = false });
+        this._source.Mappings.Add(mapping);
+
+        // Act
+        var changed = await this.Act();
+
+        // Assert
+        Assert.IsFalse(changed, nameof(changed));
+        this.AssertBasics();
+        Assert.IsNull(this.GetActionRebindElement(this._outputMappingsXml, mapping));
+    }
+
+    [Test]
+    public async Task Update_OnlyMatches_false_creates_missing_actionmap_and_action()
+    {
+        // Arrange
+        this._exporter.ExportOptions = new ExportOptions { OnlyMatches = false };
+        var mapping = new SCMapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick", Preserve = true };
+        this._source.Inputs.Add(new SCInputDevice { Type = "joystick", Instance = 1, Product = RandomString(), Preserve = false });
+        this._source.Mappings.Add(mapping);
+
+        // Act
+        var changed = await this.Act();
+
+        // Assert
+        Assert.IsTrue(changed, nameof(changed));
+        this.AssertBasics();
+        var addedActionRebindElement = this.GetActionRebindElement(this._outputMappingsXml, mapping);
+        Assert.NotNull(addedActionRebindElement, nameof(addedActionRebindElement));
+        Assert.AreEqual(mapping.Input, addedActionRebindElement.GetAttribute("input"));
+    }
+
+    [Test]
+    public async Task Update_OnlyMatches_adds_missing_rebind_when_action_exists()
+    {
+        // Arrange
+        this._exporter.ExportOptions = new ExportOptions { OnlyMatches = true };
+        var mapping = new SCMapping { ActionMap = "spaceship_movement", Action = "v_ifcs_toggle_cruise_control", Input = "gp1_dpad_up", InputType = "gamepad", Preserve = true };
+        this._source.Inputs.Add(new SCInputDevice { Type = "gamepad", Instance = 1, Product = "Controller (Gamepad)", Preserve = false });
+        this._source.Mappings.Add(mapping);
+
+        // Act
+        var changed = await this.Act();
+
+        // Assert
+        Assert.IsTrue(changed, nameof(changed));
+        this.AssertBasics();
+        var addedActionRebindElement = this.GetActionRebindElement(this._outputMappingsXml, mapping);
+        Assert.NotNull(addedActionRebindElement, nameof(addedActionRebindElement));
+        Assert.AreEqual(mapping.Input, addedActionRebindElement.GetAttribute("input"));
+    }
+
+    [Test]
+    public async Task Update_OnlyMatches_still_restores_preserved_inputs()
+    {
+        // Arrange
+        this._exporter.ExportOptions = new ExportOptions { OnlyMatches = true };
+        var input = new SCInputDevice { Type = "joystick", Instance = 99, Product = RandomString(), Preserve = true };
+        this._source.Inputs.Add(input);
+
+        // Act
+        var changed = await this.Act();
+
+        // Assert
+        Assert.IsTrue(changed, nameof(changed));
+        this.AssertBasics();
+        var restoredInput = this.GetInputElement(this._outputMappingsXml, input.Type, input.Instance, input.Product);
+        Assert.NotNull(restoredInput, nameof(restoredInput));
+    }
+
+    [Test]
+    public async Task CreateInteractiveSession_OnlyMatches_skips_missing_actionmap_and_action()
+    {
+        // Arrange
+        this._exporter.ExportOptions = new ExportOptions { OnlyMatches = true };
+        var mapping = new SCMapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick", Preserve = true };
+        this._source.Inputs.Add(new SCInputDevice { Type = "joystick", Instance = 1, Product = RandomString(), Preserve = false });
+        this._source.Mappings.Add(mapping);
+
+        // Act
+        var session = await this.CreateInteractiveSessionAct();
+
+        // Assert
+        Assert.IsFalse(session.HasRows);
+    }
+
+    [Test]
+    public async Task CreateInteractiveSession_OnlyMatches_false_includes_missing_actionmap_and_action()
+    {
+        // Arrange
+        this._exporter.ExportOptions = new ExportOptions { OnlyMatches = false };
+        var mapping = new SCMapping { ActionMap = RandomString(), Action = RandomString(), Input = $"js1_{RandomString()}", InputType = "joystick", Preserve = true };
+        this._source.Inputs.Add(new SCInputDevice { Type = "joystick", Instance = 1, Product = RandomString(), Preserve = false });
+        this._source.Mappings.Add(mapping);
+
+        // Act
+        var session = await this.CreateInteractiveSessionAct();
+
+        // Assert
+        Assert.True(session.HasRows);
+        Assert.NotNull(session.Rows.SingleOrDefault(r => r.RowId == $"{mapping.Id}.{mapping.InputType}" && r.ChangeKind == "Add"));
+    }
+
+    [Test]
+    public async Task CreateInteractiveSession_OnlyMatches_still_includes_missing_rebind_when_action_exists()
+    {
+        // Arrange
+        this._exporter.ExportOptions = new ExportOptions { OnlyMatches = true };
+        var mapping = new SCMapping { ActionMap = "spaceship_movement", Action = "v_ifcs_toggle_cruise_control", Input = "gp1_dpad_up", InputType = "gamepad", Preserve = true };
+        this._source.Inputs.Add(new SCInputDevice { Type = "gamepad", Instance = 1, Product = "Controller (Gamepad)", Preserve = false });
+        this._source.Mappings.Add(mapping);
+
+        // Act
+        var session = await this.CreateInteractiveSessionAct();
+
+        // Assert
+        Assert.True(session.HasRows);
+        Assert.NotNull(session.Rows.SingleOrDefault(r => r.RowId == $"{mapping.Id}.{mapping.InputType}" && r.ChangeKind == "Add"));
     }
 
     protected (SCInputDevice, SCInputDeviceSetting, string, string) Arrange_Update_overwrites_input_setting(bool settingPreserve)
@@ -656,6 +792,88 @@ public class MappingExporter_Update_Tests : TestBase
         Assert.IsNotNull(finalAttrElement, nameof(finalAttrElement));
         Assert.AreEqual(attr.Name, finalAttrElement.GetAttribute("name"));
         Assert.AreEqual(attr.Value, finalAttrElement.GetAttribute("value"));
+    }
+
+    [Test]
+    public async Task Update_OnlyMatches_skips_missing_attribute()
+    {
+        // Arrange
+        this._exporter.ExportOptions = new ExportOptions { OnlyMatches = true };
+        var attr = new SCAttribute {
+            Name = RandomString(),
+            Value = RandomString(),
+            Preserve = true,
+        };
+        this._source.Attributes.Add(attr);
+
+        // Act
+        var changed = await this.Act();
+
+        // Assert
+        Assert.IsFalse(changed, nameof(changed));
+        var finalAttrElement = this._outputAttributesXml.XPathSelectElement($"/Attributes/Attr[@name='{attr.Name}']");
+        Assert.IsNull(finalAttrElement, nameof(finalAttrElement));
+    }
+
+    [Test]
+    public async Task Update_OnlyMatches_false_creates_missing_attribute()
+    {
+        // Arrange
+        this._exporter.ExportOptions = new ExportOptions { OnlyMatches = false };
+        var attr = new SCAttribute {
+            Name = RandomString(),
+            Value = RandomString(),
+            Preserve = true,
+        };
+        this._source.Attributes.Add(attr);
+
+        // Act
+        var changed = await this.Act();
+
+        // Assert
+        Assert.IsTrue(changed, nameof(changed));
+        var finalAttrElement = this._outputAttributesXml.XPathSelectElement($"/Attributes/Attr[@name='{attr.Name}']");
+        Assert.IsNotNull(finalAttrElement, nameof(finalAttrElement));
+        Assert.AreEqual(attr.Value, finalAttrElement.GetAttribute("value"));
+    }
+
+    [Test]
+    public async Task CreateInteractiveSession_OnlyMatches_skips_missing_attribute()
+    {
+        // Arrange
+        this._exporter.ExportOptions = new ExportOptions { OnlyMatches = true };
+        var attr = new SCAttribute {
+            Name = RandomString(),
+            Value = RandomString(),
+            Preserve = true,
+        };
+        this._source.Attributes.Add(attr);
+
+        // Act
+        var session = await this.CreateInteractiveSessionAct();
+
+        // Assert
+        Assert.IsFalse(session.HasRows);
+    }
+
+    [Test]
+    public async Task CreateInteractiveSession_OnlyMatches_false_includes_missing_attribute()
+    {
+        // Arrange
+        this._exporter.ExportOptions = new ExportOptions { OnlyMatches = false };
+        var attr = new SCAttribute {
+            Name = RandomString(),
+            Value = RandomString(),
+            Preserve = true,
+        };
+        this._source.Attributes.Add(attr);
+
+        // Act
+        var session = await this.CreateInteractiveSessionAct();
+
+        // Assert
+        Assert.True(session.HasRows);
+        Assert.NotNull(session.Rows.SingleOrDefault(r => r.RowId == attr.Name && r.ChangeKind == "Add"));
     }
 
     [Test]

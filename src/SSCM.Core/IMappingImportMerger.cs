@@ -11,4 +11,8 @@ public interface IMappingImportMerger<TData>
     bool Preview(TData current, TData updated);
     
     TData Merge(TData current, TData updated);
+    
+    TData MergeInteractive(TData current, TData updated, IUserInput userInput);
+
+    InteractiveChangeSession CreateInteractiveSession(TData current, TData updated);
 }

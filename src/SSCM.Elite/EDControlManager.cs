@@ -12,12 +12,10 @@ public class EDControlManager : ControlManagerBase<EDMappingData>
     public override string CommandAlias => "ed";
     public override string GameType => "Elite: Dangerous";
 
-    private readonly IPlatform _platform;
     private readonly IEDFolders _folders;
 
-    public EDControlManager(IPlatform platform, IEDFolders folders) : base(platform)
+    public EDControlManager(IPlatform platform, IEDFolders folders, IUserInput userInput) : base(platform, userInput)
     {
-        this._platform = platform;
         this._folders = folders;
     }
 
@@ -37,6 +35,15 @@ public class EDControlManager : ControlManagerBase<EDMappingData>
         importer.WarningOutput += WriteLineWarning;
         importer.DebugOutput += WriteLineDebug;
         return importer;
+    }
+
+    protected override IMappingUpgrader<EDMappingData> CreateUpgrader()
+    {
+        var upgrader = new NullMappingUpgrader<EDMappingData>(this.Platform);
+        upgrader.StandardOutput += WriteLineStandard;
+        upgrader.WarningOutput += WriteLineWarning;
+        upgrader.DebugOutput += WriteLineDebug;
+        return upgrader;
     }
 
     protected override IMappingImportMerger<EDMappingData> CreateMerger()

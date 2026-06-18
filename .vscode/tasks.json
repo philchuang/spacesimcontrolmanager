@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/src",
+                "${workspaceFolder}/src/SSCM.cli/SSCM.cli.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -38,7 +38,7 @@
             "type": "process",
             "args": [
                 "test",
-                "${workspaceFolder}/src/SSCM.StarCitizen.Tests/SSCM.StarCitizen.Tests.csproj"
+                "${workspaceFolder}/src/SSCM.sln"
             ],
             "problemMatcher": "$msCompile",
             "group": {

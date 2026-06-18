@@ -1,7 +1,5 @@
 namespace SSCM.Core;
 
-// TODO write tests for this class
-
 public interface IControlManager
 {
     event Action<string> StandardOutput;
@@ -10,15 +8,17 @@ public interface IControlManager
 
     string CommandAlias { get; }
     string GameType { get; }
+    string GameTypeTitle { get; }
+    List<CommandOption> GlobalOptions { get; }
 
-    Task Import(ImportMode mode);
-    Task ExportPreview();
-    Task ExportApply();
-    Task<string> Report(ReportingOptions options);
-    void Backup();
-    void Restore();
-    void Open();
-    void OpenGameConfig();
+    Task Import(ImportMode mode, Dictionary<string, string>? options = null, IInteractiveChangeSelector? selector = null);
+    Task Upgrade(UpgradeMode mode, Dictionary<string, string>? options = null);
+    Task Export(ExportMode mode, ExportOptions exportOptions, Dictionary<string, string>? options = null, IInteractiveChangeSelector? selector = null);
+    Task<string> Report(ReportingOptions reportingOptions, Dictionary<string, string>? options = null);
+    void Backup(Dictionary<string, string>? options = null);
+    void Restore(Dictionary<string, string>? options = null);
+    void Open(Dictionary<string, string>? options = null);
+    void OpenGameConfig(Dictionary<string, string>? options = null);
 }
 
 public abstract class ControlManagerBase<TData> : IControlManager
@@ -32,27 +32,36 @@ public abstract class ControlManagerBase<TData> : IControlManager
 
     public abstract string CommandAlias { get; }
     public abstract string GameType { get; }
+    public virtual string GameTypeTitle => this.GameType;
+    public virtual List<CommandOption> GlobalOptions { get; } = new();
     protected abstract string GameConfigPath { get; }
     protected abstract string MappingDataSavePath { get; }
     protected IPlatform Platform { get; init; }
+    protected IUserInput UserInput { get; init; }
     
     private readonly Lazy<IMappingDataRepository<TData>> _lazyMappingDataRepository;
     protected IMappingDataRepository<TData> MappingDataRepository => this._lazyMappingDataRepository.Value;
 
-    protected ControlManagerBase(IPlatform platform)
+    protected ControlManagerBase(IPlatform platform, IUserInput userInput)
     {
         this.Platform = platform;
+        this.UserInput = userInput;
         this._lazyMappingDataRepository = new Lazy<IMappingDataRepository<TData>>(() => this.CreateMappingDataRepository());
     }
 
     protected abstract IMappingDataRepository<TData> CreateMappingDataRepository();
     protected abstract IMappingImporter<TData> CreateImporter();
     protected abstract IMappingImportMerger<TData> CreateMerger();
+    protected abstract IMappingUpgrader<TData> CreateUpgrader();
     protected abstract IMappingExporter<TData> CreateExporter();
     protected abstract IMappingReporter<TData> CreateReporter();
+    protected virtual void ApplyOptions(Dictionary<string, string> options) {}
 
-    public async Task Import(ImportMode mode)
+    private Dictionary<string, string> NormalizeOptions(Dictionary<string, string>? options = null) => options ?? new Dictionary<string, string>();
+
+    public async Task Import(ImportMode mode, Dictionary<string, string>? options = null, IInteractiveChangeSelector? selector = null)
     {
+        this.ApplyOptions(this.NormalizeOptions(options));
         var importer = this.CreateImporter();
 
         var updatedData = await importer.Read();
@@ -73,7 +82,7 @@ public abstract class ControlManagerBase<TData> : IControlManager
         
         var merger = this.CreateMerger();
 
-        if (mode == ImportMode.Default)
+        if (mode == ImportMode.Preview)
         {
             WriteLineDebug($"Previewing merge...");
             if (merger.Preview(currentData, updatedData))
@@ -93,62 +102,196 @@ public abstract class ControlManagerBase<TData> : IControlManager
             WriteLineDebug($"Merging...");
             var mergedData = merger.Merge(currentData, updatedData);
             await this.MappingDataRepository.Save(mergedData);
+            return;
+        }
+
+        if (mode == ImportMode.Serial)
+        {
+            this.MappingDataRepository.Backup();
+            WriteLineDebug($"Merging...");
+            try
+            {
+                var mergedData = merger.MergeInteractive(currentData, updatedData, this.UserInput);
+                if (mergedData != null)
+                {
+                    await this.MappingDataRepository.Save(mergedData);
+                    return;
+                }
+            }
+            catch (UserInputCancelledException)
+            {
+                // ignore
+            }
+
+            this.WriteLineStandard("Merge cancelled.");
+            return;
+        }
+
+        if (mode == ImportMode.Tui)
+        {
+            if (selector == null) throw new ArgumentNullException(nameof(selector));
+
+            var session = merger.CreateInteractiveSession(currentData, updatedData);
+            if (!session.HasRows)
+            {
+                this.WriteLineStandard("No changes to make.");
+                return;
+            }
+
+            this.MappingDataRepository.Backup();
+            if (selector.SelectAndApply(session))
+            {
+                await this.MappingDataRepository.Save(currentData);
+                this.WriteLineStandard("Mappings updated.");
+            }
+            else
+            {
+                this.WriteLineStandard("Merge cancelled.");
+            }
         }
     }
 
-    public async Task ExportPreview()
+    public async Task Upgrade(UpgradeMode mode, Dictionary<string, string>? options = null)
     {
+        this.ApplyOptions(this.NormalizeOptions(options));
+        var upgrader = this.CreateUpgrader();
+
+        var currentData = await this.MappingDataRepository.Load();
+        if (currentData == null)
+        {
+            if (currentData == null) WriteLineDebug($"currentData is null");
+            return;
+        }
+        this.WriteLineStandard("");
+        
+        if (mode == UpgradeMode.Preview)
+        {
+            WriteLineDebug($"PREVIEWING UPGRADE:");
+            if (await upgrader.Preview(currentData))
+            {
+                this.WriteLineStandard($"{upgrader.Result.MergeActions.Count} changes NOT saved! Run in apply mode to save changes.");
+            }
+            else
+            {
+                this.WriteLineStandard("No changes to make.");
+            }
+            return;
+        }
+
+        if (mode == UpgradeMode.Apply)
+        {
+            this.MappingDataRepository.Backup();
+            WriteLineDebug($"UPGRADING...");
+            var upgradedData = await upgrader.Upgrade(currentData);
+            await this.MappingDataRepository.Save(upgradedData);
+            return;
+        }
+    }
+
+    public async Task Export(ExportMode mode, ExportOptions exportOptions, Dictionary<string, string>? options = null, IInteractiveChangeSelector? selector = null)
+    {
+        this.ApplyOptions(this.NormalizeOptions(options));
         var data = await this.MappingDataRepository.Load();
         if (data == null) throw new Exception("Could not load saved mappings!");
 
         var exporter = this.CreateExporter();
-        WriteLineStandard($"PREVIEWING EXPORT:");
-        var changed = await exporter.Preview(data);
-        if (changed)
+        exporter.ExportOptions = exportOptions ?? ExportOptions.Default;
+
+        if (mode == ExportMode.Preview)
         {
-            WriteLineStandard($"CONFIGURATION NOT UPDATED: Execute \"export apply\" to apply these changes.");
+            WriteLineStandard($"PREVIEWING EXPORT:");
+            var changed = await exporter.Preview(data);
+            if (changed)
+            {
+                WriteLineStandard($"CONFIGURATION NOT UPDATED: Execute \"export apply\" to apply these changes.");
+            }
+            else
+            {
+                WriteLineStandard($"CONFIGURATION NOT UPDATED: No changes necessary.");
+            }
+            return;
         }
-        else
+
+        if (mode == ExportMode.Apply)
         {
-            WriteLineStandard($"CONFIGURATION NOT UPDATED: No changes necessary.");
+            exporter.Backup();
+            await exporter.Update(data);
+            WriteLineStandard($"CONFIGURATION UPDATED: Changes applied to {this.GameType}.");
+            return;
+        }
+
+        if (mode == ExportMode.Serial)
+        {
+            exporter.Backup();
+            try
+            {
+                if (await exporter.UpdateInteractive(data, this.UserInput))
+                {
+                    WriteLineStandard($"CONFIGURATION UPDATED: Changes applied to {this.GameType}.");
+                }
+                else
+                {
+                    WriteLineStandard($"CONFIGURATION NOT UPDATED: No changes necessary.");
+                }
+            }
+            catch (UserInputCancelledException)
+            {
+                WriteLineStandard("Export cancelled.");
+            }
+            return;
+        }
+
+        if (mode == ExportMode.Tui)
+        {
+            if (selector == null) throw new ArgumentNullException(nameof(selector));
+
+            var session = await exporter.CreateInteractiveSession(data);
+            if (!session.HasRows)
+            {
+                this.WriteLineStandard("CONFIGURATION NOT UPDATED: No changes necessary.");
+                return;
+            }
+
+            exporter.Backup();
+            if (selector.SelectAndApply(session))
+            {
+                await exporter.SaveInteractive();
+                this.WriteLineStandard($"CONFIGURATION UPDATED: Changes applied to {this.GameType}.");
+            }
+            else
+            {
+                this.WriteLineStandard("Export cancelled.");
+            }
         }
     }
 
-    public async Task ExportApply()
+    public async Task<string> Report(ReportingOptions reportingOptions, Dictionary<string, string>? options = null)
     {
-        var data = await this.MappingDataRepository.Load();
-        if (data == null) throw new Exception("Could not load saved mappings!");
-
-        var exporter = this.CreateExporter();
-        exporter.Backup();
-        await exporter.Update(data);
-        WriteLineStandard($"CONFIGURATION UPDATED: Changes applied to {this.GameType}.");
-    }
-
-    public async Task<string> Report(ReportingOptions options)
-    {
+        this.ApplyOptions(this.NormalizeOptions(options));
         var reporter = this.CreateReporter();
         var data = await this.MappingDataRepository.Load();
-        return reporter.Report(data ?? this.MappingDataRepository.CreateNew(), options);
+        return reporter.Report(data ?? this.MappingDataRepository.CreateNew(), reportingOptions);
     }
 
-    public void Backup()
+    public void Backup(Dictionary<string, string>? options = null)
     {
+        this.ApplyOptions(this.NormalizeOptions(options));
         var exporter = this.CreateExporter();
         var backup = exporter.Backup();
         WriteLineStandard($"{this.GameType} config backed up to [{backup}].");
     }
 
-    public void Restore()
+    public void Restore(Dictionary<string, string>? options = null)
     {
+        this.ApplyOptions(this.NormalizeOptions(options));
         var exporter = this.CreateExporter();
         var backup = exporter.RestoreLatest();
         WriteLineStandard($"{this.GameType} config restored from [{backup}].");
     }
 
-    public void Open()
+    public void Open(Dictionary<string, string>? options = null)
     {
-        // TODO write simple test
+        this.ApplyOptions(this.NormalizeOptions(options));
         try
         {
             this.Platform.Open(this.MappingDataSavePath);
@@ -160,9 +303,9 @@ public abstract class ControlManagerBase<TData> : IControlManager
         }
     }
 
-    public void OpenGameConfig()
+    public void OpenGameConfig(Dictionary<string, string>? options = null)
     {
-        // TODO write simple test
+        this.ApplyOptions(this.NormalizeOptions(options));
         try
         {
             this.Platform.Open(this.GameConfigPath);

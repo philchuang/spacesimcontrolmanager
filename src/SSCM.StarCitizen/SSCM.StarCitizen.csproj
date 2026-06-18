@@ -2,13 +2,22 @@
 
   <PropertyGroup>
     <AssemblyName>SpaceSimControlManager.StarCitizen</AssemblyName>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SSCM.Core\SSCM.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="SCUpgradeMappings.jsonc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="defaultProfile.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
