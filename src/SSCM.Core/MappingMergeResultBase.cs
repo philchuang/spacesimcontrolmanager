@@ -8,7 +8,7 @@ public abstract class MappingMergeResultBase<TData>
     public TData Updated { get; init; }
 
     public bool HasDifferences { get; set; }
-    public bool CanMerge { get; set; }
+    public bool CanAutoMerge { get; set; }
     public IList<MappingMergeAction> MergeActions { get; set; } = new List<MappingMergeAction>();
 
     protected MappingMergeResultBase(TData current, TData updated)

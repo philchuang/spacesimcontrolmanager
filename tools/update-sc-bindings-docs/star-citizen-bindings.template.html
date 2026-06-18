@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Star Citizen Bindings</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/darkly/bootstrap.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/tabulator-tables@6.2.5/dist/css/tabulator_bootstrap5.min.css">
+  <style>
+    :root {
+      --sc-bg: #141a20;
+      --sc-panel: #1c252d;
+      --sc-panel-strong: #222f38;
+      --sc-panel-soft: #192128;
+      --sc-border: rgba(173, 181, 189, 0.22);
+      --sc-border-strong: rgba(91, 192, 222, 0.45);
+      --sc-accent: #5bc0de;
+      --sc-accent-soft: rgba(91, 192, 222, 0.14);
+      --sc-text-muted: #96a4af;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        linear-gradient(180deg, rgba(91, 192, 222, 0.08), transparent 18rem),
+        var(--sc-bg);
+    }
+
+    .page-wrap {
+      max-width: 98vw;
+      margin: 0 auto;
+      padding: 1.5rem 0.75rem;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--sc-border);
+      padding-bottom: 1rem;
+    }
+
+    .page-title {
+      margin: 0;
+      color: #f7fbff;
+      letter-spacing: 0;
+    }
+
+    .page-subtitle {
+      max-width: 48rem;
+      margin: 0.25rem 0 0;
+      color: var(--sc-text-muted);
+    }
+
+    .tool-credit {
+      white-space: nowrap;
+      color: var(--sc-text-muted);
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.85rem;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      flex: 0 0 auto;
+    }
+
+    .controls-panel {
+      display: flex;
+      flex: 0 0 auto;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .toolbar-status {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.15rem;
+    }
+
+    .notes-row {
+      display: flex;
+      justify-content: flex-end;
+      width: 100%;
+    }
+
+    .toolbar-summary {
+      flex: 1 1 28rem;
+      min-width: 24rem;
+    }
+
+    #bindings-notes {
+      width: 100%;
+      min-height: 10rem;
+      resize: vertical;
+      border-color: var(--sc-border);
+      background-color: var(--sc-panel);
+      color: var(--bs-body-color);
+    }
+
+    #bindings-notes::placeholder {
+      color: var(--bs-secondary-color);
+      opacity: 1;
+    }
+
+    #bindings-notes:focus {
+      border-color: var(--sc-accent);
+      box-shadow: 0 0 0 0.2rem var(--sc-accent-soft);
+    }
+
+    #global-search {
+      min-width: min(36rem, 90vw);
+      border-color: var(--sc-border);
+      background-color: var(--sc-panel);
+      color: var(--bs-body-color);
+    }
+
+    #global-search::placeholder {
+      color: var(--bs-secondary-color);
+      opacity: 1;
+    }
+
+    #global-search:focus {
+      border-color: var(--sc-accent);
+      box-shadow: 0 0 0 0.2rem var(--sc-accent-soft);
+    }
+
+    #bindings-table {
+      border-radius: 0.5rem;
+      overflow: hidden;
+      border: 1px solid var(--sc-border-strong);
+      background: var(--sc-panel);
+      box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.22);
+    }
+
+    #bindings-table.tabulator {
+      background: var(--sc-panel);
+      color: var(--bs-body-color);
+      font-size: 0.875rem;
+    }
+
+    #bindings-table .tabulator-header {
+      border-bottom: 1px solid var(--sc-border-strong);
+      background: var(--sc-panel-strong);
+      color: #f7fbff;
+    }
+
+    #bindings-table .tabulator-header .tabulator-col {
+      border-right: 1px solid var(--sc-border);
+      background: var(--sc-panel-strong);
+    }
+
+    #bindings-table .tabulator-header .tabulator-col-title {
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      color: var(--sc-accent);
+    }
+
+    #bindings-table .tabulator-header-filter input,
+    #bindings-table .tabulator-header-filter select {
+      border: 1px solid var(--sc-border);
+      border-radius: 0.35rem;
+      background: var(--sc-panel-soft);
+      color: var(--bs-body-color);
+      padding: 0.25rem 0.4rem;
+    }
+
+    #bindings-table .tabulator-row {
+      border-bottom: 1px solid rgba(173, 181, 189, 0.12);
+      background: #172027;
+    }
+
+    #bindings-table .tabulator-row:nth-child(even) {
+      background: #1b252d;
+    }
+
+    #bindings-table .tabulator-row.tabulator-row-even {
+      background: #1b252d;
+    }
+
+    #bindings-table .tabulator-row:hover,
+    #bindings-table .tabulator-row.tabulator-selectable:hover {
+      background: #203743 !important;
+      color: #f7fbff;
+    }
+
+    #bindings-table .tabulator-row:hover .tabulator-cell,
+    #bindings-table .tabulator-row.tabulator-selectable:hover .tabulator-cell {
+      background: transparent;
+      color: #f7fbff;
+    }
+
+    #bindings-table .tabulator-row:hover .empty-value,
+    #bindings-table .tabulator-row.tabulator-selectable:hover .empty-value {
+      color: rgba(247, 251, 255, 0.58);
+    }
+
+    #bindings-table .tabulator-row:hover .binding-chip,
+    #bindings-table .tabulator-row.tabulator-selectable:hover .binding-chip {
+      border-color: rgba(91, 192, 222, 0.58);
+      background: rgba(20, 26, 32, 0.72);
+      color: #d9f5ff;
+    }
+
+    #bindings-table .tabulator-row .tabulator-cell {
+      border-right: 1px solid rgba(173, 181, 189, 0.12);
+      padding: 0.55rem 0.65rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.35;
+    }
+
+    #bindings-table .tabulator-footer {
+      border-top: 1px solid var(--sc-border);
+      background: var(--sc-panel-strong);
+      color: var(--sc-text-muted);
+    }
+
+    #bindings-table .tabulator-page {
+      border-color: var(--sc-border);
+      background: var(--sc-panel-soft);
+      color: var(--bs-body-color);
+    }
+
+    #bindings-table .tabulator-page.active {
+      border-color: var(--sc-accent);
+      background: var(--sc-accent-soft);
+      color: #f7fbff;
+    }
+
+    .binding-chip {
+      display: inline-flex;
+      align-items: center;
+      max-width: 100%;
+      margin: 0.1rem 0.18rem 0.1rem 0;
+      border: 1px solid var(--sc-border);
+      border-radius: 0.35rem;
+      background: rgba(91, 192, 222, 0.1);
+      color: #d9f5ff;
+      padding: 0.08rem 0.42rem;
+      font-family: var(--bs-font-monospace);
+      font-size: 0.78rem;
+      overflow-wrap: anywhere;
+    }
+
+    .favorite-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.9rem;
+      height: 1.9rem;
+      border: 1px solid var(--sc-border);
+      border-radius: 0.35rem;
+      background: var(--sc-panel-soft);
+      color: var(--sc-text-muted);
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .favorite-button:hover,
+    .favorite-button.is-favorite {
+      border-color: var(--sc-accent);
+      background: var(--sc-accent-soft);
+      color: #f7fbff;
+    }
+
+    .empty-value {
+      color: rgba(150, 164, 175, 0.62);
+    }
+
+    .tabulator-row .tabulator-cell {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .row-count {
+      opacity: 0.85;
+    }
+
+    .state-status {
+      min-height: 1rem;
+      color: var(--sc-text-muted);
+    }
+
+    @media (max-width: 760px) {
+      .page-header {
+        align-items: start;
+        flex-direction: column;
+      }
+
+      .tool-credit {
+        white-space: normal;
+      }
+
+      #global-search {
+        min-width: 100%;
+      }
+
+      .controls {
+        width: 100%;
+      }
+
+      .controls-panel {
+        width: 100%;
+      }
+
+      .toolbar-summary {
+        align-items: stretch !important;
+        min-width: 0;
+        width: 100%;
+      }
+
+      .notes-row {
+        justify-content: stretch;
+      }
+
+      #bindings-notes {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <header class="page-header">
+      <div>
+        <h1 class="h3 page-title">My Star Citizen Bindings</h1>
+        <p class="page-subtitle">Sortable and filterable control bindings generated from the custom profile data.</p>
+      </div>
+      <div class="small tool-credit">
+        <div id="generated-at" class="mb-1"></div>
+        Theme: <a href="https://bootswatch.com/darkly/" target="_blank" rel="noopener noreferrer">Bootswatch Darkly</a> |
+        Grid: <a href="https://tabulator.info/" target="_blank" rel="noopener noreferrer">Tabulator</a>
+      </div>
+    </header>
+    <div class="toolbar">
+      <div class="controls-panel">
+        <div class="controls">
+          <input id="global-search" class="form-control" type="search" placeholder="Search bindings">
+          <button id="reload-data" type="button" class="btn btn-outline-info btn-sm">Reload Data</button>
+          <button id="clear-filters" type="button" class="btn btn-outline-info btn-sm">Clear All</button>
+          <button id="save-state" type="button" class="btn btn-info btn-sm">Save Filters/Sort</button>
+        </div>
+        <div class="toolbar-status">
+          <span id="row-count" class="row-count small text-secondary"></span>
+          <span id="state-status" class="state-status small"></span>
+        </div>
+      </div>
+      <div class="toolbar-summary d-flex flex-column align-items-end gap-1">
+        <div class="notes-row">
+          <textarea id="bindings-notes" class="form-control" placeholder="Notes"></textarea>
+        </div>
+      </div>
+    </div>
+    <div id="bindings-table"></div>
+  </div>
+  <script id="bindings-fallback-data" type="application/json">__BINDINGS_JSON__</script>
+  <script src="https://unpkg.com/tabulator-tables@6.2.5/dist/js/tabulator.min.js"></script>
+  <script>
+    const globalSearchInput = document.getElementById("global-search");
+    const bindingsNotesInput = document.getElementById("bindings-notes");
+    const reloadDataButton = document.getElementById("reload-data");
+    const clearFiltersButton = document.getElementById("clear-filters");
+    const saveStateButton = document.getElementById("save-state");
+    const rowCountLabel = document.getElementById("row-count");
+    const stateStatusLabel = document.getElementById("state-status");
+    const generatedAtLabel = document.getElementById("generated-at");
+    const stateStorageKey = "star-citizen-bindings-table-state-v1";
+    const notesStorageKey = "star-citizen-bindings-notes-v1";
+    const favoritesStorageKey = "star-citizen-bindings-favorites-v1";
+    const bindingsDataUrl = "bindings.json";
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function emptyFormatter(cell) {
+      const value = cell.getValue();
+      return value ? escapeHtml(value) : '<span class="empty-value">-</span>';
+    }
+
+    function bindingFormatter(cell) {
+      const value = String(cell.getValue() || "");
+      if (!value.trim()) {
+        return '<span class="empty-value">-</span>';
+      }
+      return value
+        .split("<br>")
+        .map(item => item.trim())
+        .filter(Boolean)
+        .map(item => `<span class="binding-chip">${escapeHtml(item)}</span>`)
+        .join("");
+    }
+
+    function favoriteFormatter(cell) {
+      const isFavorite = Boolean(cell.getValue());
+      const label = isFavorite ? "Remove favorite" : "Add favorite";
+      const activeClass = isFavorite ? " is-favorite" : "";
+      const icon = isFavorite ? "&#9829;" : "&#9825;";
+      return `<button type="button" class="favorite-button${activeClass}" aria-label="${label}" title="${label}">${icon}</button>`;
+    }
+
+    const columns = [
+      {title: "Fav", field: "favorite", hozAlign: "center", headerHozAlign: "center", width: 76, headerSort: false, formatter: favoriteFormatter, cellClick: toggleFavorite, headerFilter: "list", headerFilterParams: {values: {"": "All", "true": "On", "false": "Off"}}, headerFilterFunc: (filterValue, rowValue) => filterValue === "" || filterValue === null || typeof filterValue === "undefined" || String(Boolean(rowValue)) === String(filterValue), headerFilterEmptyCheck: value => value === "" || value === null || typeof value === "undefined"},
+      {title: "ID", field: "id", sorter: "string", headerFilter: "input", minWidth: 260, formatter: emptyFormatter},
+      {title: "Category", field: "category", sorter: "string", headerFilter: "list", headerFilterParams: {valuesLookup: true, multiselect: true, clearable: true, sort: "asc"}, headerFilterFunc: "in", headerFilterEmptyCheck: value => !value || (Array.isArray(value) && !value.length), minWidth: 220, formatter: emptyFormatter},
+      {title: "Description", field: "description", sorter: "string", headerFilter: "input", minWidth: 260, formatter: emptyFormatter},
+      {title: "Keyboard", field: "keyboard", sorter: "string", headerFilter: "input", minWidth: 160, formatter: bindingFormatter},
+      {title: "Joystick", field: "joystick", sorter: "string", headerFilter: "input", minWidth: 160, formatter: bindingFormatter},
+      {title: "Joystick Description", field: "joystickDesc", sorter: "string", headerFilter: "input", minWidth: 220, formatter: bindingFormatter},
+    ];
+
+    let table;
+    let favoriteBindingIds = new Set();
+
+    async function loadBindingData() {
+      if (!window.fetch) {
+        throw new Error("Fetch is unavailable");
+      }
+
+      const response = await fetch(bindingsDataUrl, {cache: "no-cache"});
+      if (!response.ok) {
+        throw new Error(`Unable to load ${bindingsDataUrl}: ${response.status}`);
+      }
+
+      return normalizeBindingData(await response.json(), bindingsDataUrl);
+    }
+
+    function loadFallbackBindingData() {
+      const payload = JSON.parse(document.getElementById("bindings-fallback-data").textContent);
+      return normalizeBindingData(payload, "embedded fallback data");
+    }
+
+    function normalizeBindingData(payload, sourceName) {
+      const actions = Array.isArray(payload) ? payload : payload && payload.actions;
+      if (!Array.isArray(actions)) {
+        throw new Error(`${sourceName} did not contain binding actions`);
+      }
+
+      return {
+        generatedAt: String(payload && payload.generatedAt || ""),
+        rows: buildOutputRows(actions),
+      };
+    }
+
+    function joinBindingValues(value) {
+      if (typeof value === "string") {
+        return value;
+      }
+      return Array.isArray(value) ? value.join("<br>") : "";
+    }
+
+    function buildOutputRows(actions) {
+      return actions
+        .map(action => ({
+          id: String(action.id || ""),
+          favorite: favoriteBindingIds.has(String(action.id || "")),
+          category: String(action.categoryLabel || ""),
+          description: String(action.label || ""),
+          keyboard: joinBindingValues(action.keyboard),
+          joystick: joinBindingValues(action.joystick),
+          joystickDesc: joinBindingValues(action.joystickDesc),
+        }))
+        .sort((left, right) => left.id.localeCompare(right.id));
+    }
+
+    function renderGeneratedAt(generatedAt) {
+      if (!generatedAt) {
+        generatedAtLabel.textContent = "";
+        return;
+      }
+
+      const generatedDate = new Date(generatedAt);
+      generatedAtLabel.textContent = Number.isNaN(generatedDate.getTime())
+        ? `Generated ${generatedAt}`
+        : `Generated ${generatedDate.toLocaleString()}`;
+    }
+
+    function createTable(bindingData, stateToRestore = null) {
+      renderGeneratedAt(bindingData.generatedAt);
+      if (table) {
+        table.destroy();
+      }
+
+      table = new Tabulator("#bindings-table", {
+        data: bindingData.rows,
+        columns: columns,
+        layout: "fitDataStretch",
+        height: "75vh",
+        movableColumns: true,
+        placeholder: "No bindings match the current filters",
+        initialSort: [{column: "id", dir: "asc"}],
+      });
+
+      table.on("dataFiltered", updateRowCount);
+      table.on("dataLoaded", updateRowCount);
+      table.on("tableBuilt", () => {
+        if (stateToRestore) {
+          restoreTableState(stateToRestore);
+        } else {
+          loadTableState();
+        }
+        updateRowCount();
+      });
+    }
+
+    async function reloadTableData() {
+      if (!window.fetch) {
+        window.location.reload();
+        return;
+      }
+
+      try {
+        const currentState = table ? getTableState() : null;
+        createTable(await loadBindingData(), currentState);
+        showStateStatus("Reloaded bindings data");
+      } catch (error) {
+        console.warn(error);
+        window.location.reload();
+      }
+    }
+
+    function updateRowCount() {
+      const active = table.getDataCount("active");
+      const total = table.getDataCount("all");
+      rowCountLabel.textContent = `${active} shown of ${total} total`;
+    }
+
+    function applyGlobalFilter(query) {
+      const text = query.trim().toLowerCase();
+      if (!text) {
+        table.clearFilter();
+        return;
+      }
+
+      table.setFilter(function(data) {
+        return columns.some(col => String(data[col.field] || "").toLowerCase().includes(text));
+      });
+    }
+
+    function showStateStatus(message) {
+      stateStatusLabel.textContent = message;
+      window.clearTimeout(showStateStatus.timeoutId);
+      showStateStatus.timeoutId = window.setTimeout(() => {
+        stateStatusLabel.textContent = "";
+      }, 2400);
+    }
+
+    function getTableState() {
+      return {
+        globalSearch: globalSearchInput.value,
+        headerFilters: table.getHeaderFilters(),
+        sorters: table.getSorters().map(sorter => ({
+          field: sorter.field,
+          dir: sorter.dir,
+        })),
+      };
+    }
+
+    function readSavedState() {
+      try {
+        return localStorage.getItem(stateStorageKey);
+      } catch (error) {
+        showStateStatus("Saved table state is unavailable");
+        return null;
+      }
+    }
+
+    function writeSavedState(state) {
+      try {
+        localStorage.setItem(stateStorageKey, JSON.stringify(state));
+        return true;
+      } catch (error) {
+        showStateStatus("Saved table state is unavailable");
+        return false;
+      }
+    }
+
+    function removeSavedState() {
+      try {
+        localStorage.removeItem(stateStorageKey);
+      } catch (error) {
+        showStateStatus("Saved table state is unavailable");
+      }
+    }
+
+    function loadSavedFavorites() {
+      try {
+        const rawFavorites = localStorage.getItem(favoritesStorageKey);
+        const ids = rawFavorites ? JSON.parse(rawFavorites) : [];
+        favoriteBindingIds = new Set(Array.isArray(ids) ? ids.map(id => String(id)) : []);
+      } catch (error) {
+        favoriteBindingIds = new Set();
+        showStateStatus("Saved favorites are unavailable");
+      }
+    }
+
+    function saveFavorites() {
+      try {
+        localStorage.setItem(favoritesStorageKey, JSON.stringify(Array.from(favoriteBindingIds).sort()));
+      } catch (error) {
+        showStateStatus("Saved favorites are unavailable");
+      }
+    }
+
+    function toggleFavorite(event, cell) {
+      const row = cell.getRow();
+      const data = row.getData();
+      const id = String(data.id || "");
+      const isFavorite = !Boolean(data.favorite);
+
+      if (!id) {
+        return;
+      }
+
+      if (isFavorite) {
+        favoriteBindingIds.add(id);
+      } else {
+        favoriteBindingIds.delete(id);
+      }
+
+      row.update({favorite: isFavorite}).then(() => {
+        if (table && typeof table.refreshFilter === "function") {
+          table.refreshFilter();
+        }
+        updateRowCount();
+      });
+      saveFavorites();
+    }
+
+    function loadSavedNotes() {
+      try {
+        bindingsNotesInput.value = localStorage.getItem(notesStorageKey) || "";
+      } catch (error) {
+        showStateStatus("Saved notes are unavailable");
+      }
+    }
+
+    function saveNotes() {
+      try {
+        localStorage.setItem(notesStorageKey, bindingsNotesInput.value);
+      } catch (error) {
+        showStateStatus("Saved notes are unavailable");
+      }
+    }
+
+    function saveTableState() {
+      if (writeSavedState(getTableState())) {
+        showStateStatus("Filters and sorting saved");
+      }
+    }
+
+    function loadTableState() {
+      const rawState = readSavedState();
+      if (!rawState) {
+        return;
+      }
+
+      try {
+        restoreTableState(JSON.parse(rawState));
+        showStateStatus("Saved filters and sorting loaded");
+      } catch (error) {
+        removeSavedState();
+        showStateStatus("Saved table state could not be loaded");
+      }
+    }
+
+    function restoreTableState(state) {
+      globalSearchInput.value = String(state.globalSearch || "");
+      applyGlobalFilter(globalSearchInput.value);
+
+      if (Array.isArray(state.headerFilters)) {
+        state.headerFilters.forEach(filter => {
+          if (filter && filter.field) {
+            table.setHeaderFilterValue(filter.field, filter.value || "");
+          }
+        });
+      }
+
+      if (Array.isArray(state.sorters) && state.sorters.length) {
+        table.setSort(state.sorters);
+      } else {
+        table.clearSort();
+      }
+    }
+
+    function clearTableState() {
+      removeSavedState();
+      globalSearchInput.value = "";
+      table.clearFilter();
+      table.clearHeaderFilter();
+      table.clearSort();
+      showStateStatus("Filters and sorting cleared");
+    }
+
+    globalSearchInput.addEventListener("input", () => {
+      applyGlobalFilter(globalSearchInput.value);
+    });
+
+    reloadDataButton.addEventListener("click", () => {
+      reloadTableData();
+    });
+
+    clearFiltersButton.addEventListener("click", () => {
+      clearTableState();
+    });
+
+    saveStateButton.addEventListener("click", () => {
+      saveTableState();
+    });
+
+    bindingsNotesInput.addEventListener("input", () => {
+      saveNotes();
+    });
+
+    loadSavedNotes();
+    loadSavedFavorites();
+
+    loadBindingData()
+      .then(createTable)
+      .catch(error => {
+        console.warn(error);
+        createTable(loadFallbackBindingData());
+        showStateStatus("Loaded embedded fallback data");
+      });
+  </script>
+</body>
+</html>

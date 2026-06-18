@@ -1,7 +1,5 @@
 namespace SSCM.Core;
 
-// TODO write tests for this class
-
 public class MappingDataRepositoryDefault<TData> : IMappingDataRepository<TData>
     where TData : class, new()
 {
@@ -35,6 +33,12 @@ public class MappingDataRepositoryDefault<TData> : IMappingDataRepository<TData>
 
         try
         {
+            if (!System.IO.File.Exists(saveFilePath))
+            {
+                WarningOutput($"Could not find mapping data file at [{saveFilePath}].");
+                return null;
+            }
+
             var serializer = new DataSerializer<TData>(saveFilePath);
             return await serializer.Read();
         }
@@ -59,7 +63,11 @@ public class MappingDataRepositoryDefault<TData> : IMappingDataRepository<TData>
         }
 
         var saveDir = new FileInfo(saveFilePath).DirectoryName;
-        System.IO.Directory.CreateDirectory(saveDir);
+        if (!string.IsNullOrWhiteSpace(saveDir))
+        {
+            System.IO.Directory.CreateDirectory(saveDir);
+        }
+
         var serializer = new DataSerializer<TData>(saveFilePath);
         await serializer.Write(data);
         this.StandardOutput($"Mappings saved to [{this.MappingDataSavePath}].");

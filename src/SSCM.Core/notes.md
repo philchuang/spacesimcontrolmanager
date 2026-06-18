@@ -33,7 +33,3 @@
 
 - current vs updated
 - original vs final
-
-## TODOs
-
-1. star citizen to elite dangerous cross-game synchronization

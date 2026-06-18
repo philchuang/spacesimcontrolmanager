@@ -3,6 +3,7 @@
 project.lock.json
 .DS_Store
 *.pyc
+__pycache__/
 nupkg/
 
 # Visual Studio Code
@@ -16,6 +17,7 @@ nupkg/
 *.user
 *.userosscache
 *.sln.docstates
+appsettings.local.json
 
 # Build results
 [Dd]ebug/
@@ -36,6 +38,10 @@ msbuild.wrn
 # Visual Studio 2015
 .vs/
 
+# generated files
+docs/starcitizen/bindings
+
 # temp files
 */SSCM.cli/scmappings.json
 */SSCM.cli/actionmaps.xml.*
+**/*.bak

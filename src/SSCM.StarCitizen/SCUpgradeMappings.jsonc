@@ -1,0 +1,128 @@
+[
+    {
+        "type": "setting",
+        "source": "flight_move_strafe_longitudinal",
+        "target": "flight_strafe_longitudinal",
+        "comment": "v4.2"
+    },
+    {
+        "type": "mapping",
+        "source": "spaceship_radar-v_dec_ping_focus_angle",
+        "target": null,
+        "comment": "v4.2"
+    },
+    {
+        "type": "mapping",
+        "source": "spaceship_radar-v_inc_ping_focus_angle",
+        "target": null,
+        "comment": "v4.2"
+    },
+    {
+        "type": "mapping",
+        "source": "spaceship_targeting-v_target_cycle_reticle_mode",
+        "target": "spaceship_weapons-v_weapon_pip_toggle_lead_lag",
+        "comment": "v4.2"
+    },
+    // {
+    //     "type": "mapping",
+    //     "source": "spaceship_targeting-v_target_unlock_selected",
+    //     "target": "spaceship_targeting-v_target_unlock",
+    //     "comment": "v4.2"
+    // },
+    {
+        "type": "mapping",
+        "source": "spaceship_movement-v_ifcs_toggle_cruise_control",
+        "target": "spaceship_movement-v_ifcs_throttle_swap_mode",
+        "comment": "v4.2"
+    },
+    {
+        "type": "mapping",
+        "source": "spaceship_movement-v_ifcs_speed_limiter_reset_scm",
+        "target": null,
+        "comment": "v4.2"
+    },
+    {
+        "type": "mapping",
+        "source": "spaceship_movement-v_ifcs_toggle_speed_limiter",
+        "target": null,
+        "comment": "v4.2"
+    },
+    {
+        "type": "mapping",
+        "source": "spaceship_movement-v_speed_range_down",
+        "target": null,
+        "comment": "v4.2"
+    },
+    {
+        "type": "mapping",
+        "source": "spaceship_movement-v_speed_range_up",
+        "target": null,
+        "comment": "v4.2"
+    },
+    {
+        "type": "mapping",
+        "source": "spaceship_movement-v_toggle_relative_mouse_mode",
+        "target": null,
+        "comment": "v4.2"
+    },
+    {
+        "type": "mapping",
+        "source": "spaceship_weapons-v_weapon_cycle_aimmode",
+        "target": "spaceship_weapons-v_weapon_gimbal_mode_cycle_all",
+        "comment": "v4.2"
+    },
+    {
+        "type": "mapping",
+        "source": "vehicle_capacitor_assignment-v_capacitor_assignment_engine_combined_increase_max",
+        "target": "spaceship_power-v_engineering_assignment_engine_increase",
+        "comment": "v4.2"
+    },
+    {
+        "type": "mapping",
+        "source": "vehicle_capacitor_assignment-v_capacitor_assignment_reset",
+        "target": "spaceship_power-v_engineering_assignment_reset",
+        "comment": "v4.2"
+    },
+    {
+        "type": "mapping",
+        "source": "vehicle_capacitor_assignment-v_capacitor_assignment_shield_combined_increase_max",
+        "target": "spaceship_power-v_engineering_assignment_shields_increase",
+        "comment": "v4.2"
+    },
+    {
+        "type": "mapping",
+        "source": "vehicle_capacitor_assignment-v_capacitor_assignment_weapon_combined_increase_max",
+        "target": "spaceship_power-v_engineering_assignment_weapons_increase",
+        "comment": "v4.2"
+    },
+    {
+        "type": "mapping",
+        "source": "spaceship_weapons-v_attack_group1",
+        "target": "spaceship_weapons-v_weapon_preset_fire_guns0",
+        "comment": "v4.2"
+    },
+    {
+        "type": "mapping",
+        "source": "spaceship_weapons-v_attack_group2",
+        "target": "spaceship_weapons-v_weapon_preset_fire_guns1",
+        "comment": "v4.2"
+    },
+    {
+        "type": "mapping",
+        "source": "vehicle_general-v_attack_group1",
+        "target": null,
+        "comment": "v4.2"
+    },
+    {
+        "type": "mapping",
+        "source": "vehicle_general-v_attack_group2",
+        "target": null,
+        "comment": "v4.2"
+    },
+    {
+        "type": "mapping",
+        "source": "spaceship_movement-v_ifcs_toggle_gravity_compensation",
+        "target": "spaceship_movement-v_ifcs_gravity_compensation_toggle",
+        "comment": "v4.6"
+    }
+]

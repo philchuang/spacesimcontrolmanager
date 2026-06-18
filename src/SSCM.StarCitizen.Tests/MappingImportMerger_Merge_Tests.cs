@@ -44,7 +44,7 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
     public void Removes_Input()
     {
         // Arrange
-        this.Detects_Inputs_Removed_NotPreserved_Arrange();
+        this.Detects_Inputs_Removed_Arrange();
         this._expected = new SCMappingData {
             Inputs = this._updated.Inputs.Select(i => i.JsonCopy()).ToList(),
         };
@@ -76,7 +76,7 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
     public void Removes_InputSetting()
     {
          // Arrange
-        this.Detects_InputSettings_Removed_NotPreserved_Arrange();
+        this.Detects_InputSettings_Removed_Arrange();
         this._expected = new SCMappingData {
             Inputs = this._updated.Inputs.Select(i => i.JsonCopy()).ToList(),
         };
@@ -92,7 +92,7 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
     public void Changes_InputSetting()
     {
         // Arrange
-        this.Detects_InputSettings_Changed_NotPreserved_Arrange();
+        this.Detects_InputSettings_Changed_Arrange();
         this._expected = new SCMappingData {
             Inputs = this._updated.Inputs.Select(i => i.JsonCopy()).ToList(),
             Mappings = this._updated.Mappings.Select(m => m.JsonCopy()).ToList(),
@@ -126,7 +126,7 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
     public void Removes_Mapping()
     {
          // Arrange
-        this.Detects_Mapping_Removed_NotPreserved_Arrange();
+        this.Detects_Mapping_Removed_Arrange();
         this._expected = new SCMappingData {
             Inputs = this._updated.Inputs.Select(i => i.JsonCopy()).ToList(),
             Mappings = this._updated.Mappings.Select(m => m.JsonCopy()).ToList(),
@@ -143,7 +143,7 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
     public void Changes_Mapping()
     {
         // Arrange
-        this.Detects_Mapping_Changed_NotPreserved_Arrange();
+        this.Detects_Mapping_Changed_Arrange();
         this._expected = new SCMappingData {
             Inputs = this._updated.Inputs.Select(i => i.JsonCopy()).ToList(),
             Mappings = this._updated.Mappings.Select(m => m.JsonCopy()).ToList(),
@@ -161,7 +161,7 @@ public class MappingImportMerger_Merge_Tests : MappingImportMerger_TestBase
     {
         // Arrange
         var (addedInput, removedInput, currentChangingInput, updatedChangingInput, 
-            addedSetting, removedSetting, updatedChangingSetting, 
+            addedSetting, removedSetting, removedSettingButPreserved, updatedChangingSetting, changedSettingButPreserved,
             addedMapping, removedMapping, removedMappingButPreserved, currentChangedMapping, updatedChangedMapping, currentChangedMappingButPreserved, updatedChangedMappingButPreserved) = this.Creates_Merge_Actions_Arrange();
         this._expected = new SCMappingData {
             Inputs = {

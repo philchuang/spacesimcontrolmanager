@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using SSCM.Core;
 
@@ -22,12 +21,91 @@ public class MappingExporter : MappingExporterBase<EDMappingData>
 
     public override async Task<bool> Preview(EDMappingData source)
     {
-        return await this.Export(source, false);
+        var session = await this.CreateInteractiveSession(source);
+        foreach (var row in session.Rows)
+        {
+            base._StandardOutput($"{row.ChangeKind}: {row.ItemId} from {row.CurrentValue} to {row.NewValue}.");
+        }
+        return session.HasRows;
     }
 
     public override async Task<bool> Update(EDMappingData source)
     {
-        return await this.Export(source, true);
+        var session = await this.CreateInteractiveSession(source);
+        var changed = session.HasRows;
+        session.SelectAll();
+        session.ApplySelected();
+        if (changed)
+        {
+            await this.SaveInteractive();
+        }
+        return changed;
+    }
+
+    public override async Task<InteractiveChangeSession> CreateInteractiveSession(EDMappingData source)
+    {
+        this.Validate(source);
+        this._xml = await CustomBindsXmlHelper.Load(this._folders.GameConfigPath);
+        var rows = new List<InteractiveChangeRow>();
+
+        foreach (var m in source.Mappings.Where(m => m.AnyPreserve))
+        {
+            var mappingElement = this._xml.Xml.Root!.Element(m.Name);
+            AddBindingRow(m.Binding, nameof(m.Binding), m.Id, mappingElement);
+            AddBindingRow(m.Primary, nameof(m.Primary), m.Id, mappingElement);
+            AddBindingRow(m.Secondary, nameof(m.Secondary), m.Id, mappingElement);
+
+            foreach (var s in m.Settings.Where(s => s.Preserve))
+            {
+                var current = mappingElement?.Element(s.Name)?.GetAttribute("Value") ?? "";
+                if (!string.Equals(current, s.Value))
+                {
+                    rows.Add(new InteractiveChangeRow(s.Id, "Update", s.Id, current, s.Value, true, () => this.ApplySetting(this._xml!.GetOrCreateMapping(m.Name).GetOrCreate(s.Name), s)));
+                }
+            }
+        }
+
+        foreach (var s in source.Settings.Where(s => s.Preserve))
+        {
+            var current = this._xml.Xml.Root!.Element(s.Name)?.GetAttribute("Value") ?? "";
+            if (!string.Equals(current, s.Value))
+            {
+                rows.Add(new InteractiveChangeRow(s.Id, "Update", s.Id, current, s.Value, true, () => this.ApplySetting(this._xml!.GetOrCreateMapping(s.Name), s)));
+            }
+        }
+
+        return new InteractiveChangeSession(rows);
+
+        void AddBindingRow(EDBinding? binding, string type, string mappingId, XElement? mappingElement)
+        {
+            if (binding == null || !binding.Preserve) return;
+            var bindingElement = mappingElement?.Element(type);
+            var current = "";
+            if (bindingElement != null)
+            {
+                var (device, key) = ReadBindingElement(bindingElement);
+                current = $"{device}-{key}";
+                var modifierElements = bindingElement.Elements().Where(e => string.Equals("Modifier", e.Name.LocalName, StringComparison.OrdinalIgnoreCase)).ToList();
+                if (modifierElements.Any())
+                {
+                    current += " + " + string.Join(" + ", modifierElements.Select(ReadBindingElement).Select(((string, string) t) => $"{t.Item1}-{t.Item2}"));
+                }
+            }
+            if (!string.Equals(current, binding.ToString()))
+            {
+                var rowId = $"{mappingId}.{type}";
+                rows.Add(new InteractiveChangeRow(rowId, "Update", rowId, current, binding.ToString(), true, () => this.ApplyBinding(this._xml!.GetOrCreateMapping(mappingElement?.Name.LocalName ?? mappingId.Split('.').Last()).GetOrCreate(type), binding, mappingId)));
+            }
+        }
+    }
+
+    public override async Task SaveInteractive()
+    {
+        if (this._xml == null) throw new InvalidOperationException("No interactive export session has been created.");
+        base._StandardOutput($"Saving updated {Path.GetFileName(this.GameMappingsPath)}...");
+        await this._xml.Save(this.GameMappingsPath);
+        base._StandardOutput("Saved, run \"restore\" command to revert.");
+        base._StandardOutput("MUST RESTART ELITE DANGEROUS FOR CHANGES TO TAKE EFFECT.");
     }
 
     private void Validate(EDMappingData source)
@@ -36,6 +114,7 @@ public class MappingExporter : MappingExporterBase<EDMappingData>
 
     private async Task<bool> Export(EDMappingData source, bool apply)
     {
+        // TODO implement ExportOptions
         this.Validate(source);
 
         this._xml = await CustomBindsXmlHelper.Load(this._folders.GameConfigPath);

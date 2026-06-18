@@ -17,9 +17,10 @@ public static class AssertSscm
         if (actual == null) return;
 
         Assert.AreEqual(expected.Mode, actual.Mode, nameof(expected.Mode));
+        Assert.AreEqual(expected.ExistingIsPreserved, actual.ExistingIsPreserved, nameof(expected.ExistingIsPreserved));
         if (asserter != null)
         {
-            asserter(expected.Value, actual.Value);            
+            asserter(expected.Value, actual.Value);
         }
         else
         {
