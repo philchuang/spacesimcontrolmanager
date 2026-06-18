@@ -1,6 +1,6 @@
 # Space Sim Control Manager
 
-Utility to help players retain and migrate their control mappings for space-sim games, especially for new SC version releases. Elite Dangerous is also supported.
+Utility to help players retain and migrate their control mappings for space-sim games, especially for new Star Citizen version releases. Elite Dangerous is also supported.
 
 ## Standard Usage (Star Citizen)
 
