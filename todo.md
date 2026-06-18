@@ -1,9 +1,5 @@
 # Development TO-DOs
 
-[o] (Low) New release including interactive mode
-  [x] dotnet -> interactive
-  [ ] interactive -> master
-  [x] Release Notes
 [ ] (Low) live editing of mappings in TUI
 [ ] (Medium) star citizen to elite dangerous cross-game synchronization
 
