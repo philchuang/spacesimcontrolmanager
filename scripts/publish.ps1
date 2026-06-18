@@ -41,7 +41,7 @@ function GetMetadata()
     # cheating by referencing the parameters directly, but oh well
     return @{
         build_id = $BuildId
-        commit_author = if ($CommitAuthor) { $CommitAuthor } else { Exec "git show -s --format=%ae" $true }
+        # commit_author = if ($CommitAuthor) { $CommitAuthor } else { Exec "git show -s --format=%ae" $true }
         commit_date = if ($CommitDate) { $CommitDate } else { Exec "git show -s --format=%ci" $true }
         commit_hash = if ($CommitHash) { $CommitHash } else { Exec "git show -s --format=%h" $true }
         publish_time = (Get-Date -Format "O")

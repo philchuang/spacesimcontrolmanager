@@ -17,6 +17,7 @@ nupkg/
 *.user
 *.userosscache
 *.sln.docstates
+appsettings.local.json
 
 # Build results
 [Dd]ebug/
@@ -43,3 +44,4 @@ docs/starcitizen/bindings
 # temp files
 */SSCM.cli/scmappings.json
 */SSCM.cli/actionmaps.xml.*
+**/*.bak
