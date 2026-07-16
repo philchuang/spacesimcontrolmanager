@@ -1,4 +1,4 @@
-<!-- extracted from v4.8.1 -->
+<!-- extracted from v4.9.0 -->
 <profile version="1" optionsVersion="2" rebindVersion="2">
   <platforms>
     <PC keyboard="1" mouse="1" gamepad="1" joystick="1" />
@@ -509,13 +509,6 @@
         <state name="deployed" UILabel="@ui_CIToggleLandingSystem_Retract" />
       </states>
     </action>
-    <action name="v_toggle_docking_request" activationMode="tap" keyboard="ralt+n" gamepad="" joystick="" UILabel="@ui_CIToggleLandingSystem_Dock" UIDescription="ui_CIToggleLandingSystem_DockDesc">
-      <states>
-        <state name="can_dock" UILabel="@ui_CIToggleLandingSystem_Dock" />
-        <state name="docking" UILabel="@ui_CIToggleLandingSystem_CancelDocking" />
-        <state name="docked" UILabel="@ui_CIToggleLandingSystem_Undock" />
-      </states>
-    </action>
     <action name="v_deploy_landing_system" activationMode="press" keyboard=" " gamepad=" " joystick=" " UILabel="@ui_CIDeployLandingSystem" UIDescription="@ui_CIDeployLandingSystemDesc" />
     <action name="v_retract_landing_system" activationMode="press" keyboard=" " gamepad=" " joystick=" " UILabel="@ui_CIRetractLandingSystem" UIDescription="@ui_CIRetractLandingSystemDesc" />
     <action name="v_vtol_toggle" activationMode="tap" keyboard="k" gamepad=" " joystick=" " UILabel="@ui_v_ifcs_vtol_toggle" UIDescription="@ui_v_ifcs_vtol_toggle_desc" Category="FlightSystems" />
@@ -582,8 +575,13 @@
     </action>
   </actionmap>
   <actionmap name="spaceship_docking" version="1" UILabel="@ui_cg_docking" UICategory="@ui_CCSeatGeneral">
-    <action name="v_toggle_docking_mode" activationMode="tap" keyboard="n" gamepad=" " joystick=" " UILabel="@ui_v_toggle_docking_mode" UIDescription="@ui_v_toggle_docking_mode_desc" />
-    <action name="v_invoke_docking" activationMode="delayed_hold" keyboard="n" gamepad=" " joystick=" " UILabel="@ui_v_invoke_docking" UIDescription="@ui_v_invoke_docking_desc" />
+    <action name="v_toggle_docking_request" activationMode="tap" keyboard="ralt+n" gamepad=" " joystick=" " UILabel="@ui_CIToggleLandingSystem_Dock" UIDescription="ui_CIToggleLandingSystem_DockDesc">
+      <states>
+        <state name="can_dock" UILabel="@ui_CIToggleLandingSystem_Dock" />
+        <state name="docking" UILabel="@ui_CIToggleLandingSystem_CancelDocking" />
+        <state name="docked" UILabel="@ui_CIToggleLandingSystem_Undock" />
+      </states>
+    </action>
     <action name="v_dock_toggle_view" activationMode="delayed_press" keyboard="0" gamepad=" " joystick=" " UILabel="@ui_v_dock_toggle_view" UIDescription="@ui_v_dock_toggle_view_desc" />
   </actionmap>
   <actionmap name="spaceship_targeting" version="8" UILabel="@ui_CGSpaceFlightTargeting" UICategory="@ui_CCSpaceFlight">
@@ -1348,7 +1346,12 @@
   </actionmap>
   <actionmap name="debug" version="23">
     <action name="godmode" onPress="1" noModifiers="1" keyboard="f9" />
-    <action name="pause_and_fly" onPress="1" noModifiers="1" keyboard="pause" />
+    <action name="debug_pause" onPress="1" noModifiers="1" keyboard="pause" />
+    <action name="pause_and_fly" onPress="1" noModifiers="0" keyboard="rctrl+p" />
+    <action name="debug_pause_alt" onPress="1" noModifiers="0" keyboard="rctrl+o" />
+    <action name="debug_time_slower" onPress="1" noModifiers="0" keyboard="rctrl+minus" />
+    <action name="debug_time_faster" onPress="1" noModifiers="0" keyboard="rctrl+equals" />
+    <action name="teleport_to_camera" onPress="1" noModifiers="0" keyboard="rctrl+t" />
     <action name="toggleaidebugdraw" onPress="1" noModifiers="1" keyboard="f11" />
     <action name="ai_DebugCenterViewAgent" onPress="1" noModifiers="1" keyboard="np_divide" />
     <action name="togglepdrawhelpers" onPress="1" noModifiers="1" keyboard="f10" />
@@ -1633,8 +1636,8 @@
     <action name="pc_pit_mobiglas_actions" activationMode="press" keyboard=" " gamepad=" " joystick=" " UILabel="@ui_MobiGlasActions_PITWheelCategory" />
     <action name="pc_pit_miningmode_actions" activationMode="press" keyboard="lalt+m" gamepad=" " joystick=" " UILabel="@ui_MiningModeActions_PITWheelCategory" />
     <action name="pc_qs_weapons_pit_primary" activationMode="all" keyboard="1" gamepad="dpad_up" joystick=" " UILabel="@ui_Weapon_QuickSelectRadialMenu" />
-    <action name="pc_qs_weapons_pit_secondary" activationMode="all" keyboard="1" gamepad="dpad_up" joystick=" " UILabel="@ui_Weapon_QuickSelectRadialMenu" />
-    <action name="pc_qs_weapons_pit_sidearm" activationMode="all" keyboard="2" gamepad="dpad_up" joystick=" " UILabel="@ui_Weapon_QuickSelectRadialMenu" />
+    <action name="pc_qs_weapons_pit_secondary" activationMode="all" keyboard="2" gamepad="dpad_up" joystick=" " UILabel="@ui_Weapon_QuickSelectRadialMenu" />
+    <action name="pc_qs_weapons_pit_sidearm" activationMode="all" keyboard="3" gamepad="dpad_up" joystick=" " UILabel="@ui_Weapon_QuickSelectRadialMenu" />
     <action name="pc_qs_grenades" activationMode="all" keyboard="g" gamepad="dpad_right" joystick=" " UILabel="@ui_Grenade_QuickSelectRadialMenu" Category="WeaponSelection" />
     <action name="pc_qs_consumables" activationMode="all" keyboard="4" gamepad="dpad_left" joystick=" " UILabel="@ui_Consumable_QuickSelectRadialMenu" Category="WeaponSelection" />
   </actionmap>
