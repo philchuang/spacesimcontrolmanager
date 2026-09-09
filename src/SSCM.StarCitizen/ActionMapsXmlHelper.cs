@@ -63,6 +63,7 @@ public class ActionMapsXmlHelper
             "gamepad"  => "gp",
             "joystick" => "js",
             "keyboard" => "kb",
+            "mouse" => "mo",
             _ => throw new ArgumentOutOfRangeException(type),
         };
     }
@@ -73,6 +74,7 @@ public class ActionMapsXmlHelper
             "gp" => "gamepad",
             "js" => "joystick",
             "kb" => "keyboard",
+            "mo" => "mouse",
             _ => throw new ArgumentOutOfRangeException(typeAbbv),
         };
     }

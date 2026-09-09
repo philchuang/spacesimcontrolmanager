@@ -78,7 +78,10 @@ public class MappingExporter : MappingExporterBase<SCMappingData>
 
     private void Validate(SCMappingData source)
     {
-        var inputPrefixes = source.Inputs.Select(i => i.GetInputPrefix()).ToHashSet();
+        var inputPrefixes = source.Inputs
+            .Select(i => i.GetInputPrefix())
+            .Concat(["mo1_"]) // add implicit mouse1
+            .ToHashSet();
         foreach (var type in source.Inputs.Select(i => i.Type).Distinct())
         {
             var preservedInputs = source.Inputs.Where(i => i.Type == type && i.Preserve).OrderBy(i => i.Instance).ToList();
