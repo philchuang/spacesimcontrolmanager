@@ -182,10 +182,12 @@ Both `sc import` and `sc export` use the same terminal UI when interactive selec
 | Key | Action |
 | --- | --- |
 | Up / Down | Move cursor |
+| Ctrl + Up / Down | Scroll the page; move the cursor only if it leaves the page |
+| Page Up / Page Down | Jump to the page edge, then move one page |
 | Space | Toggle row selection |
 | A | Select all rows |
 | N | Clear selection |
-| Enter | Apply selected changes |
+| Enter | Review selected changes, then confirm |
 | Esc / Q | Cancel without saving |
 
 ### Back up the Star Citizen configuration
