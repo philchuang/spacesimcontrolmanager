@@ -1,3 +1,10 @@
+"""Write bindings.html by embedding bindings.json in the HTML template.
+
+1. Reduce each action to id, categoryLabel, label, keyboard, joystick, and
+   joystickDesc, and keep generatedAt.
+2. JSON-encode that document and escape '</' so it cannot close a script tag.
+3. Replace the __BINDINGS_JSON__ placeholder in star-citizen-bindings.template.html.
+"""
 from __future__ import annotations
 
 import json

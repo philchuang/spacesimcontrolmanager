@@ -1,3 +1,19 @@
+"""Build the base bindings.json catalog from the game profile and localization.
+
+1. Walk defaultProfile.xml actionmaps and actions. Id is {category}-{action}.
+   defaultKeyboard is the keyboard attribute, or mouse when keyboard is blank.
+   Copy the joystick attribute as defaultJoystick. Start keyboard and joystick
+   as empty lists.
+2. Load global.ini as first-equals pairs, skipping blanks and ';' comments.
+   Replace label and categoryLabel on an exact key, then on the key with a
+   leading '@' removed.
+3. Overlay actionmaps.xml rebinds for known actions. A trailing space becomes
+   {UNBOUND}. A multiTap value appends ' {n}x' unless the input is empty or
+   unbound. kb* goes to keyboard and js* goes to joystick.
+4. Dedupe each list and keep the first value. If a list is empty, copy the
+   default and wrap it in parentheses (a trailing space becomes UNBOUND).
+5. Sort by id and write { generatedAt, actions } to bindings.json.
+"""
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET

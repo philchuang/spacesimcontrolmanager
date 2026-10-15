@@ -1,3 +1,14 @@
+"""Shared paths and document helpers for the Star Citizen bindings docs.
+
+Holds the default LIVE install, profile, localization, and docs paths, and the
+read/write helpers the other scripts use:
+
+1. Read or write bindings.json as { generatedAt, actions }, accepting a bare
+   action list on read.
+2. Turn actions into display rows (id, category, description, keyboard,
+   joystick, joystickDesc), sorted by id. List values join with <br>.
+3. Optionally drop rows whose category or description is blank.
+"""
 from __future__ import annotations
 
 import json

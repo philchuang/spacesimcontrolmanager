@@ -1,3 +1,11 @@
+"""Run the full Star Citizen bindings-doc pipeline.
+
+Calls the other scripts in order:
+
+1. Normalize defaultProfile.xml, global.ini, and actionmaps.xml into bindings.json.
+2. Fill joystickDesc from docs/joystick-bindings.md.
+3. Write bindings.md, bindings.tsv, and bindings.html.
+"""
 from __future__ import annotations
 
 from apply_custom_star_citizen_bindings import main as apply_custom_bindings

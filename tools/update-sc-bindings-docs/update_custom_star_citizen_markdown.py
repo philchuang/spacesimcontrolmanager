@@ -1,3 +1,10 @@
+"""Write bindings.md from bindings.json.
+
+1. Build display rows sorted by id: id, category, description, keyboard,
+   joystick, joystickDesc. List values join with <br>.
+2. Drop rows whose category or description is blank.
+3. Write a table under '## GENERATED BINDINGS', escaping '|' in cells.
+"""
 from __future__ import annotations
 
 from pathlib import Path
