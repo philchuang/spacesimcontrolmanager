@@ -85,6 +85,38 @@ Creates a plain-text report of the captured mappings (multiple formats available
 > SSCM.exe sc report -f json > starcitizen_mappings.json
 ```
 
+### Print
+
+Prints the current Star Citizen bindings (game defaults plus your `actionmaps.xml` rebinds, with localized names) as markdown, TSV, and an interactive HTML page. Files are written to `docs\starcitizen\bindings` under the current directory. Use `--outputDir` to write them somewhere else (a relative path is resolved against the current directory).
+
+```text
+> SSCM.exe sc print --outputDir C:\bindings
+```
+
+```text
+> SSCM.exe sc print
+```
+
+Write just one format with `markdown`, `tsv`, or `html`. The `html` format also writes `bindings.json`, the same data in a machine-readable form. Each game decides which formats and switches `print` offers, so `SSCM.exe sc print --help` always lists what is available.
+
+```text
+> SSCM.exe sc print html
+```
+
+The game's default bindings come from `defaultProfile.xml`. SSCM looks for it in the current directory first, then falls back to the copy shipped next to `SSCM.exe`. After a game update, add `--refresh-defaults` to re-extract it from the selected environment's `Data.p4k` and save it to the current directory before printing. The shipped copy is never modified, and later runs from that directory (including `sc upgrade`) keep using the refreshed file. The extracted file starts with a comment recording where it came from, such as `<!-- extracted from LIVE Data.p4k dated 2026-10-13 -->`.
+
+```text
+> SSCM.exe sc print --refresh-defaults
+```
+
+Joystick inputs are given friendly names from `joystick-bindings.md`. Like `defaultProfile.xml`, it is read from the current directory first, then from the copy shipped next to `SSCM.exe`, so you can keep your own list of joysticks wherever you run `print` from. The HTML page is built from `star-citizen-bindings.template.html`, which can be overridden the same way. The joystick file is optional. Each device's `star_citizen_device_id` in it should match a joystick `Product` in your `actionmaps.xml`. Devices that don't match are skipped with a warning. Any bound joystick input without a friendly name is described as `{NOT_FOUND}`.
+
+Action and category names are localized with `global.ini`. That file belongs to the game, so it is optional. `print` always uses the game's own `data\Localization\english\global.ini` when it exists, and falls back to a `global.ini` in the current directory when it doesn't. If neither exists, `print` shows a warning and every `@` key is written with a `/FNF` suffix (for example `@ui_CIFPSZoomIn/FNF`). If the file exists but lacks a key, that key is written with a `/KNF` suffix. Names that are plain text in the default profile are always kept as they are.
+
+If your game folder has no `global.ini`, `--refresh-defaults` also extracts one from `Data.p4k` and saves it to the current directory. This happens in the same pass as `defaultProfile.xml`, so the archive is only read once. If the game folder already has the file, nothing is extracted, and a copy saved earlier in the current directory is ignored.
+
+If the selected Star Citizen environment isn't installed (for example `--environment PTU` without a PTU), `print` shows a short error listing the environments it found instead of a stack trace.
+
 ## Advanced Usage
 
 ### Star Citizen environment

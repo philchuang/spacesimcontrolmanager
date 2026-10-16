@@ -60,6 +60,48 @@ public class SCFolders_Tests
     }
 
     [Test]
+    public void GameEnvironmentDir_UsesGameRootAndUppercaseCurrentEnvironment()
+    {
+        // Arrange
+        var gameRoot = Path.Combine(Path.GetTempPath(), TestContext.CurrentContext.Test.ID, "StarCitizen");
+        var folders = CreateFolders(gameRoot, "live");
+
+        // Act
+        folders.Environment = "ptu";
+        var actual = folders.GameEnvironmentDir;
+
+        // Assert
+        Assert.AreEqual(Path.Combine(gameRoot, "PTU"), actual);
+    }
+
+    [Test]
+    public void GameLocalizationPath_UsesGameRootAndUppercaseCurrentEnvironment()
+    {
+        // Arrange
+        var gameRoot = Path.Combine(Path.GetTempPath(), TestContext.CurrentContext.Test.ID, "StarCitizen");
+        var folders = CreateFolders(gameRoot, "live");
+
+        // Act
+        folders.Environment = "ptu";
+        var actual = folders.GameLocalizationPath;
+
+        // Assert
+        Assert.AreEqual(Path.Combine(gameRoot, "PTU", "data", "Localization", "english", "global.ini"), actual);
+    }
+
+    [Test]
+    public void GameLocalizationPath_DoesNotRequireTheFileOrFoldersToExist()
+    {
+        // Arrange
+        var gameRoot = Path.Combine(Path.GetTempPath(), TestContext.CurrentContext.Test.ID, "StarCitizen");
+        var folders = CreateFolders(gameRoot, "hotfix");
+
+        // Act & Assert
+        Assert.DoesNotThrow(() => _ = folders.GameLocalizationPath);
+        Assert.IsFalse(File.Exists(folders.GameLocalizationPath));
+    }
+
+    [Test]
     public void GameConfigDir_ThrowsWhenConstructedPathDoesNotExist()
     {
         // Arrange

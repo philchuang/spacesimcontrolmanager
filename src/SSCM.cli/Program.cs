@@ -91,6 +91,11 @@ internal class Program
             mgr.Add(command);
         }
 
+        if (manager is IBindingDocsGenerator bindingDocs)
+        {
+            mgr.Add(BuildPrintCommand(manager, bindingDocs, debugOption, globalOptions));
+        }
+
         // mgr.AddCommand(BuildConfigCommand(manager));
         root.Add(mgr);
     }
@@ -154,6 +159,73 @@ internal class Program
         cmd.Add(CreateImportModeCommand("tui", $"Selects {manager.GameType} import changes from a terminal UI.", ImportMode.Tui, useTuiSelector: true));
 
         return cmd;
+    }
+
+    private static Command BuildPrintCommand(IControlManager manager, IBindingDocsGenerator generator, Option<bool> debugOption, IList<Option<string>> globalOptions)
+    {
+        // Both the switches and the output formats come from the implementation, so each game decides what it supports.
+        var flagOptions = generator.PrintFlags.ToDictionary(
+            flag => flag,
+            flag => new Option<bool>($"--{flag.Name.ToLowerInvariant()}")
+            {
+                Description = flag.Description,
+                Recursive = true
+            });
+
+        var outputDirOption = new Option<string?>("--outputDir")
+        {
+            Description = "Directory to write the printed files. When omitted, the game module's default location is used.",
+            Recursive = true
+        };
+
+        async Task<int> Print(ParseResult parseResult, string? format)
+        {
+            var options = PrepareOptions(parseResult, debugOption, globalOptions);
+            var printOptions = new BindingPrintOptions
+            {
+                Flags = flagOptions.Where(pair => parseResult.GetValue(pair.Value)).Select(pair => pair.Key.Name).ToList(),
+                OutputDir = parseResult.GetValue(outputDirOption),
+            };
+
+            try
+            {
+                await generator.Print(format, printOptions, options);
+                return 0;
+            }
+            catch (SscmException ex)
+            {
+                // Expected problems (such as a missing environment) get a plain message instead of a stack trace.
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                return 1;
+            }
+        }
+
+        var cmd = new Command("print", $"Prints the {manager.GameType} bindings as {JoinWithAnd(generator.PrintFormats.Select(f => f.Name))}.");
+        cmd.Add(outputDirOption);
+        foreach (var option in flagOptions.Values) cmd.Add(option);
+        cmd.SetAction(parseResult => Print(parseResult, null));
+
+        foreach (var format in generator.PrintFormats)
+        {
+            var formatCommand = new Command(format.Name.ToLowerInvariant(), format.Description);
+            formatCommand.SetAction(parseResult => Print(parseResult, format.Name));
+            cmd.Add(formatCommand);
+        }
+
+        return cmd;
+    }
+
+    /// <summary>"a", "a and b", or "a, b, and c".</summary>
+    private static string JoinWithAnd(IEnumerable<string> items)
+    {
+        var list = items.ToList();
+        return list.Count switch
+        {
+            0 => string.Empty,
+            1 => list[0],
+            2 => $"{list[0]} and {list[1]}",
+            _ => $"{string.Join(", ", list.Take(list.Count - 1))}, and {list[^1]}",
+        };
     }
 
     private static Command BuildUpgradeCommand(IControlManager manager, Option<bool> debugOption, IList<Option<string>> globalOptions)

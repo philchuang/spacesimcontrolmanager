@@ -7,9 +7,15 @@ public interface ISCFolders
 {
     public string Environment { get; set; }
 
+    /// <summary>The selected environment's install folder, i.e. <c>...\StarCitizen\LIVE</c>.</summary>
+    public string GameEnvironmentDir { get; }
+
     public string GameAttributesPath { get; }
 
     public string GameConfigDir { get; }
+
+    /// <summary>The selected environment's English localization file (<c>global.ini</c>). It is not checked for existence.</summary>
+    public string GameLocalizationPath { get; }
 
     public string GameMappingsPath { get; }
 
@@ -22,23 +28,27 @@ public class SCFolders : ISCFolders
 {
     public const string PROGRAM_FILES_SC_ROOT_DIR = @"Roberts Space Industries\StarCitizen";
     public const string SC_PROFILES_DEFAULT_DIR = @"USER\Client\0\Profiles\default";
+    public const string SC_LOCALIZATION_DIR = @"data\Localization\english";
     public const string SC_DATA_DIR = "SC";
 
     public string GameRoot { get; init; }
 
     public string Environment { get; set; }
 
+    public string GameEnvironmentDir => Path.Combine(this.GameRoot, this.Environment.ToUpperInvariant());
+
     public string GameConfigDir
     {
         get
         {
-            var gameConfigDir = Path.Combine(this.GameRoot, this.Environment.ToUpperInvariant(), SC_PROFILES_DEFAULT_DIR);
+            var gameConfigDir = Path.Combine(this.GameEnvironmentDir, SC_PROFILES_DEFAULT_DIR);
             if (!Directory.Exists(gameConfigDir)) throw new DirectoryNotFoundException($"Could not find Star Citizen game config directory [{gameConfigDir}].");
             return gameConfigDir;
         }
     }
     public string GameAttributesPath => Path.Combine(this.GameConfigDir, Constants.SC_ATTRIBUTES_XML_NAME);
     public string GameMappingsPath => Path.Combine(this.GameConfigDir, Constants.SC_ACTIONMAPS_XML_NAME);
+    public string GameLocalizationPath => Path.Combine(this.GameEnvironmentDir, SC_LOCALIZATION_DIR, Constants.SC_GLOBAL_INI_NAME);
 
     public string ScDataDir { get; init; }
 
