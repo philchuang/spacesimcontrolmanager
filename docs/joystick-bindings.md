@@ -25,6 +25,9 @@ LT-EVO:
     "LT-EVO.01(FIRE)":
       elite_dangerous: Joy_1
       star_citizen: button1
+    "LT-EVO.02(FIRE-DEEP)":
+      elite_dangerous: Joy_2
+      star_citizen: button2
     "LT-EVO.03(A2)":
       elite_dangerous: Joy_3
       star_citizen: button3

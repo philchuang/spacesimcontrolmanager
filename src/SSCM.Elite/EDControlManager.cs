@@ -4,7 +4,7 @@ namespace SSCM.Elite;
 
 // TODO write tests for this class
 
-public class EDControlManager : ControlManagerBase<EDMappingData>
+public class EDControlManager : ControlManagerBase<EDMappingData>, IBindingDocsGenerator
 {
     protected override string GameConfigPath => _folders.GameConfigPath;
     protected override string MappingDataSavePath => Path.Combine(_folders.EliteDataDir, "edmappings.json");
@@ -68,5 +68,19 @@ public class EDControlManager : ControlManagerBase<EDMappingData>
     {
         var exporter = new MappingReporter();
         return exporter;
+    }
+
+    public IReadOnlyList<BindingPrintFormat> PrintFormats => EDBindingPrinter.Formats;
+
+    public IReadOnlyList<BindingPrintFlag> PrintFlags => EDBindingPrinter.Flags;
+
+    public Task<BindingPrintResult> Print(string? format, BindingPrintOptions printOptions, Dictionary<string, string>? options = null, CancellationToken cancellationToken = default)
+    {
+        this.ApplyOptions(options ?? new Dictionary<string, string>());
+        var printer = new EDBindingPrinter(this.Platform, this._folders);
+        printer.StandardOutput += WriteLineStandard;
+        printer.WarningOutput += WriteLineWarning;
+        printer.DebugOutput += WriteLineDebug;
+        return printer.Print(format, printOptions, cancellationToken);
     }
 }

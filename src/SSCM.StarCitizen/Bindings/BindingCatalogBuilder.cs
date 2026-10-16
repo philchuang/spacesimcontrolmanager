@@ -1,10 +1,11 @@
 using System.Xml.Linq;
+using SSCM.Core;
 
 namespace SSCM.StarCitizen.Bindings;
 
 /// <summary>
 /// Builds the flat action catalog:
-/// default profile actions, localized labels, and the user's rebinds from actionmaps.xml.
+/// default profile actions, localized labels, and the user's rebinds from imported actionmaps data.
 /// </summary>
 public static class BindingCatalogBuilder
 {
@@ -20,28 +21,33 @@ public static class BindingCatalogBuilder
     /// Key/value strings from global.ini, or null when that file does not exist.
     /// Only labels that are localization keys (starting with '@') are replaced; others are kept as is.
     /// </param>
+    /// <param name="actionMaps">
+    /// User rebinds and devices from <see cref="MappingImporter.ReadActionMaps"/>. Keyboard and mouse
+    /// rebinds fill the keyboard column; joystick rebinds fill the joystick column. Gamepad is ignored.
+    /// The first rebind of each column wins. Actions not in the default profile are dropped.
+    /// </param>
     public static List<BindingAction> Build(
         XDocument defaultProfile,
         IReadOnlyDictionary<string, string>? localization,
-        XDocument actionMaps)
+        SCMappingData? actionMaps = null)
     {
-        var rows = ReadDefaultActions(defaultProfile);
+        var defaultBinds = ReadDefaultActions(defaultProfile);
 
-        foreach (var row in rows.Values)
+        foreach (var row in defaultBinds.Values)
         {
             row.Action.Label = Localize(row.Action.Label, localization);
             row.Action.CategoryLabel = Localize(row.Action.CategoryLabel, localization);
         }
 
-        ApplyRebinds(rows, actionMaps);
+        ApplyRebinds(defaultBinds, actionMaps);
 
-        foreach (var row in rows.Values)
+        foreach (var row in defaultBinds.Values)
         {
             row.Action.Keyboard = row.Keyboard ?? CopyDefaultBinding(row.Action.DefaultKeyboard);
             row.Action.Joystick = row.Joystick ?? CopyDefaultBinding(row.Action.DefaultJoystick);
         }
 
-        return rows.Values.Select(r => r.Action).OrderBy(a => a.Id, StringComparer.Ordinal).ToList();
+        return defaultBinds.Values.Select(r => r.Action).OrderBy(a => a.Id, StringComparer.Ordinal).ToList();
     }
 
     private sealed class Row
@@ -53,7 +59,7 @@ public static class BindingCatalogBuilder
 
     private static Dictionary<string, Row> ReadDefaultActions(XDocument defaultProfile)
     {
-        var rows = new Dictionary<string, Row>(StringComparer.Ordinal);
+        var defaultBinds = new Dictionary<string, Row>(StringComparer.Ordinal);
 
         foreach (var actionMap in defaultProfile.Root?.Descendants("actionmap") ?? [])
         {
@@ -64,12 +70,15 @@ public static class BindingCatalogBuilder
             {
                 var actionName = Attr(action, "name");
                 var rawKeyboard = Attr(action, "keyboard");
+                var rawMouse = Attr(action, "mouse");
 
+                // Mouse wins when both are set: the few dual defaults in defaultProfile.xml pair
+                // a mouse bind with a nonsensical keyboard key.
                 string defaultKeyboard, defaultKeyboardSource;
-                if (string.IsNullOrWhiteSpace(rawKeyboard))
+                if (!string.IsNullOrWhiteSpace(rawMouse))
                 {
-                    defaultKeyboard = Attr(action, "mouse");
-                    defaultKeyboardSource = defaultKeyboard.Length > 0 ? "mouse" : "keyboard";
+                    defaultKeyboard = rawMouse;
+                    defaultKeyboardSource = "mouse";
                 }
                 else
                 {
@@ -78,7 +87,7 @@ public static class BindingCatalogBuilder
                 }
 
                 var id = $"{categoryName}-{actionName}";
-                rows[id] = new Row
+                defaultBinds[id] = new Row
                 {
                     Action = new BindingAction
                     {
@@ -95,37 +104,32 @@ public static class BindingCatalogBuilder
             }
         }
 
-        return rows;
+        return defaultBinds;
     }
 
-    private static void ApplyRebinds(Dictionary<string, Row> rows, XDocument actionMaps)
+    private static void ApplyRebinds(Dictionary<string, Row> binds, SCMappingData? actionMaps)
     {
-        foreach (var actionMap in actionMaps.Root?.Descendants("actionmap") ?? [])
+        if (actionMaps == null) return;
+
+        foreach (var mapping in actionMaps.Mappings)
         {
-            var categoryName = Attr(actionMap, "name");
-            foreach (var action in actionMap.Elements("action"))
-            {
-                if (!rows.TryGetValue($"{categoryName}-{Attr(action, "name")}", out var row)) continue;
+            if (!binds.TryGetValue(mapping.Id, out var row)) continue;
 
-                foreach (var rebind in action.Elements("rebind"))
-                {
-                    var rawInput = Attr(rebind, "input");
-                    var input = ApplyMultiTap(NormalizeInput(rawInput), Attr(rebind, "multiTap"));
-
-                    if (rawInput.StartsWith("kb", StringComparison.Ordinal)) row.Keyboard ??= input;
-                    else if (rawInput.StartsWith("js", StringComparison.Ordinal)) row.Joystick ??= input;
-                }
-            }
+            var input = FormatRebind(mapping);
+            if (IsKeyboardOrMouse(mapping.InputType)) row.Keyboard ??= input;
+            else if (mapping.InputType.Equals("joystick", StringComparison.OrdinalIgnoreCase)) row.Joystick ??= input;
         }
     }
 
-    private static string NormalizeInput(string input) => input.EndsWith(' ') ? Unbound : input;
+    internal static bool IsKeyboardOrMouse(string inputType) =>
+        inputType.Equals("keyboard", StringComparison.OrdinalIgnoreCase)
+        || inputType.Equals("mouse", StringComparison.OrdinalIgnoreCase);
 
-    private static string ApplyMultiTap(string input, string multiTap)
+    private static string FormatRebind(SCMapping mapping)
     {
-        var trimmed = multiTap.Trim();
-        if (input.Length == 0 || trimmed.Length == 0 || input == Unbound) return input;
-        return $"{input} {trimmed}x";
+        if (mapping.Input.EndsWith(' ')) return Unbound;
+        if (mapping.MultiTap is int tap && tap > 0) return $"{mapping.Input} {tap}x";
+        return mapping.Input;
     }
 
     private static string CopyDefaultBinding(string value)

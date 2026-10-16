@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text;
 using System.Xml.Linq;
 using SSCM.Core;
@@ -20,19 +19,19 @@ namespace SSCM.StarCitizen;
 /// </summary>
 public class SCBindingPrinter
 {
-    public const string JoystickBindingsFileName = "joystick-bindings.md";
+    public const string JoystickBindingsFileName = BindingPrintIO.JoystickBindingsFileName;
     public const string HtmlTemplateFileName = "star-citizen-bindings.template.html";
-    public const string MarkdownFileName = "bindings.md";
-    public const string TsvFileName = "bindings.tsv";
-    public const string HtmlFileName = "bindings.html";
-    public const string JsonFileName = "bindings.json";
+    public const string MarkdownFileName = BindingPrintIO.MarkdownFileName;
+    public const string TsvFileName = BindingPrintIO.TsvFileName;
+    public const string HtmlFileName = BindingPrintIO.HtmlFileName;
+    public const string JsonFileName = BindingPrintIO.JsonFileName;
 
-    public static readonly BindingPrintFormat MarkdownFormat = new("markdown", "Prints only the bindings markdown table.");
-    public static readonly BindingPrintFormat TsvFormat = new("tsv", "Prints only the bindings TSV.");
-    public static readonly BindingPrintFormat HtmlFormat = new("html", "Prints only the interactive bindings HTML page, along with its bindings.json data.");
+    public static readonly BindingPrintFormat MarkdownFormat = BindingPrintIO.MarkdownFormat;
+    public static readonly BindingPrintFormat TsvFormat = BindingPrintIO.TsvFormat;
+    public static readonly BindingPrintFormat HtmlFormat = BindingPrintIO.HtmlFormat;
 
     /// <summary>Everything this generator can print on its own, in the order they are written.</summary>
-    public static IReadOnlyList<BindingPrintFormat> Formats { get; } = [MarkdownFormat, TsvFormat, HtmlFormat];
+    public static IReadOnlyList<BindingPrintFormat> Formats => BindingPrintIO.Formats;
 
     public static readonly BindingPrintFlag RefreshDefaultsFlag = new(
         "refresh-defaults",
@@ -69,9 +68,9 @@ public class SCBindingPrinter
     /// <param name="format">The <see cref="BindingPrintFormat.Name"/> to print, or null for every format.</param>
     public async Task<BindingPrintResult> Print(string? format = null, BindingPrintOptions? printOptions = null, CancellationToken cancellationToken = default)
     {
-        var selected = ResolveFormat(format);
+        var selected = BindingPrintIO.ResolveFormat(format, Formats);
         bool Wants(BindingPrintFormat candidate) => selected == null || selected == candidate;
-        var outputDir = this.ResolveOutputDir(printOptions);
+        var outputDir = BindingPrintIO.ResolveOutputDir(this._platform, this.OutputDir, printOptions);
 
         this.EnsureEnvironmentExists();
         if (printOptions?.Has(RefreshDefaultsFlag.Name) == true) await this.RefreshDefaults(cancellationToken).ConfigureAwait(false);
@@ -81,7 +80,7 @@ public class SCBindingPrinter
 
         if (Wants(MarkdownFormat))
         {
-            var content = BindingDocumentRenderer.RenderMarkdown(document);
+            var content = BindingDocumentRenderer.RenderMarkdown(document, "Star Citizen Bindings");
             written.Add(this.Write(outputDir, MarkdownFileName, content, $"{BindingDocumentRenderer.CountRows(document, true)} markdown rows"));
         }
 
@@ -102,15 +101,6 @@ public class SCBindingPrinter
         }
 
         return new BindingPrintResult { ActionCount = document.Actions.Count, WrittenPaths = written };
-    }
-
-    /// <summary>Null (or blank) means every format. A name that isn't one of <see cref="Formats"/> is a user error, so it gets a friendly message.</summary>
-    private static BindingPrintFormat? ResolveFormat(string? name)
-    {
-        if (string.IsNullOrWhiteSpace(name)) return null;
-
-        var format = Formats.FirstOrDefault(f => f.Name.Equals(name.Trim(), StringComparison.OrdinalIgnoreCase));
-        return format ?? throw new SscmException($"Unknown print format [{name}]. Available formats: {string.Join(", ", Formats.Select(f => f.Name))}.");
     }
 
     /// <summary>
@@ -154,17 +144,14 @@ public class SCBindingPrinter
         var localization = await this.LoadLocalizationMap(cancellationToken).ConfigureAwait(false);
 
         this.DebugOutput($"Reading actionmaps [{actionMapsPath}]...");
-        XDocument actionMaps;
-        await using (var stream = new FileStream(actionMapsPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-        {
-            actionMaps = await XDocument.LoadAsync(stream, LoadOptions.None, cancellationToken).ConfigureAwait(false);
-        }
+        var actionMaps = await this.CreateImporter().ReadActionMaps(cancellationToken).ConfigureAwait(false);
 
         var actions = BindingCatalogBuilder.Build(defaultProfile, localization, actionMaps);
 
-        JoystickDescriptions.Apply(actions, await this.LoadJoystickNames(actionMaps, cancellationToken).ConfigureAwait(false));
+        var instances = SCJoystickDescriptions.LoadJoystickInstances(actionMaps.Inputs);
+        SCJoystickDescriptions.Apply(actions, await this.LoadJoystickDescriptions(instances, cancellationToken).ConfigureAwait(false), instances);
 
-        return new BindingDocument { GeneratedAt = this.CurrentTimestamp(), Actions = actions };
+        return new BindingDocument { GeneratedAt = BindingPrintIO.CurrentTimestamp(this._platform), Actions = actions };
     }
 
     private async Task<Dictionary<string, string>?> LoadLocalizationMap(CancellationToken cancellationToken)
@@ -183,19 +170,20 @@ public class SCBindingPrinter
     }
 
     /// <summary>joystick-bindings.md is optional. Without it, bound joystick inputs are described as {NOT_FOUND}.</summary>
-    private async Task<Dictionary<string, string>> LoadJoystickNames(XDocument actionMaps, CancellationToken cancellationToken)
+    private async Task<JoystickDescriptions> LoadJoystickDescriptions(IReadOnlyDictionary<string, string> joystickInstances, CancellationToken cancellationToken)
     {
-        var file = this.Resource(JoystickBindingsFileName);
-        var path = file.FindExistingPath();
-        if (path == null)
-        {
-            this.WarningOutput($"Could not find {JoystickBindingsFileName} at {file.Searched}. Joystick descriptions will be {JoystickDescriptions.NotFound}.");
-            return new Dictionary<string, string>();
-        }
+        var descriptions = await JoystickBindingsFile.Load(this._platform, this._resourceDir, this.WarningOutput, this.DebugOutput, cancellationToken).ConfigureAwait(false);
+        SCJoystickDescriptions.WarnUnattached(descriptions, joystickInstances, this.WarningOutput);
+        return descriptions;
+    }
 
-        this.DebugOutput($"Reading joystick bindings [{path}]...");
-        var markdown = await File.ReadAllTextAsync(path, Encoding.UTF8, cancellationToken).ConfigureAwait(false);
-        return JoystickDescriptions.LoadNames(markdown, JoystickDescriptions.LoadJoystickInstances(actionMaps), this.WarningOutput);
+    private MappingImporter CreateImporter()
+    {
+        var importer = new MappingImporter(this._platform, this._folders);
+        importer.StandardOutput += msg => this.StandardOutput(msg);
+        importer.WarningOutput += msg => this.WarningOutput(msg);
+        importer.DebugOutput += msg => this.DebugOutput(msg);
+        return importer;
     }
 
     private string GameMappingsPath
@@ -242,30 +230,8 @@ public class SCBindingPrinter
         throw new SscmException(message);
     }
 
-    private string CurrentTimestamp() =>
-        new DateTimeOffset(DateTime.SpecifyKind(this._platform.UtcNow, DateTimeKind.Utc))
-            .ToLocalTime()
-            .ToString("yyyy-MM-dd'T'HH:mm:sszzz", CultureInfo.InvariantCulture);
-
-    /// <summary>Uses <see cref="OutputDir"/> when no directory was given. A relative path is resolved against the working directory.</summary>
-    private string ResolveOutputDir(BindingPrintOptions? printOptions)
-    {
-        if (string.IsNullOrWhiteSpace(printOptions?.OutputDir)) return this.OutputDir;
-
-        var specified = printOptions.OutputDir.Trim();
-        return Path.IsPathRooted(specified)
-            ? Path.GetFullPath(specified)
-            : Path.GetFullPath(Path.Combine(this._platform.WorkingDir, specified));
-    }
-
-    private string Write(string outputDir, string fileName, string content, string description)
-    {
-        Directory.CreateDirectory(outputDir);
-        var path = Path.Combine(outputDir, fileName);
-        File.WriteAllText(path, content, new UTF8Encoding(false));
-        this.StandardOutput($"Wrote {description} to {path}");
-        return path;
-    }
+    private string Write(string outputDir, string fileName, string content, string description) =>
+        BindingPrintIO.Write(outputDir, fileName, content, description, msg => this.StandardOutput(msg));
 
     /// <summary>A file that ships with the tool: the working directory is checked first, then the executable directory.</summary>
     private ResourceFile Resource(string fileName) =>

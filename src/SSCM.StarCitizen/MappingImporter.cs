@@ -26,15 +26,23 @@ public class MappingImporter : IMappingImporter<SCMappingData>
 
     public async Task<SCMappingData> Read()
     {
-        this._data = new SCMappingData { ReadTime = this._platform.UtcNow };
-
-        await this.ReadMappings();
+        await this.ReadActionMaps();
         await this.ReadAttributes();
+        return this._data;
+    }
 
+    /// <summary>
+    /// Reads actionmaps.xml into inputs and mappings without requiring attributes.xml.
+    /// Used by import and by binding-doc generation.
+    /// </summary>
+    public async Task<SCMappingData> ReadActionMaps(CancellationToken cancellationToken = default)
+    {
+        this._data = new SCMappingData { ReadTime = this._platform.UtcNow };
+        await this.ReadMappings(cancellationToken).ConfigureAwait(false);
         return this._data;
     }
     
-    private async Task ReadMappings()
+    private async Task ReadMappings(CancellationToken cancellationToken = default)
     {
         if (!System.IO.File.Exists(this.GameMappingsPath))
         {
@@ -42,10 +50,9 @@ public class MappingImporter : IMappingImporter<SCMappingData>
         }
 
         this.StandardOutput($"Reading [{this.GameMappingsPath}]...");
-        using (var fs = new FileStream(this.GameMappingsPath, FileMode.Open))
+        using (var fs = new FileStream(this.GameMappingsPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
         {
-            var ct = new CancellationToken();
-            var xd = await XDocument.LoadAsync(fs, LoadOptions.None, ct);
+            var xd = await XDocument.LoadAsync(fs, LoadOptions.None, cancellationToken).ConfigureAwait(false);
 
             ReadMappingsDocument(xd);
         }
@@ -177,7 +184,11 @@ public class MappingImporter : IMappingImporter<SCMappingData>
         }
         var multitapStr = rebind.GetAttribute("multiTap");
         if (!int.TryParse(multitapStr, out var multitap)) multitap = -1;
-        var (inputType, instance) = ActionMapsXmlHelper.GetOptionsTypeAndInstanceForPrefix(input);
+        if (!ActionMapsXmlHelper.TryGetOptionsTypeAndInstanceForPrefix(input, out var inputType, out _))
+        {
+            this.WarningOutput($"Could not determine input type for rebind [{input}] on [{actionName}].");
+            inputType = string.Empty;
+        }
         this._data.Mappings.Add(new SCMapping { ActionMap = actionmapName, Action = actionName, Input = input, InputType = inputType, MultiTap = multitap != -1 ? multitap : null, Preserve = preserve });
     }
 

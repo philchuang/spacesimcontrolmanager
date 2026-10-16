@@ -40,6 +40,7 @@ msbuild.wrn
 
 # generated files
 docs/starcitizen/bindings
+docs/elite/bindings
 
 # temp files
 */SSCM.cli/scmappings.json

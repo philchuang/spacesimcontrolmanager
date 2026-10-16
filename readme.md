@@ -87,7 +87,7 @@ Creates a plain-text report of the captured mappings (multiple formats available
 
 ### Print
 
-Prints the current Star Citizen bindings (game defaults plus your `actionmaps.xml` rebinds, with localized names) as markdown, TSV, and an interactive HTML page. Files are written to `docs\starcitizen\bindings` under the current directory. Use `--outputDir` to write them somewhere else (a relative path is resolved against the current directory).
+Prints the current Star Citizen bindings (game defaults plus your `actionmaps.xml` rebinds, with localized names) as markdown, TSV, and an interactive HTML page. Keyboard and mouse rebinds fill the keyboard column; joystick rebinds fill the joystick column. Files are written to `docs\starcitizen\bindings` under the current directory. Use `--outputDir` to write them somewhere else (a relative path is resolved against the current directory).
 
 ```text
 > SSCM.exe sc print --outputDir C:\bindings
@@ -116,6 +116,24 @@ Action and category names are localized with `global.ini`. That file belongs to 
 If your game folder has no `global.ini`, `--refresh-defaults` also extracts one from `Data.p4k` and saves it to the current directory. This happens in the same pass as `defaultProfile.xml`, so the archive is only read once. If the game folder already has the file, nothing is extracted, and a copy saved earlier in the current directory is ignored.
 
 If the selected Star Citizen environment isn't installed (for example `--environment PTU` without a PTU), `print` shows a short error listing the environments it found instead of a stack trace.
+
+### Elite Dangerous print
+
+Prints the current Elite Dangerous bindings from the highest `Custom.{major}.{minor}.binds` file in the game bindings folder (for example `Custom.4.2.binds` over `Custom.4.0.binds` and `Custom.3.0.binds`) as markdown, TSV, and an interactive HTML page. Primary, Secondary, and axis Binding slots are folded into the same `keyboard` / `joystick` / `joystickDesc` columns Star Citizen uses. Keyboard and mouse go in `keyboard`; other devices go in `joystick`. Two different devices in the same column are joined with `; `; if Primary and Secondary share a device, Primary wins. Files are written to `docs\elitedangerous\bindings` under the current directory. Use `--outputDir` to write them somewhere else.
+
+```text
+> SSCM.exe ed print
+```
+
+```text
+> SSCM.exe ed print html
+```
+
+The game's default bindings are read on every print from `{GameRoot}\ControlSchemes\{DefaultBinds}.binds`. `DefaultBinds` is the scheme name without the `.binds` extension and defaults to `GenericJoystick`. Every Primary, Secondary, and axis Binding slot in that file is used. Actions you have not rebound keep the scheme's bind in parentheses. SSCM looks for `{DefaultBinds}.binds` in the current directory first, then falls back to the game's ControlSchemes copy. `GameRoot` defaults to the Steam Odyssey product folder; both it and `DefaultBinds` are set in `appsettings.json`. Override them with `EDFolders:GameRoot` and `EDFolders:DefaultBinds` in `appsettings.local.json` if your install or preferred scheme is different.
+
+Joystick inputs are given friendly names from `joystick-bindings.md` using each device's `elite_dangerous_device_id` and `elite_dangerous` input (`Joy_4`). Combinations (a button plus modifiers) list every involved input in `joystickDesc`, joined with ` + `. The file is optional and is read from the current directory first, then from the copy shipped next to `SSCM.exe`. Devices that are not in your binds file are skipped with a warning. Bound joystick inputs without a friendly name are described as `{NOT_FOUND}`. The HTML page is built from `elite-dangerous-bindings.template.html`, which can be overridden the same way.
+
+Elite does not yet extract localization from the game. `--refresh-defaults` prints a warning and continues; default binds are still read from ControlSchemes as above. If you place `elite-localization.ini` in the current directory, `print` uses it: keys matching the XML action name replace the description (`/KNF` when a key is missing). The on-disk localization format may change once the game source is known.
 
 ## Advanced Usage
 

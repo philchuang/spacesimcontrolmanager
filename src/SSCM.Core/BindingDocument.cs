@@ -1,4 +1,4 @@
-namespace SSCM.StarCitizen.Bindings;
+namespace SSCM.Core;
 
 public class BindingAction
 {

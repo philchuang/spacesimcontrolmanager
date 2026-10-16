@@ -66,7 +66,7 @@ public class SCBindingPrinter_Tests
 
         var markdown = File.ReadAllText(Path.Combine(outputDir, "bindings.md"));
         Assert.That(markdown, Does.Contain("|seat-fire|Seat Controls|Fire Weapons|kb1_f|js1_button1 2x|LT-EVO.01(FIRE)|"));
-        Assert.That(markdown, Does.Contain("|seat-look|Seat Controls|Look|(maxis_x)|||"));
+        Assert.That(markdown, Does.Contain("|seat-look|Seat Controls|Look|mo1_mouse1|||"));
 
         var html = File.ReadAllText(Path.Combine(outputDir, "bindings.html"));
         Assert.That(html, Does.Contain("\"generatedAt\":\"2026-10-15T"));
@@ -261,8 +261,8 @@ public class SCBindingPrinter_Tests
         await generator.Print("tsv");
 
         // Assert
-        Assert.AreEqual(1, messages.Count);
-        Assert.That(messages[0], Does.Contain("2 TSV rows").And.Contain("bindings.tsv"));
+        Assert.That(messages, Has.Some.Contain("Reading").And.Contain("actionmaps.xml"));
+        Assert.That(messages, Has.Some.Contain("2 TSV rows").And.Contain("bindings.tsv"));
     }
 
     [Test]
@@ -516,7 +516,7 @@ public class SCBindingPrinter_Tests
             .And.Contain(Path.Combine(this._resourceDir, "joystick-bindings.md")));
         var markdown = File.ReadAllText(Path.Combine(generator.OutputDir, "bindings.md"));
         Assert.That(markdown, Does.Contain("|seat-fire|Seat Controls|Fire Weapons|kb1_f|js1_button1 2x|{NOT_FOUND}|"));
-        Assert.That(markdown, Does.Contain("|seat-look|Seat Controls|Look|(maxis_x)|||"), "nothing is bound, so nothing is not found");
+        Assert.That(markdown, Does.Contain("|seat-look|Seat Controls|Look|mo1_mouse1|||"), "mouse rebinds fill the keyboard column and have nothing to describe");
     }
 
     [Test]
@@ -863,6 +863,9 @@ public class SCBindingPrinter_Tests
               <action name="fire">
                 <rebind input="kb1_f" />
                 <rebind input="js1_button1" multiTap="2" />
+              </action>
+              <action name="look">
+                <rebind input="mo1_mouse1" />
               </action>
             </actionmap>
           </ActionProfiles>

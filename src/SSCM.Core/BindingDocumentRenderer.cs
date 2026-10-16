@@ -1,7 +1,7 @@
 using System.Text;
 using Newtonsoft.Json;
 
-namespace SSCM.StarCitizen.Bindings;
+namespace SSCM.Core;
 
 /// <summary>Renders a <see cref="BindingDocument"/> as markdown, TSV, or interactive HTML.</summary>
 public static class BindingDocumentRenderer
@@ -10,14 +10,14 @@ public static class BindingDocumentRenderer
 
     private static readonly string[] Columns = ["id", "category", "description", "keyboard", "joystick", "joystickDesc"];
 
-    public static string RenderMarkdown(BindingDocument document)
+    public static string RenderMarkdown(BindingDocument document, string heading)
     {
         // Rows without a category or description are noise in markdown, so they are dropped.
         var rows = BuildRows(document, skipMissingCategoryOrDescription: true);
 
         var lines = new List<string>
         {
-            "# Star Citizen Bindings",
+            $"# {heading}",
             "",
             "## GENERATED BINDINGS",
             "",

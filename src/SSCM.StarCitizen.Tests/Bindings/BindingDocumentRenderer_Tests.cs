@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
-using SSCM.StarCitizen.Bindings;
+using SSCM.Core;
 
 namespace SSCM.StarCitizen.Tests.Bindings;
 
@@ -18,7 +18,7 @@ public class BindingDocumentRenderer_Tests
             Action("d-nodescription", "Cat", " ", "", "", ""));
 
         // Act
-        var markdown = BindingDocumentRenderer.RenderMarkdown(document);
+        var markdown = BindingDocumentRenderer.RenderMarkdown(document, "Star Citizen Bindings");
 
         // Assert
         var expected = string.Join("\n",
@@ -40,7 +40,7 @@ public class BindingDocumentRenderer_Tests
         var document = Document(Action("a", "Cat", "A|B\r\nC", "", "", ""));
 
         // Act
-        var markdown = BindingDocumentRenderer.RenderMarkdown(document);
+        var markdown = BindingDocumentRenderer.RenderMarkdown(document, "Star Citizen Bindings");
 
         // Assert
         Assert.That(markdown, Does.Contain("|a|Cat|A\\|B  C|"));

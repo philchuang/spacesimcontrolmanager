@@ -1,5 +1,7 @@
 using System.Xml.Linq;
 using NUnit.Framework;
+using SSCM.Core;
+using SSCM.StarCitizen;
 using SSCM.StarCitizen.Bindings;
 
 namespace SSCM.StarCitizen.Tests.Bindings;
@@ -18,7 +20,7 @@ public class BindingCatalogBuilder_Tests
             """);
 
         // Act
-        var actions = BindingCatalogBuilder.Build(profile, NoLocalization, ActionMaps(""));
+        var actions = BindingCatalogBuilder.Build(profile, NoLocalization);
 
         // Assert
         Assert.AreEqual(new[] { "Flight-boost", "seat-fire" }, actions.Select(a => a.Id));
@@ -33,16 +35,18 @@ public class BindingCatalogBuilder_Tests
         var profile = Profile("""
             <actionmap name="m"><action name="a" keyboard=" " mouse="mouse1" />
             <action name="b" keyboard="space" mouse="mouse2" />
-            <action name="c" /></actionmap>
+            <action name="c" />
+            <action name="d" keyboard="space" mouse=" " /></actionmap>
             """);
 
         // Act
-        var actions = BindingCatalogBuilder.Build(profile, NoLocalization, ActionMaps("")).ToDictionary(a => a.Id);
+        var actions = BindingCatalogBuilder.Build(profile, NoLocalization).ToDictionary(a => a.Id);
 
         // Assert
         Assert.AreEqual("(mouse1)", actions["m-a"].Keyboard);
-        Assert.AreEqual("(space)", actions["m-b"].Keyboard);
+        Assert.AreEqual("(mouse2)", actions["m-b"].Keyboard, "when both are set, mouse wins");
         Assert.AreEqual("", actions["m-c"].Keyboard);
+        Assert.AreEqual("(space)", actions["m-d"].Keyboard);
     }
 
     [Test]
@@ -52,11 +56,12 @@ public class BindingCatalogBuilder_Tests
         var profile = Profile("""
             <actionmap name="m" UILabel="Map"><action name="a" keyboard=" " mouse="mouse1" joystick="js1_button4" />
             <action name="b" keyboard="space" mouse="mouse2" />
-            <action name="c" /></actionmap>
+            <action name="c" />
+            <action name="d" keyboard="space" /></actionmap>
             """);
 
         // Act
-        var actions = BindingCatalogBuilder.Build(profile, NoLocalization, ActionMaps("")).ToDictionary(a => a.Id);
+        var actions = BindingCatalogBuilder.Build(profile, NoLocalization).ToDictionary(a => a.Id);
 
         // Assert
         Assert.AreEqual("m", actions["m-a"].CategoryName);
@@ -64,10 +69,12 @@ public class BindingCatalogBuilder_Tests
         Assert.AreEqual("mouse1", actions["m-a"].DefaultKeyboard);
         Assert.AreEqual("mouse", actions["m-a"].DefaultKeyboardSource);
         Assert.AreEqual("js1_button4", actions["m-a"].DefaultJoystick);
-        Assert.AreEqual("space", actions["m-b"].DefaultKeyboard);
-        Assert.AreEqual("keyboard", actions["m-b"].DefaultKeyboardSource);
+        Assert.AreEqual("mouse2", actions["m-b"].DefaultKeyboard);
+        Assert.AreEqual("mouse", actions["m-b"].DefaultKeyboardSource);
         Assert.AreEqual("", actions["m-c"].DefaultKeyboard);
         Assert.AreEqual("keyboard", actions["m-c"].DefaultKeyboardSource);
+        Assert.AreEqual("space", actions["m-d"].DefaultKeyboard);
+        Assert.AreEqual("keyboard", actions["m-d"].DefaultKeyboardSource);
     }
 
     [Test]
@@ -77,7 +84,7 @@ public class BindingCatalogBuilder_Tests
         var profile = Profile("""<actionmap name="m"><action name="a" keyboard="u+lshift" joystick=" " /></actionmap>""");
 
         // Act
-        var action = BindingCatalogBuilder.Build(profile, NoLocalization, ActionMaps("")).Single();
+        var action = BindingCatalogBuilder.Build(profile, NoLocalization).Single();
 
         // Assert
         Assert.AreEqual("(u+lshift)", action.Keyboard);
@@ -106,7 +113,7 @@ public class BindingCatalogBuilder_Tests
         };
 
         // Act
-        var actions = BindingCatalogBuilder.Build(profile, localization, ActionMaps("")).ToDictionary(a => a.Id);
+        var actions = BindingCatalogBuilder.Build(profile, localization).ToDictionary(a => a.Id);
 
         // Assert
         Assert.AreEqual("Category", actions["m-a"].CategoryLabel, "category labels are localized too");
@@ -129,7 +136,7 @@ public class BindingCatalogBuilder_Tests
             """);
 
         // Act
-        var actions = BindingCatalogBuilder.Build(profile, null, ActionMaps("")).ToDictionary(a => a.Id);
+        var actions = BindingCatalogBuilder.Build(profile, null).ToDictionary(a => a.Id);
 
         // Assert
         Assert.AreEqual("@ui_cat/FNF", actions["m-a"].CategoryLabel);
@@ -149,7 +156,7 @@ public class BindingCatalogBuilder_Tests
             """);
 
         // Act
-        var action = BindingCatalogBuilder.Build(profile, NoLocalization, ActionMaps("")).Single();
+        var action = BindingCatalogBuilder.Build(profile, NoLocalization).Single();
 
         // Assert
         Assert.AreEqual("Category Text", action.CategoryLabel);
@@ -161,15 +168,12 @@ public class BindingCatalogBuilder_Tests
     {
         // Arrange
         var profile = Profile("""<actionmap name="seat"><action name="fire" keyboard="space" joystick="js1_button9" /></actionmap>""");
-        var actionMaps = ActionMaps("""
-            <actionmap name="seat"><action name="fire">
-              <rebind input="kb1_f" />
-              <rebind input="js1_button3" />
-              <rebind input="kb1_f" />
-              <rebind input="kb1_g" />
-              <rebind input="mo1_mouse1" />
-            </action></actionmap>
-            """);
+        var actionMaps = Data(
+            Map("seat", "fire", "kb1_f", "keyboard"),
+            Map("seat", "fire", "js1_button3", "joystick"),
+            Map("seat", "fire", "kb1_f", "keyboard"),
+            Map("seat", "fire", "kb1_g", "keyboard"),
+            Map("seat", "fire", "mo1_mouse1", "mouse"));
 
         // Act
         var action = BindingCatalogBuilder.Build(profile, NoLocalization, actionMaps).Single();
@@ -180,20 +184,47 @@ public class BindingCatalogBuilder_Tests
     }
 
     [Test]
+    public void Build_PutsMouseRebindsInTheKeyboardColumn()
+    {
+        // Arrange
+        var profile = Profile("""<actionmap name="seat"><action name="look" mouse="maxis_x" /></actionmap>""");
+        var actionMaps = Data(Map("seat", "look", "mo1_mouse1", "mouse"));
+
+        // Act
+        var action = BindingCatalogBuilder.Build(profile, NoLocalization, actionMaps).Single();
+
+        // Assert
+        Assert.AreEqual("mo1_mouse1", action.Keyboard);
+        Assert.AreEqual("", action.Joystick);
+    }
+
+    [Test]
+    public void Build_IgnoresGamepadRebinds()
+    {
+        // Arrange
+        var profile = Profile("""<actionmap name="seat"><action name="fire" keyboard="space" /></actionmap>""");
+        var actionMaps = Data(Map("seat", "fire", "gp1_button1", "gamepad"));
+
+        // Act
+        var action = BindingCatalogBuilder.Build(profile, NoLocalization, actionMaps).Single();
+
+        // Assert
+        Assert.AreEqual("(space)", action.Keyboard);
+        Assert.AreEqual("", action.Joystick);
+    }
+
+    [Test]
     public void Build_MarksTrailingSpaceRebindsUnboundAndAppendsMultiTapSuffix()
     {
         // Arrange
         var profile = Profile("""
             <actionmap name="s"><action name="a" /><action name="b" /><action name="c" /><action name="d" /></actionmap>
             """);
-        var actionMaps = ActionMaps("""
-            <actionmap name="s">
-              <action name="a"><rebind input="js1_ " /></action>
-              <action name="b"><rebind input="js1_button1" multiTap="2" /></action>
-              <action name="c"><rebind input="js1_ " multiTap="2" /></action>
-              <action name="d"><rebind input="kb1_x" multiTap=" 3 " /></action>
-            </actionmap>
-            """);
+        var actionMaps = Data(
+            Map("s", "a", "js1_ ", "joystick"),
+            Map("s", "b", "js1_button1", "joystick", multiTap: 2),
+            Map("s", "c", "js1_ ", "joystick", multiTap: 2),
+            Map("s", "d", "kb1_x", "keyboard", multiTap: 3));
 
         // Act
         var actions = BindingCatalogBuilder.Build(profile, NoLocalization, actionMaps).ToDictionary(a => a.Id);
@@ -210,7 +241,7 @@ public class BindingCatalogBuilder_Tests
     {
         // Arrange
         var profile = Profile("""<actionmap name="seat"><action name="fire" /></actionmap>""");
-        var actionMaps = ActionMaps("""<actionmap name="seat"><action name="removed"><rebind input="kb1_x" /></action></actionmap>""");
+        var actionMaps = Data(Map("seat", "removed", "kb1_x", "keyboard"));
 
         // Act
         var actions = BindingCatalogBuilder.Build(profile, NoLocalization, actionMaps);
@@ -221,6 +252,8 @@ public class BindingCatalogBuilder_Tests
 
     private static XDocument Profile(string actionMaps) => XDocument.Parse($"<profile>{actionMaps}</profile>");
 
-    private static XDocument ActionMaps(string actionMaps) =>
-        XDocument.Parse($"<ActionMaps><ActionProfiles profileName=\"default\">{actionMaps}</ActionProfiles></ActionMaps>");
+    private static SCMappingData Data(params SCMapping[] mappings) => new() { Mappings = mappings };
+
+    private static SCMapping Map(string actionMap, string action, string input, string inputType, int? multiTap = null) =>
+        new() { ActionMap = actionMap, Action = action, Input = input, InputType = inputType, MultiTap = multiTap };
 }

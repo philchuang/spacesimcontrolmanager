@@ -93,11 +93,29 @@ public class ActionMapsXmlHelper
 
     public static (string, string) GetOptionsTypeAndInstanceForPrefix(string prefix)
     {
+        if (TryGetOptionsTypeAndInstanceForPrefix(prefix, out var type, out var instance)) return (type, instance);
+        throw new ArgumentOutOfRangeException(nameof(prefix), prefix, "Could not determine the input type from this bind prefix.");
+    }
+
+    public static bool TryGetOptionsTypeAndInstanceForPrefix(string prefix, out string type, out string instance)
+    {
+        type = string.Empty;
+        instance = string.Empty;
         var match = InputPrefixParseRegex.Match(prefix);
-        var typeAbbv = match.Groups[1].Value;
-        var instance = match.Groups[2].Value;
-        var type = GetOptionsTypeFromAbbv(typeAbbv);
-        return (type, instance);
+        if (!match.Success) return false;
+
+        instance = match.Groups[2].Value;
+        try
+        {
+            type = GetOptionsTypeFromAbbv(match.Groups[1].Value);
+            return true;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            type = string.Empty;
+            instance = string.Empty;
+            return false;
+        }
     }
 
     public XElement? GetOptionsElementForInputDevice(SCInputDevice input)

@@ -1,5 +1,6 @@
-using System.Xml.Linq;
 using NUnit.Framework;
+using SSCM.Core;
+using SSCM.StarCitizen;
 using SSCM.StarCitizen.Bindings;
 
 namespace SSCM.StarCitizen.Tests.Bindings;
@@ -34,15 +35,16 @@ public class JoystickDescriptions_Tests
     public void LoadJoystickInstances_MapsProductToInstanceId()
     {
         // Arrange
-        var actionMaps = ActionMaps($"""
-            <options type="keyboard" instance="1" Product="Keyboard" />
-            <options type="joystick" instance="1" Product="{LeftProduct}" />
-            <options type="joystick" instance="2" Product="{RightProduct}" />
-            <options type="joystick" instance="3" />
-            """);
+        var inputs = new[]
+        {
+            Device("keyboard", 1, "Keyboard"),
+            Device("joystick", 1, LeftProduct),
+            Device("joystick", 2, RightProduct),
+            Device("joystick", 3, ""),
+        };
 
         // Act
-        var instances = JoystickDescriptions.LoadJoystickInstances(actionMaps);
+        var instances = SCJoystickDescriptions.LoadJoystickInstances(inputs);
 
         // Assert
         Assert.AreEqual(2, instances.Count);
@@ -54,141 +56,79 @@ public class JoystickDescriptions_Tests
     public void LoadJoystickInstances_ThrowsWhenAProductHasTwoInstances()
     {
         // Arrange
-        var actionMaps = ActionMaps($"""
-            <options type="joystick" instance="1" Product="{LeftProduct}" />
-            <options type="joystick" instance="2" Product="{LeftProduct}" />
-            """);
+        var inputs = new[]
+        {
+            Device("joystick", 1, LeftProduct),
+            Device("joystick", 2, LeftProduct),
+        };
 
         // Act & Assert
-        Assert.Throws<InvalidDataException>(() => JoystickDescriptions.LoadJoystickInstances(actionMaps));
+        Assert.Throws<InvalidDataException>(() => SCJoystickDescriptions.LoadJoystickInstances(inputs));
     }
 
     [Test]
     public void LoadJoystickInstances_ReturnsEmptyWhenNoJoysticksExist()
     {
         // Act
-        var instances = JoystickDescriptions.LoadJoystickInstances(ActionMaps(""));
+        var instances = SCJoystickDescriptions.LoadJoystickInstances([Device("keyboard", 1, "Keyboard")]);
 
         // Assert
         Assert.IsEmpty(instances);
     }
 
     [Test]
-    public void LoadNames_PrefixesInputsWithTheMatchingJoystickInstance()
+    public void WarnUnattached_WarnsForYamlDevicesMissingFromActionMaps()
     {
         // Arrange
-        var instances = new Dictionary<string, string> { [LeftProduct] = "js1", [RightProduct] = "js2" };
-
-        // Act
-        var names = JoystickDescriptions.LoadNames(Markdown, instances);
-
-        // Assert
-        Assert.AreEqual(3, names.Count);
-        Assert.AreEqual("LT-EVO.01(FIRE)", names["js1_button1"]);
-        Assert.AreEqual("LT-EVO.POV(HAT_UP)", names["js1_hat1_up"]);
-        Assert.AreEqual("RT-EVO.01(FIRE)", names["js2_button1"]);
-    }
-
-    [Test]
-    public void LoadNames_AcceptsWindowsLineEndings()
-    {
-        // Arrange
-        var instances = new Dictionary<string, string> { [LeftProduct] = "js1", [RightProduct] = "js2" };
-
-        // Act
-        var names = JoystickDescriptions.LoadNames(Markdown.Replace("\n", "\r\n"), instances);
-
-        // Assert
-        Assert.AreEqual(3, names.Count);
-    }
-
-    [Test]
-    public void LoadNames_SkipsDevicesWithoutAnInstanceAndWarns()
-    {
-        // Arrange
+        var descriptions = JoystickBindingsFile.Parse(Markdown);
         var instances = new Dictionary<string, string> { [LeftProduct] = "js1" };
         var warnings = new List<string>();
 
         // Act
-        var names = JoystickDescriptions.LoadNames(Markdown, instances, warnings.Add);
+        SCJoystickDescriptions.WarnUnattached(descriptions, instances, warnings.Add);
 
         // Assert
-        Assert.AreEqual(new[] { "js1_button1", "js1_hat1_up" }, names.Keys.OrderBy(k => k));
+        Assert.AreEqual("LT-EVO.01(FIRE)", descriptions.Get(SCJoystickDescriptions.Game, LeftProduct)["button1"]);
         Assert.AreEqual(1, warnings.Count);
         Assert.That(warnings[0], Does.Contain(RightProduct).And.Contain("skipped"));
     }
 
     [Test]
-    public void LoadNames_ReturnsNothingWhenNoDeviceIsAttached()
-    {
-        // Arrange
-        var warnings = new List<string>();
-
-        // Act
-        var names = JoystickDescriptions.LoadNames(Markdown, new Dictionary<string, string>(), warnings.Add);
-
-        // Assert
-        Assert.IsEmpty(names);
-        Assert.AreEqual(2, warnings.Count, "one warning per skipped device");
-    }
-
-    [Test]
-    public void LoadNames_DoesNotRequireAWarningHandler()
+    public void WarnUnattached_DoesNotRequireAWarningHandler()
     {
         // Act & Assert
-        Assert.DoesNotThrow(() => JoystickDescriptions.LoadNames(Markdown, new Dictionary<string, string>()));
-    }
-
-    [Test]
-    public void LoadNames_ThrowsWhenThereIsNoYamlBlock()
-    {
-        // Act & Assert
-        Assert.Throws<InvalidDataException>(() => JoystickDescriptions.LoadNames("# nothing here", new Dictionary<string, string>()));
-    }
-
-    [Test]
-    public void LoadNames_ThrowsWhenTwoNamesShareAnInput()
-    {
-        // Arrange
-        var markdown = """
-            ```yaml
-            LT-EVO:
-              star_citizen_device_id: " Left Stick {1111}"
-              bindings:
-                "LT-EVO.01(A)":
-                  star_citizen: button1
-                "LT-EVO.02(B)":
-                  star_citizen: button1
-            ```
-            """;
-
-        // Act & Assert
-        Assert.Throws<InvalidDataException>(() => JoystickDescriptions.LoadNames(markdown, new Dictionary<string, string> { [LeftProduct] = "js1" }));
+        Assert.DoesNotThrow(() => SCJoystickDescriptions.WarnUnattached(JoystickBindingsFile.Parse(Markdown), new Dictionary<string, string>(), null));
     }
 
     [Test]
     public void Apply_DescribesRebindsIgnoringTheMultiTapSuffix()
     {
         // Arrange
-        var names = new Dictionary<string, string> { ["js1_button1"] = "LT-EVO.01(FIRE)" };
+        var descriptions = JoystickBindingsFile.Parse(Markdown);
+        var instances = new Dictionary<string, string> { [LeftProduct] = "js1", [RightProduct] = "js2" };
         var actions = new List<BindingAction>
         {
             new() { Id = "a", Joystick = "js1_button1" },
             new() { Id = "b", Joystick = "js1_button1 2x" },
+            new() { Id = "c", Joystick = "js1_hat1_up" },
+            new() { Id = "d", Joystick = "js2_button1" },
         };
 
         // Act
-        JoystickDescriptions.Apply(actions, names);
+        SCJoystickDescriptions.Apply(actions, descriptions, instances);
 
         // Assert
-        Assert.AreEqual(new[] { "LT-EVO.01(FIRE)", "LT-EVO.01(FIRE)" }, actions.Select(a => a.JoystickDescription));
+        Assert.AreEqual(
+            new[] { "LT-EVO.01(FIRE)", "LT-EVO.01(FIRE)", "LT-EVO.POV(HAT_UP)", "RT-EVO.01(FIRE)" },
+            actions.Select(a => a.JoystickDescription));
     }
 
     [Test]
     public void Apply_MarksRebindsWithoutANameAsNotFound()
     {
         // Arrange
-        var names = new Dictionary<string, string> { ["js1_button1"] = "LT-EVO.01(FIRE)" };
+        var descriptions = JoystickBindingsFile.Parse(Markdown);
+        var instances = new Dictionary<string, string> { [LeftProduct] = "js1" };
         var actions = new List<BindingAction>
         {
             new() { Id = "a", Joystick = "js1_button99" },
@@ -196,7 +136,7 @@ public class JoystickDescriptions_Tests
         };
 
         // Act
-        JoystickDescriptions.Apply(actions, names);
+        SCJoystickDescriptions.Apply(actions, descriptions, instances);
 
         // Assert
         Assert.AreEqual(new[] { "{NOT_FOUND}", "{NOT_FOUND}" }, actions.Select(a => a.JoystickDescription));
@@ -206,7 +146,6 @@ public class JoystickDescriptions_Tests
     public void Apply_LeavesNothingToDescribeEmpty()
     {
         // Arrange
-        var names = new Dictionary<string, string> { ["js1_button1"] = "LT-EVO.01(FIRE)" };
         var actions = new List<BindingAction>
         {
             new() { Id = "none", Joystick = "", JoystickDescription = "stale" },
@@ -216,7 +155,7 @@ public class JoystickDescriptions_Tests
         };
 
         // Act
-        JoystickDescriptions.Apply(actions, names);
+        SCJoystickDescriptions.Apply(actions, JoystickBindingsFile.Parse(Markdown), new Dictionary<string, string> { [LeftProduct] = "js1" });
 
         // Assert
         Assert.AreEqual(new[] { "", "", "", "" }, actions.Select(a => a.JoystickDescription));
@@ -233,12 +172,12 @@ public class JoystickDescriptions_Tests
         };
 
         // Act
-        JoystickDescriptions.Apply(actions, new Dictionary<string, string>());
+        SCJoystickDescriptions.Apply(actions, JoystickDescriptions.Empty, new Dictionary<string, string> { [LeftProduct] = "js1" });
 
         // Assert
         Assert.AreEqual(new[] { "{NOT_FOUND}", "" }, actions.Select(a => a.JoystickDescription));
     }
 
-    private static XDocument ActionMaps(string options) =>
-        XDocument.Parse($"<ActionMaps><ActionProfiles profileName=\"default\">{options}</ActionProfiles></ActionMaps>");
+    private static SCInputDevice Device(string type, int instance, string product) =>
+        new() { Type = type, Instance = instance, Product = product };
 }

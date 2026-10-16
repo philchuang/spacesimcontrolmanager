@@ -109,4 +109,24 @@ public class MappingImporter_Read_Tests
 
         Assert2.DictionaryEquals(expected, actual, true, AssertSC.AreEqual);
     }
+
+    [Test]
+    public async Task ReadActionMaps_DoesNotRequireAttributes()
+    {
+        // Arrange
+        var folders = new SCFoldersForTest
+        {
+            GameMappingsPath = Samples.GetActionMapsXmlPath(),
+            GameAttributesPath = Path.Combine(Path.GetTempPath(), "sscm-missing-attributes.xml"),
+        };
+        var importer = new MappingImporter(this._platform, folders);
+
+        // Act
+        var data = await importer.ReadActionMaps();
+
+        // Assert
+        Assert.Greater(data.Mappings.Count, 0);
+        Assert.Greater(data.Inputs.Count, 0);
+        Assert.AreEqual(0, data.Attributes.Count);
+    }
 }
