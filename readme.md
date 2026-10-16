@@ -1,6 +1,6 @@
 # Space Sim Control Manager
 
-Utility to help players retain and migrate their control mappings for space-sim games, especially for new Star Citizen version releases. Elite Dangerous is also supported.
+Utility to help players retain and migrate their control mappings for space-sim games, especially for new Star Citizen version releases. Elite Dangerous is also supported. `print` generates binding docs (markdown, TSV, and an interactive HTML page) from the current game bindings.
 
 ## Standard Usage (Star Citizen)
 
@@ -89,6 +89,8 @@ Creates a plain-text report of the captured mappings (multiple formats available
 
 Prints the current Star Citizen bindings (game defaults plus your `actionmaps.xml` rebinds, with localized names) as markdown, TSV, and an interactive HTML page. Keyboard and mouse rebinds fill the keyboard column; joystick rebinds fill the joystick column. Files are written to `docs\starcitizen\bindings` under the current directory. Use `--outputDir` to write them somewhere else (a relative path is resolved against the current directory).
 
+![Star Citizen bindings HTML page](docs/images/sc-bindings-doc.png)
+
 ```text
 > SSCM.exe sc print --outputDir C:\bindings
 ```
@@ -120,6 +122,8 @@ If the selected Star Citizen environment isn't installed (for example `--environ
 ### Elite Dangerous print
 
 Prints the current Elite Dangerous bindings from the highest `Custom.{major}.{minor}.binds` file in the game bindings folder (for example `Custom.4.2.binds` over `Custom.4.0.binds` and `Custom.3.0.binds`) as markdown, TSV, and an interactive HTML page. Primary, Secondary, and axis Binding slots are folded into the same `keyboard` / `joystick` / `joystickDesc` columns Star Citizen uses. Keyboard and mouse go in `keyboard`; other devices go in `joystick`. Two different devices in the same column are joined with `; `; if Primary and Secondary share a device, Primary wins. Files are written to `docs\elitedangerous\bindings` under the current directory. Use `--outputDir` to write them somewhere else.
+
+![Elite Dangerous bindings HTML page](docs/images/ed-bindings-doc.png)
 
 ```text
 > SSCM.exe ed print
