@@ -107,13 +107,13 @@
 - Verify preserved mapping with malformed binding input throws `SscmException`.
 - Verify preserved mapping referencing an unknown input prefix throws `SscmException`.
 
-[ ] Add Elite folder detection tests
+[x] Add Elite folder detection tests
 
-- Verify configured `GameConfigDir` is used when supplied.
-- Verify configured `EliteDataDir` is used when supplied.
-- Verify `Custom.4.0.binds` is preferred over `Custom.3.0.binds` when both exist.
-- Verify `Custom.3.0.binds` is used when `Custom.4.0.binds` is absent.
-- Verify a useful exception is thrown when no `.binds` file exists.
+- [x] Verify configured `GameConfigDir` is used when supplied.
+- [x] Verify configured `EliteDataDir` is used when supplied.
+- [x] Verify the highest `Custom.{major}.{minor}.binds` wins when several exist (`Custom.4.2.binds` over `Custom.4.0.binds` and `Custom.3.0.binds`, compared numerically so `4.10` beats `4.2`).
+- [x] Verify `Custom.3.0.binds` is used when it is the only custom binds file.
+- [x] Verify a useful exception is thrown when no custom binds file exists.
 
 ## Suggested Order
 
