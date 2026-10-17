@@ -12,22 +12,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="SpaceSimControlManager.StarCitizen.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="SCUpgradeMappings.jsonc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="defaultProfile.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\docs\joystick-bindings.md" Link="joystick-bindings.md">
+    <None Include="star-citizen-bindings.template.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\tools\update-sc-bindings-docs\star-citizen-bindings.template.html" Link="star-citizen-bindings.template.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="ZstdSharp.Port" Version="0.8.8" />
   </ItemGroup>
 
 </Project>
