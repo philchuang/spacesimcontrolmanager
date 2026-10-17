@@ -1,3 +1,11 @@
+"""Write bindings.tsv from bindings.json.
+
+1. Build display rows sorted by id: id, category, description, keyboard,
+   joystick, joystickDesc. List values join with <br>.
+2. Keep every row, including blank category or description.
+3. Write a header plus one tab-separated line per row, replacing tabs and
+   newlines in cells with spaces.
+"""
 from __future__ import annotations
 
 from pathlib import Path

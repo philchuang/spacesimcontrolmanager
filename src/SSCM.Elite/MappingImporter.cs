@@ -20,11 +20,15 @@ public class MappingImporter : IMappingImporter<EDMappingData>
     private readonly Lazy<EDMappingConfig> _lazyConfig;
     private EDMappingConfig Config => this._lazyConfig.Value;
     
-    public MappingImporter(IPlatform platform, string gameConfigPath)
+    public const string ConfigFileName = "EDMappingConfig.yml";
+
+    /// <param name="executableDir">The fallback location for EDMappingConfig.yml. Defaults to the executable directory.</param>
+    public MappingImporter(IPlatform platform, string gameConfigPath, string? executableDir = null)
     {
         this._platform = platform;
         this.GameConfigPath = gameConfigPath;
-        this._lazyConfig = new Lazy<EDMappingConfig>(() => EDMappingConfig.Load(Path.Combine(this._platform.WorkingDir, "EDMappingConfig.yml")));
+        var configFile = ResourceFile.Create(platform, ConfigFileName, executableDir);
+        this._lazyConfig = new Lazy<EDMappingConfig>(() => EDMappingConfig.Load(configFile.Require()));
     }
 
     public async Task<EDMappingData> Read()

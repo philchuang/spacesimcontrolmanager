@@ -3,27 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Star Citizen Bindings</title>
+  <title>Elite Dangerous Bindings</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/darkly/bootstrap.min.css">
   <link rel="stylesheet" href="https://unpkg.com/tabulator-tables@6.2.5/dist/css/tabulator_bootstrap5.min.css">
   <style>
     :root {
-      --sc-bg: #141a20;
-      --sc-panel: #1c252d;
-      --sc-panel-strong: #222f38;
-      --sc-panel-soft: #192128;
-      --sc-border: rgba(173, 181, 189, 0.22);
-      --sc-border-strong: rgba(91, 192, 222, 0.45);
-      --sc-accent: #5bc0de;
-      --sc-accent-soft: rgba(91, 192, 222, 0.14);
-      --sc-text-muted: #96a4af;
+      --ed-bg: #0b0b0b;
+      --ed-panel: #16110c;
+      --ed-panel-strong: #1f1810;
+      --ed-panel-soft: #120e0a;
+      --ed-border: rgba(184, 160, 144, 0.22);
+      --ed-border-strong: rgba(255, 122, 24, 0.45);
+      --ed-accent: #ff7a18;
+      --ed-accent-soft: rgba(255, 122, 24, 0.14);
+      --ed-text-muted: #b8a090;
     }
 
     body {
       min-height: 100vh;
       background:
-        linear-gradient(180deg, rgba(91, 192, 222, 0.08), transparent 18rem),
-        var(--sc-bg);
+        linear-gradient(180deg, rgba(255, 122, 24, 0.08), transparent 18rem),
+        var(--ed-bg);
     }
 
     .page-wrap {
@@ -38,25 +38,25 @@
       justify-content: space-between;
       gap: 1rem;
       margin-bottom: 1rem;
-      border-bottom: 1px solid var(--sc-border);
+      border-bottom: 1px solid var(--ed-border);
       padding-bottom: 1rem;
     }
 
     .page-title {
       margin: 0;
-      color: #f7fbff;
+      color: #fff8f0;
       letter-spacing: 0;
     }
 
     .page-subtitle {
       max-width: 48rem;
       margin: 0.25rem 0 0;
-      color: var(--sc-text-muted);
+      color: var(--ed-text-muted);
     }
 
     .tool-credit {
       white-space: nowrap;
-      color: var(--sc-text-muted);
+      color: var(--ed-text-muted);
     }
 
     .toolbar {
@@ -105,8 +105,8 @@
       width: 100%;
       min-height: 10rem;
       resize: vertical;
-      border-color: var(--sc-border);
-      background-color: var(--sc-panel);
+      border-color: var(--ed-border);
+      background-color: var(--ed-panel);
       color: var(--bs-body-color);
     }
 
@@ -116,14 +116,14 @@
     }
 
     #bindings-notes:focus {
-      border-color: var(--sc-accent);
-      box-shadow: 0 0 0 0.2rem var(--sc-accent-soft);
+      border-color: var(--ed-accent);
+      box-shadow: 0 0 0 0.2rem var(--ed-accent-soft);
     }
 
     #global-search {
       min-width: min(36rem, 90vw);
-      border-color: var(--sc-border);
-      background-color: var(--sc-panel);
+      border-color: var(--ed-border);
+      background-color: var(--ed-panel);
       color: var(--bs-body-color);
     }
 
@@ -133,74 +133,74 @@
     }
 
     #global-search:focus {
-      border-color: var(--sc-accent);
-      box-shadow: 0 0 0 0.2rem var(--sc-accent-soft);
+      border-color: var(--ed-accent);
+      box-shadow: 0 0 0 0.2rem var(--ed-accent-soft);
     }
 
     #bindings-table {
       border-radius: 0.5rem;
       overflow: hidden;
-      border: 1px solid var(--sc-border-strong);
-      background: var(--sc-panel);
+      border: 1px solid var(--ed-border-strong);
+      background: var(--ed-panel);
       box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.22);
     }
 
     #bindings-table.tabulator {
-      background: var(--sc-panel);
+      background: var(--ed-panel);
       color: var(--bs-body-color);
       font-size: 0.875rem;
     }
 
     #bindings-table .tabulator-header {
-      border-bottom: 1px solid var(--sc-border-strong);
-      background: var(--sc-panel-strong);
-      color: #f7fbff;
+      border-bottom: 1px solid var(--ed-border-strong);
+      background: var(--ed-panel-strong);
+      color: #fff8f0;
     }
 
     #bindings-table .tabulator-header .tabulator-col {
-      border-right: 1px solid var(--sc-border);
-      background: var(--sc-panel-strong);
+      border-right: 1px solid var(--ed-border);
+      background: var(--ed-panel-strong);
     }
 
     #bindings-table .tabulator-header .tabulator-col-title {
       font-weight: 700;
       text-transform: uppercase;
       font-size: 0.72rem;
-      color: var(--sc-accent);
+      color: var(--ed-accent);
     }
 
     #bindings-table .tabulator-header-filter input,
     #bindings-table .tabulator-header-filter select {
-      border: 1px solid var(--sc-border);
+      border: 1px solid var(--ed-border);
       border-radius: 0.35rem;
-      background: var(--sc-panel-soft);
+      background: var(--ed-panel-soft);
       color: var(--bs-body-color);
       padding: 0.25rem 0.4rem;
     }
 
     #bindings-table .tabulator-row {
       border-bottom: 1px solid rgba(173, 181, 189, 0.12);
-      background: #172027;
+      background: #14100c;
     }
 
     #bindings-table .tabulator-row:nth-child(even) {
-      background: #1b252d;
+      background: #1a140e;
     }
 
     #bindings-table .tabulator-row.tabulator-row-even {
-      background: #1b252d;
+      background: #1a140e;
     }
 
     #bindings-table .tabulator-row:hover,
     #bindings-table .tabulator-row.tabulator-selectable:hover {
-      background: #203743 !important;
-      color: #f7fbff;
+      background: #2a1c10 !important;
+      color: #fff8f0;
     }
 
     #bindings-table .tabulator-row:hover .tabulator-cell,
     #bindings-table .tabulator-row.tabulator-selectable:hover .tabulator-cell {
       background: transparent;
-      color: #f7fbff;
+      color: #fff8f0;
     }
 
     #bindings-table .tabulator-row:hover .empty-value,
@@ -210,9 +210,9 @@
 
     #bindings-table .tabulator-row:hover .binding-chip,
     #bindings-table .tabulator-row.tabulator-selectable:hover .binding-chip {
-      border-color: rgba(91, 192, 222, 0.58);
-      background: rgba(20, 26, 32, 0.72);
-      color: #d9f5ff;
+      border-color: rgba(255, 122, 24, 0.58);
+      background: rgba(11, 11, 11, 0.72);
+      color: #ffe4cc;
     }
 
     #bindings-table .tabulator-row .tabulator-cell {
@@ -224,21 +224,21 @@
     }
 
     #bindings-table .tabulator-footer {
-      border-top: 1px solid var(--sc-border);
-      background: var(--sc-panel-strong);
-      color: var(--sc-text-muted);
+      border-top: 1px solid var(--ed-border);
+      background: var(--ed-panel-strong);
+      color: var(--ed-text-muted);
     }
 
     #bindings-table .tabulator-page {
-      border-color: var(--sc-border);
-      background: var(--sc-panel-soft);
+      border-color: var(--ed-border);
+      background: var(--ed-panel-soft);
       color: var(--bs-body-color);
     }
 
     #bindings-table .tabulator-page.active {
-      border-color: var(--sc-accent);
-      background: var(--sc-accent-soft);
-      color: #f7fbff;
+      border-color: var(--ed-accent);
+      background: var(--ed-accent-soft);
+      color: #fff8f0;
     }
 
     .binding-chip {
@@ -246,10 +246,10 @@
       align-items: center;
       max-width: 100%;
       margin: 0.1rem 0.18rem 0.1rem 0;
-      border: 1px solid var(--sc-border);
+      border: 1px solid var(--ed-border);
       border-radius: 0.35rem;
-      background: rgba(91, 192, 222, 0.1);
-      color: #d9f5ff;
+      background: rgba(255, 122, 24, 0.1);
+      color: #ffe4cc;
       padding: 0.08rem 0.42rem;
       font-family: var(--bs-font-monospace);
       font-size: 0.78rem;
@@ -262,19 +262,19 @@
       justify-content: center;
       width: 1.9rem;
       height: 1.9rem;
-      border: 1px solid var(--sc-border);
+      border: 1px solid var(--ed-border);
       border-radius: 0.35rem;
-      background: var(--sc-panel-soft);
-      color: var(--sc-text-muted);
+      background: var(--ed-panel-soft);
+      color: var(--ed-text-muted);
       font-size: 1rem;
       line-height: 1;
     }
 
     .favorite-button:hover,
     .favorite-button.is-favorite {
-      border-color: var(--sc-accent);
-      background: var(--sc-accent-soft);
-      color: #f7fbff;
+      border-color: var(--ed-accent);
+      background: var(--ed-accent-soft);
+      color: #fff8f0;
     }
 
     .empty-value {
@@ -292,7 +292,7 @@
 
     .state-status {
       min-height: 1rem;
-      color: var(--sc-text-muted);
+      color: var(--ed-text-muted);
     }
 
     @media (max-width: 760px) {
@@ -337,8 +337,8 @@
   <div class="page-wrap">
     <header class="page-header">
       <div>
-        <h1 class="h3 page-title">My Star Citizen Bindings</h1>
-        <p class="page-subtitle">Sortable and filterable control bindings generated from the custom profile data.</p>
+        <h1 class="h3 page-title">My Elite Dangerous Bindings</h1>
+        <p class="page-subtitle">Sortable and filterable control bindings generated from the custom binds file.</p>
       </div>
       <div class="small tool-credit">
         <div id="generated-at" class="mb-1"></div>
@@ -350,9 +350,9 @@
       <div class="controls-panel">
         <div class="controls">
           <input id="global-search" class="form-control" type="search" placeholder="Search bindings">
-          <button id="reload-data" type="button" class="btn btn-outline-info btn-sm">Reload Data</button>
-          <button id="clear-filters" type="button" class="btn btn-outline-info btn-sm">Clear All</button>
-          <button id="save-state" type="button" class="btn btn-info btn-sm">Save Filters/Sort</button>
+          <button id="reload-data" type="button" class="btn btn-outline-warning btn-sm">Reload Data</button>
+          <button id="clear-filters" type="button" class="btn btn-outline-warning btn-sm">Clear All</button>
+          <button id="save-state" type="button" class="btn btn-warning btn-sm">Save Filters/Sort</button>
         </div>
         <div class="toolbar-status">
           <span id="row-count" class="row-count small text-secondary"></span>
@@ -378,9 +378,9 @@
     const rowCountLabel = document.getElementById("row-count");
     const stateStatusLabel = document.getElementById("state-status");
     const generatedAtLabel = document.getElementById("generated-at");
-    const stateStorageKey = "star-citizen-bindings-table-state-v1";
-    const notesStorageKey = "star-citizen-bindings-notes-v1";
-    const favoritesStorageKey = "star-citizen-bindings-favorites-v1";
+    const stateStorageKey = "elite-dangerous-bindings-table-state-v1";
+    const notesStorageKey = "elite-dangerous-bindings-notes-v1";
+    const favoritesStorageKey = "elite-dangerous-bindings-favorites-v1";
     const bindingsDataUrl = "bindings.json";
 
     function escapeHtml(value) {
@@ -418,14 +418,39 @@
       return `<button type="button" class="favorite-button${activeClass}" aria-label="${label}" title="${label}">${icon}</button>`;
     }
 
+    function hasVisibleValue(value) {
+      return String(value || "")
+        .split("<br>")
+        .some(part => part.trim() !== "");
+    }
+
+    function headerTextFilter(filterValue, rowValue) {
+      const query = String(filterValue || "").trim();
+      if (!query) {
+        return true;
+      }
+
+      if (query === "*") {
+        return hasVisibleValue(rowValue);
+      }
+
+      return String(rowValue || "").toLowerCase().includes(query.toLowerCase());
+    }
+
+    const textHeaderFilter = {
+      headerFilter: "input",
+      headerFilterPlaceholder: "* = any value",
+      headerFilterFunc: headerTextFilter,
+    };
+
     const columns = [
       {title: "Fav", field: "favorite", hozAlign: "center", headerHozAlign: "center", width: 76, headerSort: false, formatter: favoriteFormatter, cellClick: toggleFavorite, headerFilter: "list", headerFilterParams: {values: {"": "All", "true": "On", "false": "Off"}}, headerFilterFunc: (filterValue, rowValue) => filterValue === "" || filterValue === null || typeof filterValue === "undefined" || String(Boolean(rowValue)) === String(filterValue), headerFilterEmptyCheck: value => value === "" || value === null || typeof value === "undefined"},
-      {title: "ID", field: "id", sorter: "string", headerFilter: "input", minWidth: 260, formatter: emptyFormatter},
+      {title: "ID", field: "id", sorter: "string", ...textHeaderFilter, minWidth: 260, formatter: emptyFormatter},
       {title: "Category", field: "category", sorter: "string", headerFilter: "list", headerFilterParams: {valuesLookup: true, multiselect: true, clearable: true, sort: "asc"}, headerFilterFunc: "in", headerFilterEmptyCheck: value => !value || (Array.isArray(value) && !value.length), minWidth: 220, formatter: emptyFormatter},
-      {title: "Description", field: "description", sorter: "string", headerFilter: "input", minWidth: 260, formatter: emptyFormatter},
-      {title: "Keyboard", field: "keyboard", sorter: "string", headerFilter: "input", minWidth: 160, formatter: bindingFormatter},
-      {title: "Joystick", field: "joystick", sorter: "string", headerFilter: "input", minWidth: 160, formatter: bindingFormatter},
-      {title: "Joystick Description", field: "joystickDesc", sorter: "string", headerFilter: "input", minWidth: 220, formatter: bindingFormatter},
+      {title: "Description", field: "description", sorter: "string", ...textHeaderFilter, minWidth: 260, formatter: emptyFormatter},
+      {title: "Keyboard", field: "keyboard", sorter: "string", ...textHeaderFilter, minWidth: 160, formatter: bindingFormatter},
+      {title: "Joystick", field: "joystick", sorter: "string", ...textHeaderFilter, minWidth: 160, formatter: bindingFormatter},
+      {title: "Joystick Description", field: "joystickDesc", sorter: "string", ...textHeaderFilter, minWidth: 220, formatter: bindingFormatter},
     ];
 
     let table;

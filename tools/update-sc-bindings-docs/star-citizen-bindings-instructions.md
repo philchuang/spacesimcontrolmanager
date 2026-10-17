@@ -36,13 +36,12 @@ INSTRUCTIONS:
       1. If there is no value for `keyboard`, copy the value from `defaultKeyboard`
       2. If there is no value for `joystick`, copy the value from `defaultJoystick`
 4. Read `docs\joystick-bindings.md`
-   1. Capture the list of Binding names
-   2. Iterate over actionData from step 3 if it has a joystick binding that is not `UNBOUND`
-      1. Using `js1` as `LT` and `js2` as `RT`, attempt to map a binding name to the joystick input.
-         1. Any input that contains `button` followed by a number should map cleanly to a binding name like:
-            1. `js1_button99` => `LT-EVO.99(SHIFT+C1_LT)`
-         2. If the input is not a button, then analyze the input value against the binding names and build mapping logic into the script
-         3. Copy the binding name to the actionData as `joystickDesc`
+   1. Parse the YAML bindings block
+   2. Match each `star_citizen_device_id` to a joystick `Product` in actionmaps.xml and use that `instance` as `js#`
+   3. Prefix `js#_` onto each `star_citizen` value
+   4. Iterate over actionData from step 3 if it has a joystick binding that is not `UNBOUND`
+      1. Look up the joystick input and copy the descriptive button name to `joystickDesc`
+         1. `js1_button99` => `LT-EVO.99(SHIFT+C1_LT)`
 5. Generate output documents
    1. Create `docs\starcitizen\bindings\bindings.json`.
    2. Create `docs\starcitizen\bindings\bindings.md` with a table under the `GENERATED BINDINGS` section, where each row is an actionData item.

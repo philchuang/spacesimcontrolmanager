@@ -1,3 +1,14 @@
+"""Shared paths and document helpers for the Star Citizen bindings docs.
+
+Holds the default LIVE install, profile, localization, and docs paths, and the
+read/write helpers the other scripts use:
+
+1. Read or write bindings.json as { generatedAt, actions }, accepting a bare
+   action list on read.
+2. Turn actions into display rows (id, category, description, keyboard,
+   joystick, joystickDesc), sorted by id. List values join with <br>.
+3. Optionally drop rows whose category or description is blank.
+"""
 from __future__ import annotations
 
 import json
@@ -18,7 +29,7 @@ DEFAULT_PROFILE_PATH = REPO_ROOT / "src" / "SSCM.StarCitizen" / "defaultProfile.
 GLOBAL_INI_PATH = STAR_CITIZEN_ENV_DIR / "data" / "Localization" / "english" / "global.ini"
 ACTIONMAPS_PATH = STAR_CITIZEN_ENV_DIR / "USER" / "Client" / "0" / "Profiles" / "default" / "actionmaps.xml"
 JOYSTICK_BINDINGS_PATH = DOCS_DIR / "joystick-bindings.md"
-HTML_TEMPLATE_PATH = SCRIPT_DIR / "star-citizen-bindings.template.html"
+HTML_TEMPLATE_PATH = REPO_ROOT / "src" / "SSCM.StarCitizen" / "star-citizen-bindings.template.html"
 CUSTOM_JSON_PATH = BINDINGS_OUTPUT_DIR / "bindings.json"
 MARKDOWN_OUTPUT_PATH = BINDINGS_OUTPUT_DIR / "bindings.md"
 TSV_OUTPUT_PATH = BINDINGS_OUTPUT_DIR / "bindings.tsv"

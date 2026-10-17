@@ -5,9 +5,11 @@ namespace SSCM.StarCitizen.Tests.Mocks;
 public class SCFoldersForTest : ISCFolders
 {
     public string Environment { get; set; } = "LIVE";
+    public string GameEnvironmentDir { get; set; } = string.Empty;
     public string GameAttributesPath { get; set; } = string.Empty;
     public string GameConfigDir { get; set; }
     public string GameMappingsPath { get; set; } = string.Empty;
+    public string GameLocalizationPath { get; set; } = string.Empty;
     public string ScDataDir { get; set; }
     public string MappingDataSavePath { get; set; } = string.Empty;
 

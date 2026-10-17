@@ -12,7 +12,7 @@ public class SCFolders_Tests
     {
         // Arrange
         var gameRoot = Path.Combine(Path.GetTempPath(), TestContext.CurrentContext.Test.ID, "StarCitizen");
-        var expected = Path.Combine(gameRoot, "PTU", SCFolders.SC_PROFILES_DEFAULT_DIR);
+        var expected = PathSegments.Combine(gameRoot, "PTU", SCFolders.SC_PROFILES_DEFAULT_DIR);
         Directory.CreateDirectory(expected);
 
         var folders = CreateFolders(gameRoot, "ptu");
@@ -29,7 +29,7 @@ public class SCFolders_Tests
     {
         // Arrange
         var gameRoot = Path.Combine(Path.GetTempPath(), TestContext.CurrentContext.Test.ID, "StarCitizen");
-        var expected = Path.Combine(gameRoot, "HOTFIX", SCFolders.SC_PROFILES_DEFAULT_DIR);
+        var expected = PathSegments.Combine(gameRoot, "HOTFIX", SCFolders.SC_PROFILES_DEFAULT_DIR);
         Directory.CreateDirectory(expected);
         var folders = CreateFolders(gameRoot, "live");
 
@@ -46,7 +46,7 @@ public class SCFolders_Tests
     {
         // Arrange
         var gameRoot = Path.Combine(Path.GetTempPath(), TestContext.CurrentContext.Test.ID, "StarCitizen");
-        var expected = Path.Combine(gameRoot, "LIVE", SCFolders.SC_PROFILES_DEFAULT_DIR);
+        var expected = PathSegments.Combine(gameRoot, "LIVE", SCFolders.SC_PROFILES_DEFAULT_DIR);
         Directory.CreateDirectory(expected);
 
         var folders = CreateFolders(gameRoot, environment: null);
@@ -60,12 +60,70 @@ public class SCFolders_Tests
     }
 
     [Test]
-    public void GameConfigDir_ThrowsWhenConstructedPathDoesNotExist()
+    public void GameEnvironmentDir_UsesGameRootAndUppercaseCurrentEnvironment()
+    {
+        // Arrange
+        var gameRoot = Path.Combine(Path.GetTempPath(), TestContext.CurrentContext.Test.ID, "StarCitizen");
+        var folders = CreateFolders(gameRoot, "live");
+
+        // Act
+        folders.Environment = "ptu";
+        var actual = folders.GameEnvironmentDir;
+
+        // Assert
+        Assert.AreEqual(Path.Combine(gameRoot, "PTU"), actual);
+    }
+
+    [Test]
+    public void GameLocalizationPath_UsesGameRootAndUppercaseCurrentEnvironment()
+    {
+        // Arrange
+        var gameRoot = Path.Combine(Path.GetTempPath(), TestContext.CurrentContext.Test.ID, "StarCitizen");
+        var folders = CreateFolders(gameRoot, "live");
+
+        // Act
+        folders.Environment = "ptu";
+        var actual = folders.GameLocalizationPath;
+
+        // Assert
+        Assert.AreEqual(Path.Combine(gameRoot, "PTU", "data", "Localization", "english", "global.ini"), actual);
+    }
+
+    [Test]
+    public void GameLocalizationPath_DoesNotRequireTheFileOrFoldersToExist()
     {
         // Arrange
         var gameRoot = Path.Combine(Path.GetTempPath(), TestContext.CurrentContext.Test.ID, "StarCitizen");
         var folders = CreateFolders(gameRoot, "hotfix");
-        var expected = Path.Combine(gameRoot, "HOTFIX", SCFolders.SC_PROFILES_DEFAULT_DIR);
+
+        // Act & Assert
+        Assert.DoesNotThrow(() => _ = folders.GameLocalizationPath);
+        Assert.IsFalse(File.Exists(folders.GameLocalizationPath));
+    }
+
+    [Test]
+    public void GameConfigDir_ThrowsWhenTheInstallFolderIsMissing()
+    {
+        // Arrange
+        var gameRoot = Path.Combine(Path.GetTempPath(), TestContext.CurrentContext.Test.ID, "StarCitizen");
+        var folders = CreateFolders(gameRoot, "hotfix");
+
+        // Act
+        var ex = Assert.Throws<SscmException>(() => _ = folders.GameConfigDir);
+
+        // Assert
+        Assert.That(ex!.Message, Does.Contain(gameRoot).And.Contain("SCFolders:GameRoot").And.Contain("appsettings.local.json"));
+        Assert.That(ex.Message, Does.Not.Contain("Start Star Citizen"));
+    }
+
+    [Test]
+    public void GameConfigDir_ThrowsWhenTheProfileFolderIsMissing()
+    {
+        // Arrange
+        var gameRoot = Path.Combine(Path.GetTempPath(), TestContext.CurrentContext.Test.ID, "StarCitizen");
+        Directory.CreateDirectory(Path.Combine(gameRoot, "HOTFIX"));
+        var folders = CreateFolders(gameRoot, "hotfix");
+        var expected = PathSegments.Combine(gameRoot, "HOTFIX", SCFolders.SC_PROFILES_DEFAULT_DIR);
 
         // Act
         var ex = Assert.Throws<DirectoryNotFoundException>(() => _ = folders.GameConfigDir);

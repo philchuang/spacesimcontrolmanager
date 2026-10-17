@@ -1,6 +1,6 @@
 # Space Sim Control Manager
 
-Utility to help players retain and migrate their control mappings for space-sim games, especially for new Star Citizen version releases. Elite Dangerous is also supported.
+Utility to help players retain and migrate their control mappings for space-sim games, especially for new Star Citizen version releases. Elite Dangerous is also supported. `print` generates binding docs (markdown, TSV, and an interactive HTML page) from the current game bindings.
 
 ## Standard Usage (Star Citizen)
 
@@ -84,6 +84,60 @@ Creates a plain-text report of the captured mappings (multiple formats available
 ```text
 > SSCM.exe sc report -f json > starcitizen_mappings.json
 ```
+
+### Print
+
+Prints the current Star Citizen bindings (game defaults plus your `actionmaps.xml` rebinds, with localized names) as markdown, TSV, and an interactive HTML page. Keyboard and mouse rebinds fill the keyboard column; joystick rebinds fill the joystick column. Files are written to `docs\starcitizen\bindings` under the current directory. Use `--outputdir` to write them somewhere else (a relative path is resolved against the current directory).
+
+![Star Citizen bindings HTML page](docs/images/sc-bindings-doc.png)
+
+```text
+> SSCM.exe sc print --outputdir C:\bindings
+```
+
+```text
+> SSCM.exe sc print
+```
+
+Write just one format with `markdown`, `tsv`, or `html`. The `html` format also writes `bindings.json`, the same data in a machine-readable form. Each game decides which formats and switches `print` offers, so `SSCM.exe sc print --help` always lists what is available.
+
+```text
+> SSCM.exe sc print html
+```
+
+The game's default bindings come from `defaultProfile.xml`. SSCM looks for it in the current directory first, then falls back to the copy shipped next to `SSCM.exe`. After a game update, add `--refresh-defaults` to re-extract it from the selected environment's `Data.p4k` and save it to the current directory before printing. The shipped copy is never modified, and later runs from that directory (including `sc upgrade`) keep using the refreshed file. The extracted file starts with a comment recording where it came from, such as `<!-- extracted from LIVE Data.p4k dated 2026-10-13 -->`.
+
+```text
+> SSCM.exe sc print --refresh-defaults
+```
+
+Joystick inputs are given friendly names from `joystick-bindings.md`. The copy shipped next to `SSCM.exe` is a starting point. Copy it into the current directory and edit that copy to match your hardware; a file there is used instead, and updating the tool replaces only the copy beside `SSCM.exe`. The HTML page is built from `star-citizen-bindings.template.html`, which can be overridden the same way. The joystick file is optional. Each device's `star_citizen_device_id` in it should match a joystick `Product` in your `actionmaps.xml`. If the devices in the file do not match the joysticks in your game, `print` warns and still writes the docs. Devices that are only in the file are skipped. Joysticks that are only in the game, and any bound input without a friendly name, are described as `{NOT_FOUND}`.
+
+Action and category names are localized with `global.ini`. That file belongs to the game, so it is optional. `print` always uses the game's own `data\Localization\english\global.ini` when it exists, and falls back to a `global.ini` in the current directory when it doesn't. If neither exists, `print` shows a warning and every `@` key is written with a `/FNF` suffix (for example `@ui_CIFPSZoomIn/FNF`). If the file exists but lacks a key, that key is written with a `/KNF` suffix. Names that are plain text in the default profile are always kept as they are.
+
+If your game folder has no `global.ini`, `--refresh-defaults` also extracts one from `Data.p4k` and saves it to the current directory. This happens in the same pass as `defaultProfile.xml`, so the archive is only read once. If the game folder already has the file, nothing is extracted, and a copy saved earlier in the current directory is ignored.
+
+If the selected Star Citizen environment isn't installed (for example `--environment PTU` without a PTU), `print` shows a short error listing the environments it found instead of a stack trace.
+
+### Elite Dangerous print
+
+Prints the current Elite Dangerous bindings from the highest `Custom.{major}.{minor}.binds` file in the game bindings folder (for example `Custom.4.2.binds` over `Custom.4.0.binds` and `Custom.3.0.binds`) as markdown, TSV, and an interactive HTML page. Primary, Secondary, and axis Binding slots are folded into the same `keyboard` / `joystick` / `joystickDesc` columns Star Citizen uses. Keyboard and mouse go in `keyboard`; other devices go in `joystick`. Two different devices in the same column are joined with `; `; if Primary and Secondary share a device, Primary wins. Files are written to `docs\elitedangerous\bindings` under the current directory. Use `--outputdir` to write them somewhere else.
+
+![Elite Dangerous bindings HTML page](docs/images/ed-bindings-doc.png)
+
+```text
+> SSCM.exe ed print
+```
+
+```text
+> SSCM.exe ed print html
+```
+
+The game's default bindings are read on every print from `{GameRoot}\ControlSchemes\{DefaultBinds}.binds`. `DefaultBinds` is the scheme name without the `.binds` extension and defaults to `GenericJoystick`. Every Primary, Secondary, and axis Binding slot in that file is used. Actions you have not rebound keep the scheme's bind in parentheses. SSCM looks for `{DefaultBinds}.binds` in the current directory first, then falls back to the game's ControlSchemes copy. `GameRoot` defaults to the Steam Odyssey product folder; both it and `DefaultBinds` are set in `appsettings.json`. Override them with `EDFolders:GameRoot` and `EDFolders:DefaultBinds` in `appsettings.local.json` if your install or preferred scheme is different.
+
+Joystick inputs are given friendly names from `joystick-bindings.md` using each device's `elite_dangerous_device_id` and `elite_dangerous` input (`Joy_4`). Combinations (a button plus modifiers) list every involved input in `joystickDesc`, joined with ` + `. The copy shipped next to `SSCM.exe` is a starting point. Copy it into the current directory and edit that copy to match your hardware; a file there is used instead, and updating the tool replaces only the copy beside `SSCM.exe`. The file is optional. If the devices in the file do not match the joysticks in your binds, `print` warns and still writes the docs. Devices that are only in the file are skipped. Joysticks that are only in your binds, and any bound input without a friendly name, are described as `{NOT_FOUND}`. The HTML page is built from `elite-dangerous-bindings.template.html`, which can be overridden the same way.
+
+Elite does not yet extract localization from the game. `--refresh-defaults` prints a warning and continues; default binds are still read from ControlSchemes as above. If you place `elite-localization.ini` in the current directory, `print` uses it: keys matching the XML action name replace the description (`/KNF` when a key is missing). The on-disk localization format may change once the game source is known.
 
 ## Advanced Usage
 

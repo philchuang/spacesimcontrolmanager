@@ -1,8 +1,21 @@
+"""Fill joystickDesc on bindings.json from docs/joystick-bindings.md.
+
+1. Read joystick Product strings from actionmaps.xml and map each one to jsN.
+2. Read the YAML bindings block. Prefix jsN_ onto each star_citizen value
+   using that joystick's star_citizen_device_id, and index the descriptive
+   name by the full input.
+3. For each action, strip a trailing ' Nx' from the joystick input and look
+   that input up. Unknown or unbound inputs become blank.
+4. Rewrite bindings.json, keeping the existing generatedAt.
+"""
 from __future__ import annotations
 
 import re
+import xml.etree.ElementTree as ET
+from pathlib import Path
 
 from sc_bindings_core import (
+    ACTIONMAPS_PATH,
     CUSTOM_JSON_PATH,
     JOYSTICK_BINDINGS_PATH,
     ensure_required_files,
@@ -11,62 +24,77 @@ from sc_bindings_core import (
 )
 
 
-def dedupe(values: list[str]) -> list[str]:
-    seen: set[str] = set()
-    output: list[str] = []
-    for value in values:
-        if value in seen:
+def load_joystick_instances(actionmaps_path: Path) -> dict[str, str]:
+    instances: dict[str, str] = {}
+    for options in ET.parse(actionmaps_path).getroot().findall(".//options"):
+        if options.attrib.get("type") != "joystick":
             continue
-        seen.add(value)
-        output.append(value)
-    return output
+        product = options.attrib.get("Product", "")
+        instance = options.attrib.get("instance", "")
+        if not product or not instance:
+            continue
+        joystick_id = f"js{instance}"
+        previous = instances.get(product)
+        if previous and previous != joystick_id:
+            raise ValueError(f"Product {product!r} is both {previous} and {joystick_id}")
+        instances[product] = joystick_id
+    if not instances:
+        raise ValueError(f"No joystick products in {actionmaps_path}")
+    return instances
+
+
+def load_star_citizen_names(text: str, joystick_instances: dict[str, str]) -> dict[str, str]:
+    match = re.search(r"^```yaml\s*\n(.*?)^```\s*$", text, re.M | re.S)
+    if not match:
+        raise ValueError(f"No yaml bindings block in {JOYSTICK_BINDINGS_PATH}")
+
+    names: dict[str, str] = {}
+    current_name: str | None = None
+    current_joystick_id: str | None = None
+    for line in match.group(1).splitlines():
+        if re.match(r"^[A-Za-z0-9-]+:\s*$", line):
+            current_name = None
+            current_joystick_id = None
+            continue
+        device = re.match(r'^  star_citizen_device_id: "(.*)"\s*$', line)
+        if device:
+            product = device.group(1)
+            current_joystick_id = joystick_instances.get(product)
+            if not current_joystick_id:
+                raise ValueError(f"No joystick instance for Star Citizen device {product!r}")
+            continue
+        binding = re.match(r'^    "([^"]+)":\s*$', line)
+        if binding:
+            current_name = binding.group(1)
+            continue
+        star_citizen = re.match(r"^      star_citizen: (\S+)\s*$", line)
+        if not star_citizen:
+            continue
+        if not current_name or not current_joystick_id:
+            raise ValueError(f"star_citizen without a joystick or button name: {line}")
+        input_name = f"{current_joystick_id}_{star_citizen.group(1)}"
+        previous = names.get(input_name)
+        if previous and previous != current_name:
+            raise ValueError(
+                f"Duplicate Star Citizen input {input_name}: {previous} and {current_name}"
+            )
+        names[input_name] = current_name
+        current_name = None
+
+    if not names:
+        raise ValueError(f"No bindings parsed from {JOYSTICK_BINDINGS_PATH}")
+    return names
 
 
 def apply_joystick_descriptions(actions: list[dict[str, object]]) -> list[dict[str, object]]:
-    binding_names: list[str] = []
-    for line in JOYSTICK_BINDINGS_PATH.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if stripped.startswith("* "):
-            binding_names.append(stripped[2:].strip())
-
-    button_lookup: dict[tuple[str, int], str] = {}
-    literal_lookup: dict[tuple[str, str], str] = {}
-    entry_regex = re.compile(r"^(LT|RT)-[^.]+\.(.+)$")
-    number_regex = re.compile(r"^(\d+)(?:\(|$)")
-    for name in binding_names:
-        match = entry_regex.match(name)
-        if not match:
-            continue
-        hand = match.group(1)
-        literal = match.group(2)
-        literal_lookup.setdefault((hand, literal), name)
-        number_match = number_regex.match(literal)
-        if number_match:
-            button_lookup.setdefault((hand, int(number_match.group(1))), name)
+    star_citizen_names = load_star_citizen_names(
+        JOYSTICK_BINDINGS_PATH.read_text(encoding="utf-8"),
+        load_joystick_instances(ACTIONMAPS_PATH),
+    )
 
     def map_joystick_input_to_binding_name(input_value: str) -> str:
         base_input_value = re.sub(r"\s+\d+x$", "", input_value)
-        match = re.match(r"^js(\d+)_(.+)$", base_input_value)
-        if not match:
-            return ""
-        hand = {"1": "LT", "2": "RT"}.get(match.group(1), "")
-        if not hand:
-            return ""
-        payload = match.group(2)
-        button_match = re.match(r"^button(\d+)$", payload)
-        if button_match:
-            return button_lookup.get((hand, int(button_match.group(1))), "")
-        if payload == "UNBOUND":
-            return ""
-        if payload in {"x", "y", "z", "rotz"}:
-            axis_map = {"x": "X_Axis", "y": "Y_Axis", "z": "Z_Axis", "rotz": "Z_Rot"}
-            return literal_lookup.get((hand, axis_map[payload]), "")
-        hat_match = re.match(r"^hat(\d+)_(up|down|left|right)$", payload)
-        if hat_match:
-            direction_map = {"up": "UP", "down": "DN", "left": "LT", "right": "RT"}
-            direction = direction_map[hat_match.group(2)]
-            return literal_lookup.get((hand, f"POV1(A1_{direction})"), "")
-        return ""
+        return star_citizen_names.get(base_input_value, "")
 
     for row in actions:
         joystick_input = row.get("joystick", "")
@@ -81,7 +109,7 @@ def apply_joystick_descriptions(actions: list[dict[str, object]]) -> list[dict[s
 
 
 def main() -> None:
-    ensure_required_files([CUSTOM_JSON_PATH, JOYSTICK_BINDINGS_PATH])
+    ensure_required_files([CUSTOM_JSON_PATH, JOYSTICK_BINDINGS_PATH, ACTIONMAPS_PATH])
     document = read_binding_document(CUSTOM_JSON_PATH)
     actions = document["actions"]
     if not isinstance(actions, list):

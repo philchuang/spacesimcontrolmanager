@@ -4,7 +4,7 @@ namespace SSCM.StarCitizen;
 
 // TODO write tests for this class
 
-public class SCControlManager : ControlManagerBase<SCMappingData>
+public class SCControlManager : ControlManagerBase<SCMappingData>, IBindingDocsGenerator
 {
     protected override string GameConfigPath => System.IO.Path.Combine(this._folders.GameConfigDir, Constants.SC_ACTIONMAPS_XML_NAME);
     protected override string MappingDataSavePath => this._folders.MappingDataSavePath;
@@ -89,6 +89,20 @@ public class SCControlManager : ControlManagerBase<SCMappingData>
     {
         var exporter = new MappingReporter();
         return exporter;
+    }
+
+    public IReadOnlyList<BindingPrintFormat> PrintFormats => SCBindingPrinter.Formats;
+
+    public IReadOnlyList<BindingPrintFlag> PrintFlags => SCBindingPrinter.Flags;
+
+    public Task<BindingPrintResult> Print(string? format, BindingPrintOptions printOptions, Dictionary<string, string>? options = null, CancellationToken cancellationToken = default)
+    {
+        this.ApplyOptions(options ?? new Dictionary<string, string>());
+        var printer = new SCBindingPrinter(this.Platform, this._folders);
+        printer.StandardOutput += WriteLineStandard;
+        printer.WarningOutput += WriteLineWarning;
+        printer.DebugOutput += WriteLineDebug;
+        return printer.Print(format, printOptions, cancellationToken);
     }
 
     public async Task<string> ReportInputs(ReportingOptions options)

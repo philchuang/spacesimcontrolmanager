@@ -9,13 +9,20 @@
 
 ## Changelog
 
+v1.4.0
+
+* TUI improvements
+* [Star Citizen] Updated through 4.10.2
+* [Star Citizen] binding docs generator, native
+* [Elite Dangerous] binding docs generator, native
+
 v1.3.0
 
 * added interactive merge (TUI and serial) for import and export
 * upgrade mode
 * updated to dotnet 10
-* [Star Citizen] binding docs generator
 * [Star Citizen] environment selection (live, hotfix, ptu, etc)
+* [Star Citizen] binding docs generator, python
 
 v1.2.1 - fixed handling of Star Citizen multitap bindings
 

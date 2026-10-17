@@ -121,6 +121,262 @@ public class Program_CommandBinding_Tests
         Assert.True(manager.ReportCalls.Single().ReportingOptions.HeadersOnly);
     }
 
+    [TestCase(new[] { "fake", "print" }, null)]
+    [TestCase(new[] { "fake", "print", "markdown" }, "markdown")]
+    [TestCase(new[] { "fake", "print", "tsv" }, "tsv")]
+    [TestCase(new[] { "fake", "print", "html" }, "html")]
+    public async Task Print_Commands_Call_Expected_Format(string[] args, string? expectedFormat)
+    {
+        // Arrange
+        var manager = new FakePrintControlManager();
+
+        // Act
+        var exitCode = await Invoke(manager, args);
+
+        // Assert
+        Assert.AreEqual(0, exitCode);
+        Assert.AreEqual(expectedFormat, manager.PrintCalls.Single().Format);
+        Assert.IsEmpty(manager.PrintCalls.Single().PrintOptions.Flags, "no switch is on unless it is asked for");
+    }
+
+    [TestCase(new[] { "fake", "print", "--refresh-defaults" }, null)]
+    [TestCase(new[] { "fake", "print", "--refresh-defaults", "html" }, "html")]
+    [TestCase(new[] { "fake", "print", "tsv", "--refresh-defaults" }, "tsv")]
+    public async Task Print_Flag_Is_Set_Before_Or_After_The_Format(string[] args, string? expectedFormat)
+    {
+        // Arrange
+        var manager = new FakePrintControlManager();
+
+        // Act
+        var exitCode = await Invoke(manager, args);
+
+        // Assert
+        Assert.AreEqual(0, exitCode);
+        Assert.AreEqual(expectedFormat, manager.PrintCalls.Single().Format);
+        Assert.AreEqual(new[] { "refresh-defaults" }, manager.PrintCalls.Single().PrintOptions.Flags);
+    }
+
+    [Test]
+    public void Print_Subcommands_And_Options_Come_From_The_Implementation()
+    {
+        // Arrange
+        var manager = new FakePrintControlManager
+        {
+            PrintFormats = [new BindingPrintFormat("json", "Prints JSON."), new BindingPrintFormat("csv", "Prints CSV.")],
+            PrintFlags = [new BindingPrintFlag("verbose", "Be chatty."), new BindingPrintFlag("Include-Unbound", "Keep unbound rows.")],
+        };
+
+        // Act
+        var print = FindPrintCommand(manager);
+
+        // Assert
+        Assert.AreEqual(new[] { "json", "csv" }, print.Subcommands.Select(c => c.Name));
+        Assert.AreEqual(new[] { "Prints JSON.", "Prints CSV." }, print.Subcommands.Select(c => c.Description));
+        Assert.That(print.Options.Select(o => o.Name), Is.SupersetOf(new[] { "--verbose", "--include-unbound" }));
+        Assert.That(print.Options.Select(o => o.Name), Does.Not.Contain("--refresh-defaults"));
+        Assert.AreEqual("Prints the Fake Game bindings as json and csv.", print.Description);
+    }
+
+    [Test]
+    public async Task Print_Passes_The_Chosen_Format_And_Flags_To_The_Implementation()
+    {
+        // Arrange
+        var manager = new FakePrintControlManager
+        {
+            PrintFormats = [new BindingPrintFormat("json", "Prints JSON."), new BindingPrintFormat("csv", "Prints CSV.")],
+            PrintFlags = [new BindingPrintFlag("verbose", "Be chatty."), new BindingPrintFlag("compact", "Be brief.")],
+        };
+
+        // Act
+        var exitCode = await Invoke(manager, "fake", "print", "csv", "--compact");
+
+        // Assert
+        Assert.AreEqual(0, exitCode);
+        Assert.AreEqual("csv", manager.PrintCalls.Single().Format);
+        Assert.AreEqual(new[] { "compact" }, manager.PrintCalls.Single().PrintOptions.Flags);
+    }
+
+    [Test]
+    public async Task Print_Rejects_A_Format_The_Implementation_Does_Not_Offer()
+    {
+        // Arrange
+        var manager = new FakePrintControlManager { PrintFormats = [new BindingPrintFormat("json", "Prints JSON.")] };
+
+        // Act
+        var exitCode = await Invoke(manager, "fake", "print", "markdown");
+
+        // Assert
+        Assert.AreNotEqual(0, exitCode);
+        Assert.IsEmpty(manager.PrintCalls);
+    }
+
+    [TestCase("--refresh-defaults")]
+    public async Task Print_Rejects_A_Flag_The_Implementation_Does_Not_Offer(string flag)
+    {
+        // Arrange
+        var manager = new FakePrintControlManager { PrintFlags = [] };
+
+        // Act
+        var exitCode = await Invoke(manager, "fake", "print", flag);
+
+        // Assert
+        Assert.AreNotEqual(0, exitCode);
+        Assert.IsEmpty(manager.PrintCalls);
+    }
+
+    [TestCase(1, "Prints the Fake Game bindings as a.")]
+    [TestCase(2, "Prints the Fake Game bindings as a and b.")]
+    [TestCase(3, "Prints the Fake Game bindings as a, b, and c.")]
+    public void Print_Description_Lists_The_Available_Formats(int count, string expected)
+    {
+        // Arrange
+        var manager = new FakePrintControlManager
+        {
+            PrintFormats = new[] { "a", "b", "c" }.Take(count).Select(n => new BindingPrintFormat(n, n)).ToList(),
+        };
+
+        // Act & Assert
+        Assert.AreEqual(expected, FindPrintCommand(manager).Description);
+    }
+
+    [Test]
+    public void Print_Has_No_Subcommands_Or_Options_When_The_Implementation_Offers_None()
+    {
+        // Arrange
+        var manager = new FakePrintControlManager { PrintFormats = [], PrintFlags = [] };
+
+        // Act
+        var print = FindPrintCommand(manager);
+
+        // Assert
+        Assert.IsEmpty(print.Subcommands);
+        Assert.That(print.Options.Select(o => o.Name), Does.Not.Contain("--refresh-defaults"));
+    }
+
+    [TestCase("--environment", "PTU")]
+    [TestCase("-e", "EPTU")]
+    public async Task Print_Passes_Global_Options_To_Generator(string option, string value)
+    {
+        // Arrange
+        var manager = new FakePrintControlManager();
+
+        // Act
+        var exitCode = await Invoke(manager, "fake", option, value, "print", "tsv");
+
+        // Assert
+        Assert.AreEqual(0, exitCode);
+        Assert.AreEqual(value, manager.PrintCalls.Single().Options["environment"]);
+    }
+
+    [Test]
+    public void Print_AlwaysOffersOutputDir()
+    {
+        // Arrange
+        var manager = new FakePrintControlManager { PrintFormats = [], PrintFlags = [] };
+
+        // Act
+        var print = FindPrintCommand(manager);
+
+        // Assert
+        Assert.That(print.Options.Select(o => o.Name), Does.Contain("--outputdir"));
+    }
+
+    [TestCase(new[] { "fake", "print", "--outputdir", @"C:\out" }, null, @"C:\out")]
+    [TestCase(new[] { "fake", "print", "--outputdir", "relative/out", "markdown" }, "markdown", "relative/out")]
+    [TestCase(new[] { "fake", "print", "html", "--outputdir", "after" }, "html", "after")]
+    public async Task Print_Passes_OutputDir_To_The_Implementation(string[] args, string? expectedFormat, string expectedOutputDir)
+    {
+        // Arrange
+        var manager = new FakePrintControlManager();
+
+        // Act
+        var exitCode = await Invoke(manager, args);
+
+        // Assert
+        Assert.AreEqual(0, exitCode);
+        Assert.AreEqual(expectedFormat, manager.PrintCalls.Single().Format);
+        Assert.AreEqual(expectedOutputDir, manager.PrintCalls.Single().PrintOptions.OutputDir);
+    }
+
+    [Test]
+    public async Task Print_Leaves_OutputDir_Unset_When_The_Option_Is_Omitted()
+    {
+        // Arrange
+        var manager = new FakePrintControlManager();
+
+        // Act
+        var exitCode = await Invoke(manager, "fake", "print");
+
+        // Assert
+        Assert.AreEqual(0, exitCode);
+        Assert.IsNull(manager.PrintCalls.Single().PrintOptions.OutputDir);
+    }
+
+    [TestCase("print")]
+    [TestCase("print", "html")]
+    [TestCase("print", "--refresh-defaults")]
+    public async Task Print_Shows_Friendly_Error_And_Fails_When_The_Generator_Reports_One(params string[] printArgs)
+    {
+        // Arrange
+        var manager = new FakePrintControlManager { Exception = new SscmException("Star Citizen environment [PTU] was not found.") };
+        var originalError = Console.Error;
+        var error = new StringWriter();
+        Console.SetError(error);
+
+        // Act
+        int exitCode;
+        try
+        {
+            exitCode = await Invoke(manager, new[] { "fake" }.Concat(printArgs).ToArray());
+        }
+        finally
+        {
+            Console.SetError(originalError);
+        }
+
+        // Assert
+        Assert.AreEqual(1, exitCode);
+        Assert.AreEqual("Error: Star Citizen environment [PTU] was not found." + Environment.NewLine, error.ToString());
+    }
+
+    [Test]
+    public async Task Print_Leaves_Unexpected_Errors_To_The_Default_Handler()
+    {
+        // Arrange
+        var manager = new FakePrintControlManager { Exception = new InvalidOperationException("boom") };
+        var originalError = Console.Error;
+        var error = new StringWriter();
+        Console.SetError(error);
+
+        // Act
+        int exitCode;
+        try
+        {
+            exitCode = await Invoke(manager, "fake", "print");
+        }
+        finally
+        {
+            Console.SetError(originalError);
+        }
+
+        // Assert
+        Assert.AreNotEqual(0, exitCode);
+        Assert.That(error.ToString(), Does.Not.Contain("Error: boom"), "only SscmException gets the friendly message");
+    }
+
+    [Test]
+    public async Task Print_Command_Is_Only_Registered_For_Managers_That_Can_Print()
+    {
+        // Arrange
+        var manager = new FakeControlManager();
+
+        // Act
+        var exitCode = await Invoke(manager, "fake", "print");
+
+        // Assert
+        Assert.AreNotEqual(0, exitCode);
+    }
+
     [TestCase("backup", nameof(FakeControlManager.BackupCount))]
     [TestCase("restore", nameof(FakeControlManager.RestoreCount))]
     [TestCase("edit", nameof(FakeControlManager.OpenCount))]
@@ -139,6 +395,9 @@ public class Program_CommandBinding_Tests
         Assert.AreEqual(0, exitCode);
         Assert.AreEqual(1, manager.GetCounter(counterName));
     }
+
+    private static Command FindPrintCommand(FakeControlManager manager) =>
+        Program.BuildRootCommand([manager]).Subcommands.Single(c => c.Name == "fake").Subcommands.Single(c => c.Name == "print");
 
     private static Task<int> Invoke(FakeControlManager manager, params string[] args)
     {
@@ -214,6 +473,33 @@ public class Program_CommandBinding_Tests
         };
     }
 
+    private class FakePrintControlManager : FakeControlManager, IBindingDocsGenerator
+    {
+        public List<PrintCall> PrintCalls { get; } = new();
+        public Exception? Exception { get; init; }
+
+        // Defaults mimic Star Citizen; tests override them to show the CLI follows the implementation.
+        public IReadOnlyList<BindingPrintFormat> PrintFormats { get; init; } =
+        [
+            new BindingPrintFormat("markdown", "Prints markdown."),
+            new BindingPrintFormat("tsv", "Prints TSV."),
+            new BindingPrintFormat("html", "Prints HTML."),
+        ];
+
+        public IReadOnlyList<BindingPrintFlag> PrintFlags { get; init; } =
+        [
+            new BindingPrintFlag("refresh-defaults", "Refreshes the defaults."),
+        ];
+
+        public Task<BindingPrintResult> Print(string? format, BindingPrintOptions printOptions, Dictionary<string, string>? options = null, CancellationToken cancellationToken = default)
+        {
+            if (this.Exception != null) throw this.Exception;
+            this.PrintCalls.Add(new PrintCall(format, printOptions, options ?? new Dictionary<string, string>()));
+            return Task.FromResult(new BindingPrintResult());
+        }
+    }
+
+    private record PrintCall(string? Format, BindingPrintOptions PrintOptions, Dictionary<string, string> Options);
     private record ImportCall(ImportMode Mode, Dictionary<string, string> Options, bool SelectorProvided);
     private record ExportCall(ExportMode Mode, ExportOptions ExportOptions, Dictionary<string, string> Options, bool SelectorProvided);
     private record UpgradeCall(UpgradeMode Mode, Dictionary<string, string> Options);

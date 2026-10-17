@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using SSCM.Core;
+using SSCM.StarCitizen.Bindings;
 
 namespace SSCM.StarCitizen;
 
@@ -22,40 +23,47 @@ public class MappingUpgrader : MappingUpgraderBase<SCMappingData>
         set => this.ResultSC = (MappingMergeResult) value;
     }
 
+    public const string UpgradeMappingsFileName = "SCUpgradeMappings.jsonc";
+
     private readonly ISCFolders _folders;
-    private readonly ISCDefaultProfileLoader _defaultProfileLoader;
+    private readonly SCDefaultProfileFileSource _defaultProfile;
     private Dictionary<string, UpgradeMapping> _upgradeMappings = new Dictionary<string, UpgradeMapping>();
     private Dictionary<string, SCMapping> _defaultMappings = new Dictionary<string, SCMapping>();
 
-    public MappingUpgrader(IPlatform platform, ISCFolders folders) : this(platform, folders, new SCDefaultProfileLoader(platform))
+    public MappingUpgrader(IPlatform platform, ISCFolders folders) : this(platform, folders, SCDefaultProfileFileSource.Create(platform))
     {
     }
 
-    public MappingUpgrader(IPlatform platform, ISCFolders folders, ISCDefaultProfileLoader defaultProfileLoader) : base(platform)
+    /// <param name="executableDir">The fallback location for SCUpgradeMappings.jsonc. Defaults to the executable directory.</param>
+    public MappingUpgrader(IPlatform platform, ISCFolders folders, SCDefaultProfileFileSource defaultProfile, string? executableDir = null) : base(platform)
     {
         this._folders = folders;
-        this._defaultProfileLoader = defaultProfileLoader;
-        this.LoadMappings();
+        this._defaultProfile = defaultProfile;
+        this.LoadMappings(ResourceFile.Create(platform, UpgradeMappingsFileName, executableDir));
         this.LoadDefaultMappings();
     }
 
-    private void LoadMappings()
+    private void LoadMappings(ResourceFile file)
     {
-        var path = Path.Combine(this._platform.WorkingDir, "SCUpgradeMappings.jsonc");
         try
         {
-            var mappings = UpgradeMapping.Load(path).Result;
+            var mappings = UpgradeMapping.Load(file.Require()).Result;
             this._upgradeMappings = mappings.ToDictionary(m => $"{m.Type}-{m.Source}".ToLowerInvariant());
         }
         catch // (Exception ex)
         {
-            base._StandardOutput($"ERROR: Failed to load SC upgrade mappings from [{path}]!");
+            base._StandardOutput($"ERROR: Failed to load SC upgrade mappings from {file.Searched}!");
         }
     }
 
     private void LoadDefaultMappings()
     {
-        var mappings = this._defaultProfileLoader.Load().Result;
+        if (this._defaultProfile.FindExistingPath() == null)
+        {
+            base._StandardOutput($"ERROR: Failed to load SC default profile from {this._defaultProfile.Searched}!");
+        }
+
+        var mappings = this._defaultProfile.LoadMappings().Result;
         foreach (var mapping in mappings)
         {
             this._defaultMappings[$"mapping-{mapping.ActionMap}-{mapping.Action}".ToLowerInvariant()] = mapping;

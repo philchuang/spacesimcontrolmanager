@@ -12,10 +12,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="SpaceSimControlManager.StarCitizen.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="SCUpgradeMappings.jsonc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="defaultProfile.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="star-citizen-bindings.template.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
