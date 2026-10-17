@@ -418,14 +418,39 @@
       return `<button type="button" class="favorite-button${activeClass}" aria-label="${label}" title="${label}">${icon}</button>`;
     }
 
+    function hasVisibleValue(value) {
+      return String(value || "")
+        .split("<br>")
+        .some(part => part.trim() !== "");
+    }
+
+    function headerTextFilter(filterValue, rowValue) {
+      const query = String(filterValue || "").trim();
+      if (!query) {
+        return true;
+      }
+
+      if (query === "*") {
+        return hasVisibleValue(rowValue);
+      }
+
+      return String(rowValue || "").toLowerCase().includes(query.toLowerCase());
+    }
+
+    const textHeaderFilter = {
+      headerFilter: "input",
+      headerFilterPlaceholder: "* = any value",
+      headerFilterFunc: headerTextFilter,
+    };
+
     const columns = [
       {title: "Fav", field: "favorite", hozAlign: "center", headerHozAlign: "center", width: 76, headerSort: false, formatter: favoriteFormatter, cellClick: toggleFavorite, headerFilter: "list", headerFilterParams: {values: {"": "All", "true": "On", "false": "Off"}}, headerFilterFunc: (filterValue, rowValue) => filterValue === "" || filterValue === null || typeof filterValue === "undefined" || String(Boolean(rowValue)) === String(filterValue), headerFilterEmptyCheck: value => value === "" || value === null || typeof value === "undefined"},
-      {title: "ID", field: "id", sorter: "string", headerFilter: "input", minWidth: 260, formatter: emptyFormatter},
+      {title: "ID", field: "id", sorter: "string", ...textHeaderFilter, minWidth: 260, formatter: emptyFormatter},
       {title: "Category", field: "category", sorter: "string", headerFilter: "list", headerFilterParams: {valuesLookup: true, multiselect: true, clearable: true, sort: "asc"}, headerFilterFunc: "in", headerFilterEmptyCheck: value => !value || (Array.isArray(value) && !value.length), minWidth: 220, formatter: emptyFormatter},
-      {title: "Description", field: "description", sorter: "string", headerFilter: "input", minWidth: 260, formatter: emptyFormatter},
-      {title: "Keyboard", field: "keyboard", sorter: "string", headerFilter: "input", minWidth: 160, formatter: bindingFormatter},
-      {title: "Joystick", field: "joystick", sorter: "string", headerFilter: "input", minWidth: 160, formatter: bindingFormatter},
-      {title: "Joystick Description", field: "joystickDesc", sorter: "string", headerFilter: "input", minWidth: 220, formatter: bindingFormatter},
+      {title: "Description", field: "description", sorter: "string", ...textHeaderFilter, minWidth: 260, formatter: emptyFormatter},
+      {title: "Keyboard", field: "keyboard", sorter: "string", ...textHeaderFilter, minWidth: 160, formatter: bindingFormatter},
+      {title: "Joystick", field: "joystick", sorter: "string", ...textHeaderFilter, minWidth: 160, formatter: bindingFormatter},
+      {title: "Joystick Description", field: "joystickDesc", sorter: "string", ...textHeaderFilter, minWidth: 220, formatter: bindingFormatter},
     ];
 
     let table;
