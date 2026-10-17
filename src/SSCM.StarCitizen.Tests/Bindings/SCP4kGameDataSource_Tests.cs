@@ -3,8 +3,8 @@ using System.Xml.Linq;
 using NUnit.Framework;
 using SSCM.StarCitizen.Bindings;
 using SSCM.StarCitizen.Tests.Mocks;
-using static SSCM.StarCitizen.Tests.P4k.CryXmlConverter_Tests;
-using static SSCM.StarCitizen.Tests.P4k.P4kArchive_Tests;
+using static SSCM.Tests.P4k.CryXmlConverter_Tests;
+using static SSCM.Tests.P4k.P4kArchive_Tests;
 
 namespace SSCM.StarCitizen.Tests.Bindings;
 

@@ -3,12 +3,13 @@ using System.IO.Compression;
 using System.Text;
 using ZstdSharp;
 
-namespace SSCM.StarCitizen.P4k;
+namespace SSCM.Core.P4k;
 
 /// <summary>
-/// Minimal read-only access to a Star Citizen Data.p4k archive.
-/// A p4k is a ZIP64 archive that uses a nonstandard local header signature and
-/// zstd (method 100) compression. Only unencrypted entries are supported.
+/// Minimal read-only access to a p4k archive.
+/// A p4k is a ZIP64 archive that uses a nonstandard local header signature
+/// (<c>0x14034b50</c> as well as the standard <c>0x04034b50</c>) and zstd (method 100)
+/// compression, alongside stored and deflate entries. Only unencrypted entries are supported.
 /// </summary>
 public static class P4kArchive
 {
@@ -26,8 +27,8 @@ public static class P4kArchive
     private const int CentralDirectoryFixedSize = 46;
     private const int LocalHeaderFixedSize = 30;
 
-    // defaultProfile.xml and global.ini are only a few megabytes. Anything larger is treated as a corrupt directory entry
-    // so a 0xFFFFFFFF size fails with a clear error instead of allocating gigabytes.
+    // A corrupt directory entry can declare 0xFFFFFFFF. Cap the allocation so that fails
+    // with a clear error instead of reserving gigabytes.
     internal const long MaxEntryBytes = 64L * 1024 * 1024;
 
     private static readonly uint[] CrcTable = CreateCrcTable();
@@ -41,9 +42,9 @@ public static class P4kArchive
     }
 
     /// <summary>Reads the named entry (case-insensitive, '/' and '\' are equivalent), or throws <see cref="FileNotFoundException"/>.</summary>
-    public static byte[] ReadEntry(string p4kPath, string entryName)
+    public static byte[] ReadEntry(string archivePath, string entryName)
     {
-        using var stream = new FileStream(p4kPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1 << 20, FileOptions.RandomAccess);
+        using var stream = new FileStream(archivePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1 << 20, FileOptions.RandomAccess);
         return ReadEntry(stream, entryName);
     }
 
@@ -55,13 +56,13 @@ public static class P4kArchive
     }
 
     /// <summary>
-    /// Reads several entries with a single scan of the archive's directory, which is the slow part of a p4k.
+    /// Reads several entries with a single scan of the central directory, which is the slow part of a large archive.
     /// Names match the same way as <see cref="ReadEntry(string, string)"/>. The result is keyed by the name as requested
     /// (case-insensitively) and leaves out any entry that is not in the archive, so callers decide which ones are required.
     /// </summary>
-    public static Dictionary<string, byte[]> ReadEntries(string p4kPath, IReadOnlyCollection<string> entryNames)
+    public static Dictionary<string, byte[]> ReadEntries(string archivePath, IReadOnlyCollection<string> entryNames)
     {
-        using var stream = new FileStream(p4kPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1 << 20, FileOptions.RandomAccess);
+        using var stream = new FileStream(archivePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1 << 20, FileOptions.RandomAccess);
         return ReadEntries(stream, entryNames);
     }
 
@@ -165,7 +166,7 @@ public static class P4kArchive
     }
 
     /// <summary>
-    /// p4k encryption is not always general-purpose bit 0, so a protected entry shows up as a zstd or deflate failure.
+    /// Encryption is not always flagged with general-purpose bit 0, so a protected entry shows up as a zstd or deflate failure.
     /// Name the entry instead of letting that codec error through on its own.
     /// </summary>
     private static byte[] Decode(string entryName, Func<byte[]> read)

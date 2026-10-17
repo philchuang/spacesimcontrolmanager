@@ -3,9 +3,9 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using NUnit.Framework;
-using SSCM.StarCitizen.P4k;
+using SSCM.Core.P4k;
 
-namespace SSCM.StarCitizen.Tests.P4k;
+namespace SSCM.Tests.P4k;
 
 public class CryXmlConverter_Tests
 {

@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using SSCM.StarCitizen.P4k;
+using SSCM.Core.P4k;
 
 namespace SSCM.StarCitizen.Bindings;
 

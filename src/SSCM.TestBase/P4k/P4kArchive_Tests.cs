@@ -1,9 +1,9 @@
 using System.IO.Compression;
 using System.Text;
 using NUnit.Framework;
-using SSCM.StarCitizen.P4k;
+using SSCM.Core.P4k;
 
-namespace SSCM.StarCitizen.Tests.P4k;
+namespace SSCM.Tests.P4k;
 
 public class P4kArchive_Tests
 {

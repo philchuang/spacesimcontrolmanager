@@ -3,7 +3,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace SSCM.StarCitizen.P4k;
+namespace SSCM.Core.P4k;
 
 /// <summary>
 /// Converts CryEngine binary XML ("CryXmlB") into an <see cref="XDocument"/>.
