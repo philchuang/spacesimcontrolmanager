@@ -83,8 +83,8 @@ public static class BindingDocumentRenderer
             }).ToList(),
         };
 
-        // "</" is escaped so the data can never close the surrounding script tag.
-        var json = JsonConvert.SerializeObject(embedded, Formatting.None).Replace("</", "<\\/", StringComparison.Ordinal);
+        // '<' becomes \u003c so a localization label cannot close the script tag or start a comment.
+        var json = JsonConvert.SerializeObject(embedded, Formatting.None).Replace("<", "\\u003c", StringComparison.Ordinal);
         return template.Replace("\r\n", "\n", StringComparison.Ordinal).Replace(BindingsJsonPlaceholder, json, StringComparison.Ordinal);
     }
 
@@ -108,8 +108,12 @@ public static class BindingDocumentRenderer
         return rows;
     }
 
+    // Escape '\' first so a trailing backslash cannot consume the '|' cell separator.
     private static string MarkdownEscape(string value) =>
-        value.Replace("|", "\\|").Replace("\n", " ").Replace("\r", " ");
+        value.Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("|", "\\|", StringComparison.Ordinal)
+            .Replace("\n", " ", StringComparison.Ordinal)
+            .Replace("\r", " ", StringComparison.Ordinal);
 
     private static string TsvEscape(string value) =>
         value.Replace("\t", " ").Replace("\n", " ").Replace("\r", " ");

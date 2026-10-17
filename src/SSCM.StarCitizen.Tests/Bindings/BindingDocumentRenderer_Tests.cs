@@ -37,13 +37,13 @@ public class BindingDocumentRenderer_Tests
     public void RenderMarkdown_EscapesPipesAndLineBreaks()
     {
         // Arrange
-        var document = Document(Action("a", "Cat", "A|B\r\nC", "", "", ""));
+        var document = Document(Action("a", "Cat", "A|B\r\nC\\", "", "", ""));
 
         // Act
         var markdown = BindingDocumentRenderer.RenderMarkdown(document, "Star Citizen Bindings");
 
         // Assert
-        Assert.That(markdown, Does.Contain("|a|Cat|A\\|B  C|"));
+        Assert.That(markdown, Does.Contain("|a|Cat|A\\|B  C\\\\|"));
     }
 
     [Test]
@@ -69,7 +69,7 @@ public class BindingDocumentRenderer_Tests
     public void RenderHtml_EmbedsDocumentJsonAndEscapesScriptClosers()
     {
         // Arrange
-        var document = Document(Action("a", "Cat", "</script><b>", "(x)", "js1_button1", "LT-EVO.01(FIRE)"));
+        var document = Document(Action("a", "Cat", "</script><b><!--", "(x)", "js1_button1", "LT-EVO.01(FIRE)"));
         document.GeneratedAt = "2026-10-15T12:00:00-04:00";
         const string template = "<script>const data = __BINDINGS_JSON__;</script>";
 
@@ -79,13 +79,13 @@ public class BindingDocumentRenderer_Tests
         // Assert
         Assert.That(html, Does.Not.Contain(BindingDocumentRenderer.BindingsJsonPlaceholder));
         Assert.That(html, Does.Not.Contain("</script><b>"));
-        Assert.That(html, Does.Contain("<\\/script>"));
+        Assert.That(html, Does.Contain("\\u003c/script>\\u003cb>\\u003c!--"));
 
         var json = html["<script>const data = ".Length..^(";</script>".Length)];
         var parsed = JsonConvert.DeserializeObject<JObject>(json, new JsonSerializerSettings { DateParseHandling = DateParseHandling.None })!;
         Assert.AreEqual("2026-10-15T12:00:00-04:00", (string?) parsed["generatedAt"]);
         var action = (JObject) parsed["actions"]![0]!;
-        Assert.AreEqual("</script><b>", (string?) action["label"]);
+        Assert.AreEqual("</script><b><!--", (string?) action["label"]);
         Assert.AreEqual("Cat", (string?) action["categoryLabel"]);
         Assert.AreEqual("LT-EVO.01(FIRE)", (string?) action["joystickDesc"]);
         Assert.AreEqual(new[] { "id", "categoryLabel", "label", "keyboard", "joystick", "joystickDesc" }, action.Properties().Select(p => p.Name));
