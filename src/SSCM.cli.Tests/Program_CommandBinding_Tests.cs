@@ -278,12 +278,12 @@ public class Program_CommandBinding_Tests
         var print = FindPrintCommand(manager);
 
         // Assert
-        Assert.That(print.Options.Select(o => o.Name), Does.Contain("--outputDir"));
+        Assert.That(print.Options.Select(o => o.Name), Does.Contain("--outputdir"));
     }
 
-    [TestCase(new[] { "fake", "print", "--outputDir", @"C:\out" }, null, @"C:\out")]
-    [TestCase(new[] { "fake", "print", "--outputDir", "relative/out", "markdown" }, "markdown", "relative/out")]
-    [TestCase(new[] { "fake", "print", "html", "--outputDir", "after" }, "html", "after")]
+    [TestCase(new[] { "fake", "print", "--outputdir", @"C:\out" }, null, @"C:\out")]
+    [TestCase(new[] { "fake", "print", "--outputdir", "relative/out", "markdown" }, "markdown", "relative/out")]
+    [TestCase(new[] { "fake", "print", "html", "--outputdir", "after" }, "html", "after")]
     public async Task Print_Passes_OutputDir_To_The_Implementation(string[] args, string? expectedFormat, string expectedOutputDir)
     {
         // Arrange

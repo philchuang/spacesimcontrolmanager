@@ -172,7 +172,7 @@ internal class Program
                 Recursive = true
             });
 
-        var outputDirOption = new Option<string?>("--outputDir")
+        var outputDirOption = new Option<string?>("--outputdir")
         {
             Description = "Directory to write the printed files. When omitted, the game module's default location is used.",
             Recursive = true
