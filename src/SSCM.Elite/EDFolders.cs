@@ -54,7 +54,7 @@ public class EDFolders : IEDFolders
     }
 
     public static string DefaultGameRoot() =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), STEAM_ODYSSEY_PRODUCT_DIR);
+        PathSegments.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), STEAM_ODYSSEY_PRODUCT_DIR);
 
     internal static string NormalizeBindsName(string name)
     {
@@ -67,7 +67,7 @@ public class EDFolders : IEDFolders
     private static string FindEliteBindingsDir()
     {
         var dirs = new[] {
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Frontier Developments\Elite Dangerous\Options\Bindings")
+            PathSegments.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Frontier Developments\Elite Dangerous\Options\Bindings")
         };
 
         foreach (var dir in dirs)

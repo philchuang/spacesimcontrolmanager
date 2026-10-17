@@ -48,14 +48,14 @@ public class SCFolders : ISCFolders
                     $"Star Citizen was not found at [{this.GameRoot}]. Set SCFolders:GameRoot in appsettings.local.json to your Star Citizen install folder.");
             }
 
-            var gameConfigDir = Path.Combine(this.GameEnvironmentDir, SC_PROFILES_DEFAULT_DIR);
+            var gameConfigDir = PathSegments.Combine(this.GameEnvironmentDir, SC_PROFILES_DEFAULT_DIR);
             if (!Directory.Exists(gameConfigDir)) throw new DirectoryNotFoundException($"Could not find Star Citizen game config directory [{gameConfigDir}].");
             return gameConfigDir;
         }
     }
     public string GameAttributesPath => Path.Combine(this.GameConfigDir, Constants.SC_ATTRIBUTES_XML_NAME);
     public string GameMappingsPath => Path.Combine(this.GameConfigDir, Constants.SC_ACTIONMAPS_XML_NAME);
-    public string GameLocalizationPath => Path.Combine(this.GameEnvironmentDir, SC_LOCALIZATION_DIR, Constants.SC_GLOBAL_INI_NAME);
+    public string GameLocalizationPath => PathSegments.Combine(this.GameEnvironmentDir, SC_LOCALIZATION_DIR, Constants.SC_GLOBAL_INI_NAME);
 
     public string ScDataDir { get; init; }
 
@@ -71,7 +71,7 @@ public class SCFolders : ISCFolders
         this._sscmFolders = sscmFolders;
         this._config = config;
 
-        this.GameRoot = this._config.GetValueOrNull(nameof(SCFolders), nameof(GameRoot)) ?? Path.Combine(this._platform.ProgramFilesDir, PROGRAM_FILES_SC_ROOT_DIR);
+        this.GameRoot = this._config.GetValueOrNull(nameof(SCFolders), nameof(GameRoot)) ?? PathSegments.Combine(this._platform.ProgramFilesDir, PROGRAM_FILES_SC_ROOT_DIR);
         this.Environment = this._config.GetValueOrNull(nameof(SCFolders), nameof(Environment)) ?? "LIVE";
         this.ScDataDir = this._config.GetValueOrNull(nameof(SCFolders), nameof(ScDataDir)) ?? Path.Combine(this._sscmFolders.DataDir, SC_DATA_DIR);
     }
