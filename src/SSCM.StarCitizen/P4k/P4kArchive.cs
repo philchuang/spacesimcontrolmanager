@@ -26,7 +26,19 @@ public static class P4kArchive
     private const int CentralDirectoryFixedSize = 46;
     private const int LocalHeaderFixedSize = 30;
 
-    private sealed record Entry(ushort Flags, ushort Method, long CompressedSize, long UncompressedSize, long LocalHeaderOffset);
+    // defaultProfile.xml and global.ini are only a few megabytes. Anything larger is treated as a corrupt directory entry
+    // so a 0xFFFFFFFF size fails with a clear error instead of allocating gigabytes.
+    internal const long MaxEntryBytes = 64L * 1024 * 1024;
+
+    private static readonly uint[] CrcTable = CreateCrcTable();
+
+    private sealed record Entry(ushort Flags, ushort Method, uint Crc32, long CompressedSize, long UncompressedSize, long LocalHeaderOffset);
+
+    /// <summary>Raised inside a decoder so a short or long result is not reported as a codec failure.</summary>
+    private sealed class EntryLengthException : Exception
+    {
+        public EntryLengthException(string message) : base(message) { }
+    }
 
     /// <summary>Reads the named entry (case-insensitive, '/' and '\' are equivalent), or throws <see cref="FileNotFoundException"/>.</summary>
     public static byte[] ReadEntry(string p4kPath, string entryName)
@@ -67,6 +79,7 @@ public static class P4kArchive
     private static byte[] ReadData(Stream stream, Entry entry, string entryName)
     {
         if ((entry.Flags & 1) != 0) throw new NotSupportedException($"Entry [{entryName}] is encrypted, which is not supported.");
+        EnsureDeclaredRangeFits(stream, entry, entryName);
 
         stream.Seek(entry.LocalHeaderOffset, SeekOrigin.Begin);
         var header = new byte[LocalHeaderFixedSize];
@@ -79,38 +92,119 @@ public static class P4kArchive
 
         var nameLength = BinaryPrimitives.ReadUInt16LittleEndian(header.AsSpan(26));
         var extraLength = BinaryPrimitives.ReadUInt16LittleEndian(header.AsSpan(28));
-        stream.Seek(entry.LocalHeaderOffset + LocalHeaderFixedSize + nameLength + extraLength, SeekOrigin.Begin);
+        var preamble = (long) LocalHeaderFixedSize + nameLength + extraLength;
+        if (preamble > stream.Length - entry.LocalHeaderOffset)
+        {
+            throw new InvalidDataException($"Entry [{entryName}] extends past the end of the archive.");
+        }
 
-        var compressed = new byte[entry.CompressedSize];
+        var dataOffset = entry.LocalHeaderOffset + preamble;
+        if (entry.CompressedSize > stream.Length - dataOffset)
+        {
+            throw new InvalidDataException($"Entry [{entryName}] extends past the end of the archive.");
+        }
+
+        stream.Seek(dataOffset, SeekOrigin.Begin);
+        var compressed = new byte[checked((int) entry.CompressedSize)];
         stream.ReadExactly(compressed);
         return Decompress(entry, compressed, entryName);
     }
 
+    private static void EnsureDeclaredRangeFits(Stream stream, Entry entry, string entryName)
+    {
+        if (entry.CompressedSize < 0 || entry.UncompressedSize < 0 || entry.LocalHeaderOffset < 0)
+        {
+            throw new InvalidDataException($"Entry [{entryName}] has a negative size or offset.");
+        }
+
+        if (entry.CompressedSize > MaxEntryBytes || entry.UncompressedSize > MaxEntryBytes)
+        {
+            throw new InvalidDataException($"Entry [{entryName}] declares a size above the {MaxEntryBytes}-byte limit.");
+        }
+
+        // LocalHeaderOffset + CompressedSize <= length, without adding the two values (a corrupt pair can overflow).
+        if (stream.Length < LocalHeaderFixedSize
+            || entry.LocalHeaderOffset > stream.Length - LocalHeaderFixedSize
+            || entry.CompressedSize > stream.Length - entry.LocalHeaderOffset)
+        {
+            throw new InvalidDataException($"Entry [{entryName}] extends past the end of the archive.");
+        }
+    }
+
     private static byte[] Decompress(Entry entry, byte[] compressed, string entryName)
     {
-        switch (entry.Method)
+        var output = entry.Method switch
         {
-            case MethodStore:
-                return compressed;
-            case MethodDeflate:
+            MethodStore => compressed,
+            MethodDeflate => Decode(entryName, () =>
             {
-                using var input = new MemoryStream(compressed);
+                using var input = new MemoryStream(compressed, writable: false);
                 using var deflate = new DeflateStream(input, CompressionMode.Decompress);
-                using var output = new MemoryStream();
-                deflate.CopyTo(output);
-                return output.ToArray();
-            }
-            case MethodZstd:
+                return ReadBounded(deflate, checked((int) entry.UncompressedSize), entryName);
+            }),
+            MethodZstd => Decode(entryName, () =>
             {
-                using var input = new MemoryStream(compressed);
+                using var input = new MemoryStream(compressed, writable: false);
                 using var zstd = new DecompressionStream(input);
-                using var output = new MemoryStream((int) Math.Min(entry.UncompressedSize, int.MaxValue));
-                zstd.CopyTo(output);
-                return output.ToArray();
-            }
-            default:
-                throw new NotSupportedException($"Entry [{entryName}] uses unsupported compression method {entry.Method}.");
+                return ReadBounded(zstd, checked((int) entry.UncompressedSize), entryName);
+            }),
+            _ => throw new NotSupportedException($"Entry [{entryName}] uses unsupported compression method {entry.Method}."),
+        };
+
+        if (output.LongLength != entry.UncompressedSize)
+        {
+            throw new InvalidDataException($"Entry [{entryName}] decompressed to {output.LongLength} bytes, but the archive declares {entry.UncompressedSize}.");
         }
+
+        if (Crc32(output) != entry.Crc32)
+        {
+            throw new InvalidDataException($"Entry [{entryName}] failed its CRC32 check.");
+        }
+
+        return output;
+    }
+
+    /// <summary>
+    /// p4k encryption is not always general-purpose bit 0, so a protected entry shows up as a zstd or deflate failure.
+    /// Name the entry instead of letting that codec error through on its own.
+    /// </summary>
+    private static byte[] Decode(string entryName, Func<byte[]> read)
+    {
+        try
+        {
+            return read();
+        }
+        catch (EntryLengthException ex)
+        {
+            throw new InvalidDataException(ex.Message, ex);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidDataException($"Failed to decode entry [{entryName}]. It may be encrypted or corrupt.", ex);
+        }
+    }
+
+    private static byte[] ReadBounded(Stream decoder, int expected, string entryName)
+    {
+        var buffer = expected == 0 ? [] : new byte[expected];
+        var offset = 0;
+        while (offset < buffer.Length)
+        {
+            var read = decoder.Read(buffer, offset, buffer.Length - offset);
+            if (read == 0)
+            {
+                throw new EntryLengthException($"Entry [{entryName}] decompressed to {offset} bytes, but the archive declares {expected}.");
+            }
+
+            offset += read;
+        }
+
+        if (decoder.ReadByte() >= 0)
+        {
+            throw new EntryLengthException($"Entry [{entryName}] decompressed to more than the declared {expected} bytes.");
+        }
+
+        return buffer;
     }
 
     /// <summary>Scans the directory once for all the names, stopping early when every one has been found. Entries that are absent are left out.</summary>
@@ -123,7 +217,7 @@ public static class P4kArchive
         var (entryCount, directoryOffset) = ReadDirectoryLocation(stream);
         stream.Seek(directoryOffset, SeekOrigin.Begin);
 
-        // Buffering is local to the scan. The caller's stream stays open and is repositioned afterwards.
+        // Buffering is local to the scan. Nothing rewinds the stream; ReadData seeks to each local header itself.
         var buffered = new BufferedStream(stream, 1 << 20);
         var fixedPart = new byte[CentralDirectoryFixedSize];
         var variablePart = new byte[ushort.MaxValue * 3];
@@ -156,11 +250,12 @@ public static class P4kArchive
             var compressedSize = (long) BinaryPrimitives.ReadUInt32LittleEndian(fixedPart.AsSpan(20));
             var uncompressedSize = (long) BinaryPrimitives.ReadUInt32LittleEndian(fixedPart.AsSpan(24));
             var localHeaderOffset = (long) BinaryPrimitives.ReadUInt32LittleEndian(fixedPart.AsSpan(42));
-            ApplyZip64Extra(variablePart.AsSpan(nameLength, extraLength), ref uncompressedSize, ref compressedSize, ref localHeaderOffset);
+            ApplyZip64Extra(variablePart.AsSpan(nameLength, extraLength), ref uncompressedSize, ref compressedSize, ref localHeaderOffset, matchedName);
 
             found[matchedName] = new Entry(
                 BinaryPrimitives.ReadUInt16LittleEndian(fixedPart.AsSpan(8)),
                 BinaryPrimitives.ReadUInt16LittleEndian(fixedPart.AsSpan(10)),
+                BinaryPrimitives.ReadUInt32LittleEndian(fixedPart.AsSpan(16)),
                 compressedSize,
                 uncompressedSize,
                 localHeaderOffset);
@@ -188,7 +283,7 @@ public static class P4kArchive
     }
 
     // ZIP64 extra field (id 0x0001) holds, in order, only the values whose 32-bit field is 0xFFFFFFFF.
-    private static void ApplyZip64Extra(ReadOnlySpan<byte> extra, ref long uncompressedSize, ref long compressedSize, ref long localHeaderOffset)
+    private static void ApplyZip64Extra(ReadOnlySpan<byte> extra, ref long uncompressedSize, ref long compressedSize, ref long localHeaderOffset, string entryName)
     {
         var needUncompressed = uncompressedSize == uint.MaxValue;
         var needCompressed = compressedSize == uint.MaxValue;
@@ -205,13 +300,35 @@ public static class P4kArchive
             {
                 var data = extra.Slice(4, size);
                 var position = 0;
-                if (needUncompressed && position + 8 <= data.Length) { uncompressedSize = (long) BinaryPrimitives.ReadUInt64LittleEndian(data.Slice(position)); position += 8; }
-                if (needCompressed && position + 8 <= data.Length) { compressedSize = (long) BinaryPrimitives.ReadUInt64LittleEndian(data.Slice(position)); position += 8; }
-                if (needOffset && position + 8 <= data.Length) { localHeaderOffset = (long) BinaryPrimitives.ReadUInt64LittleEndian(data.Slice(position)); }
-                return;
+                if (needUncompressed && position + 8 <= data.Length)
+                {
+                    uncompressedSize = (long) BinaryPrimitives.ReadUInt64LittleEndian(data.Slice(position));
+                    position += 8;
+                    needUncompressed = false;
+                }
+
+                if (needCompressed && position + 8 <= data.Length)
+                {
+                    compressedSize = (long) BinaryPrimitives.ReadUInt64LittleEndian(data.Slice(position));
+                    position += 8;
+                    needCompressed = false;
+                }
+
+                if (needOffset && position + 8 <= data.Length)
+                {
+                    localHeaderOffset = (long) BinaryPrimitives.ReadUInt64LittleEndian(data.Slice(position));
+                    needOffset = false;
+                }
+
+                break;
             }
 
             extra = extra.Slice(4 + size);
+        }
+
+        if (needUncompressed || needCompressed || needOffset)
+        {
+            throw new InvalidDataException($"Entry [{entryName}] has a size or offset of 0xFFFFFFFF but its ZIP64 extra field is missing or too short.");
         }
     }
 
@@ -233,11 +350,15 @@ public static class P4kArchive
 
         var entryCount = (long) BinaryPrimitives.ReadUInt16LittleEndian(tail.AsSpan(eocd + 10));
         var directoryOffset = (long) BinaryPrimitives.ReadUInt32LittleEndian(tail.AsSpan(eocd + 16));
-        var needsZip64 = entryCount == ushort.MaxValue || directoryOffset == uint.MaxValue;
-        if (!needsZip64 || eocd < 20) return (entryCount, directoryOffset);
+        var countIsSentinel = entryCount == ushort.MaxValue;
+        var offsetIsSentinel = directoryOffset == uint.MaxValue;
+        if (!countIsSentinel && !offsetIsSentinel) return (entryCount, directoryOffset);
 
-        if (BinaryPrimitives.ReadUInt32LittleEndian(tail.AsSpan(eocd - 20)) != Zip64LocatorSignature)
+        // The 20-byte ZIP64 locator sits immediately before the EOCD. A plain archive can still hold exactly 65535 entries.
+        var locatorPresent = eocd >= 20 && BinaryPrimitives.ReadUInt32LittleEndian(tail.AsSpan(eocd - 20)) == Zip64LocatorSignature;
+        if (!locatorPresent)
         {
+            if (!offsetIsSentinel) return (entryCount, directoryOffset);
             throw new InvalidDataException("Could not find the ZIP64 end of central directory locator.");
         }
 
@@ -251,5 +372,25 @@ public static class P4kArchive
         }
 
         return ((long) BinaryPrimitives.ReadUInt64LittleEndian(record.AsSpan(32)), (long) BinaryPrimitives.ReadUInt64LittleEndian(record.AsSpan(48)));
+    }
+
+    internal static uint Crc32(ReadOnlySpan<byte> data)
+    {
+        var crc = 0xFFFFFFFFu;
+        foreach (var b in data) crc = CrcTable[(crc ^ b) & 0xFF] ^ (crc >> 8);
+        return ~crc;
+    }
+
+    private static uint[] CreateCrcTable()
+    {
+        var table = new uint[256];
+        for (uint i = 0; i < table.Length; i++)
+        {
+            var crc = i;
+            for (var bit = 0; bit < 8; bit++) crc = (crc & 1) != 0 ? (crc >> 1) ^ 0xEDB88320u : crc >> 1;
+            table[i] = crc;
+        }
+
+        return table;
     }
 }

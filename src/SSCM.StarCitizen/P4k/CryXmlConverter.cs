@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using System.Text;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace SSCM.StarCitizen.P4k;
@@ -27,10 +28,12 @@ public static class CryXmlConverter
         if (!IsCryXml(data))
         {
             using var stream = new MemoryStream(data);
-            return XDocument.Load(stream);
+            using var reader = XmlReader.Create(stream, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit });
+            return XDocument.Load(reader);
         }
 
         var header = ReadHeader(data);
+        if (header.NodeCount == 0) throw new InvalidDataException("CryXml contains no nodes.");
         var strings = new StringTable(data, header.StringOffset, header.StringLength);
 
         var elements = new XElement[header.NodeCount];
@@ -54,6 +57,10 @@ public static class CryXmlConverter
             elements[i] = element;
         }
 
+        // XElement.Add clones a node that already has a parent, so a repeated index or a cycle would copy the subtree instead of failing.
+        var attached = new HashSet<int>();
+        var parentOf = new int[header.NodeCount];
+        Array.Fill(parentOf, -1);
         for (var i = 0; i < header.NodeCount; i++)
         {
             var node = ReadNode(data, header, i);
@@ -63,12 +70,26 @@ public static class CryXmlConverter
                 EnsureRange(data, childOffset, ChildSize, "child");
                 var childIndex = BinaryPrimitives.ReadUInt32LittleEndian(data.AsSpan((int) childOffset));
                 if (childIndex >= header.NodeCount) throw new InvalidDataException($"Child index {childIndex} is out of range.");
-                elements[i].Add(elements[childIndex]);
+
+                var index = (int) childIndex;
+                if (IsAncestor(parentOf, i, index)) throw new InvalidDataException($"Child index {childIndex} creates a cycle.");
+                if (!attached.Add(index)) throw new InvalidDataException($"Child index {childIndex} is already in the tree.");
+                parentOf[index] = i;
+                elements[i].Add(elements[index]);
             }
         }
 
-        if (header.NodeCount == 0) throw new InvalidDataException("CryXml contains no nodes.");
         return new XDocument(elements[0]);
+    }
+
+    private static bool IsAncestor(int[] parentOf, int node, int child)
+    {
+        for (var ancestor = node; ancestor >= 0; ancestor = parentOf[ancestor])
+        {
+            if (ancestor == child) return true;
+        }
+
+        return false;
     }
 
     public static bool IsCryXml(byte[] data) => data.Length >= HeaderSize && data.AsSpan(0, Magic.Length).SequenceEqual(Magic);

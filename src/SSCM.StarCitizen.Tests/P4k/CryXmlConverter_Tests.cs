@@ -1,4 +1,6 @@
+using System.Buffers.Binary;
 using System.Text;
+using System.Xml;
 using System.Xml.Linq;
 using NUnit.Framework;
 using SSCM.StarCitizen.P4k;
@@ -63,6 +65,74 @@ public class CryXmlConverter_Tests
     }
 
     [Test]
+    public void ToXDocument_ThrowsWhenAChildIndexIsReused()
+    {
+        // Arrange
+        var data = CryXmlBuilder.Build(new CryXmlBuilder.Node("profile", [], "",
+        [
+            new CryXmlBuilder.Node("a", [], "", []),
+            new CryXmlBuilder.Node("b", [], "", []),
+        ]));
+        WriteChildIndex(data, 1, 1);
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidDataException>(() => CryXmlConverter.ToXDocument(data));
+        Assert.That(ex!.Message, Does.Contain("already in the tree"));
+    }
+
+    [Test]
+    public void ToXDocument_ThrowsWhenANodeIsItsOwnChild()
+    {
+        // Arrange
+        var data = CryXmlBuilder.Build(new CryXmlBuilder.Node("profile", [], "",
+        [
+            new CryXmlBuilder.Node("a", [], "", []),
+        ]));
+        WriteChildIndex(data, 0, 0);
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidDataException>(() => CryXmlConverter.ToXDocument(data));
+        Assert.That(ex!.Message, Does.Contain("cycle"));
+    }
+
+    [Test]
+    public void ToXDocument_ThrowsWhenAChildIndexEqualsTheNodeCount()
+    {
+        // Arrange
+        var data = CryXmlBuilder.Build(new CryXmlBuilder.Node("profile", [], "",
+        [
+            new CryXmlBuilder.Node("a", [], "", []),
+        ]));
+        WriteChildIndex(data, 0, 2);
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidDataException>(() => CryXmlConverter.ToXDocument(data));
+        Assert.That(ex!.Message, Does.Contain("out of range"));
+    }
+
+    [Test]
+    public void ToXDocument_ThrowsWhenThereAreNoNodes()
+    {
+        // Arrange
+        var data = new byte[44];
+        Encoding.ASCII.GetBytes("CryXmlB\0").CopyTo(data, 0);
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidDataException>(() => CryXmlConverter.ToXDocument(data));
+        Assert.That(ex!.Message, Does.Contain("no nodes"));
+    }
+
+    [Test]
+    public void ToXDocument_RejectsAPlainXmlDtd()
+    {
+        // Arrange
+        var data = Encoding.UTF8.GetBytes("<!DOCTYPE profile [<!ENTITY x \"secret\">]><profile>&x;</profile>");
+
+        // Act & Assert
+        Assert.Throws<XmlException>(() => CryXmlConverter.ToXDocument(data));
+    }
+
+    [Test]
     public void ToXDocument_ThrowsWhenTablesAreOutsideTheFile()
     {
         // Arrange
@@ -71,6 +141,12 @@ public class CryXmlConverter_Tests
 
         // Act & Assert
         Assert.Throws<InvalidDataException>(() => CryXmlConverter.ToXDocument(truncated));
+    }
+
+    private static void WriteChildIndex(byte[] data, int childNumber, uint index)
+    {
+        var childOffset = BinaryPrimitives.ReadUInt32LittleEndian(data.AsSpan(28));
+        BinaryPrimitives.WriteUInt32LittleEndian(data.AsSpan((int) childOffset + childNumber * 4), index);
     }
 
     /// <summary>Writes the CryXmlB layout: header, nodes, children, attributes, then the string table.</summary>
