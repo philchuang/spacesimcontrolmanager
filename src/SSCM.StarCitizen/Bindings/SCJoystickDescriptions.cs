@@ -41,10 +41,19 @@ public static partial class SCJoystickDescriptions
 
     public static void WarnUnattached(JoystickDescriptions descriptions, IReadOnlyDictionary<string, string> joystickInstances, Action<string>? onWarning)
     {
-        foreach (var deviceId in descriptions.DeviceIds(Game))
+        var known = descriptions.DeviceIds(Game).ToHashSet(StringComparer.Ordinal);
+        foreach (var deviceId in known)
         {
             if (joystickInstances.ContainsKey(deviceId)) continue;
             onWarning?.Invoke($"Joystick device '{deviceId}' from joystick-bindings.md is not in actionmaps.xml. Its bindings are skipped.");
+        }
+
+        // An empty file already produced its own warning. Only compare hardware when the file named devices.
+        if (known.Count == 0) return;
+        foreach (var product in joystickInstances.Keys)
+        {
+            if (known.Contains(product)) continue;
+            onWarning?.Invoke($"Joystick '{product}' is in actionmaps.xml but not in joystick-bindings.md. Its inputs will be {NotFound}. Copy joystick-bindings.md to the current directory and edit it to match your hardware.");
         }
     }
 

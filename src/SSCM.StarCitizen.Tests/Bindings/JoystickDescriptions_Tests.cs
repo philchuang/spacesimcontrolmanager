@@ -94,6 +94,22 @@ public class JoystickDescriptions_Tests
     }
 
     [Test]
+    public void WarnUnattached_WarnsForActionMapDevicesMissingFromTheFile()
+    {
+        // Arrange
+        var descriptions = JoystickBindingsFile.Parse(Markdown);
+        var instances = new Dictionary<string, string> { [LeftProduct] = "js1", [" Other Stick {3333}"] = "js3" };
+        var warnings = new List<string>();
+
+        // Act
+        SCJoystickDescriptions.WarnUnattached(descriptions, instances, warnings.Add);
+
+        // Assert
+        Assert.That(warnings, Has.Some.Contain(" Other Stick {3333}").And.Contain("{NOT_FOUND}"));
+        Assert.That(warnings, Has.None.Contain(LeftProduct));
+    }
+
+    [Test]
     public void WarnUnattached_DoesNotRequireAWarningHandler()
     {
         // Act & Assert

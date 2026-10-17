@@ -28,10 +28,19 @@ public static class EDJoystickDescriptions
 
     public static void WarnUnattached(JoystickDescriptions descriptions, IReadOnlySet<string> attachedDeviceIds, Action<string>? onWarning)
     {
-        foreach (var deviceId in descriptions.DeviceIds(Game))
+        var known = descriptions.DeviceIds(Game).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var deviceId in known)
         {
             if (attachedDeviceIds.Contains(deviceId)) continue;
             onWarning?.Invoke($"Joystick device '{deviceId}' from joystick-bindings.md is not in the Elite binds file. Its bindings are skipped.");
+        }
+
+        // An empty file already produced its own warning. Only compare hardware when the file named devices.
+        if (known.Count == 0) return;
+        foreach (var deviceId in attachedDeviceIds)
+        {
+            if (known.Contains(deviceId)) continue;
+            onWarning?.Invoke($"Joystick '{deviceId}' is in your binds file but not in joystick-bindings.md. Its inputs will be {NotFound}. Copy joystick-bindings.md to the current directory and edit it to match your hardware.");
         }
     }
 

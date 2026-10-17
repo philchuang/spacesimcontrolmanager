@@ -534,8 +534,9 @@ public class SCBindingPrinter_Tests
         await generator.Print("markdown");
 
         // Assert
-        Assert.AreEqual(1, warnings.Count);
+        Assert.AreEqual(2, warnings.Count);
         Assert.That(warnings[0], Does.Contain("Some Other Stick {9999}"));
+        Assert.That(warnings[1], Does.Contain(" Test Stick {1234}").And.Contain("joystick-bindings.md"));
         Assert.That(File.ReadAllText(Path.Combine(generator.OutputDir, "bindings.md")), Does.Contain("|js1_button1 2x|{NOT_FOUND}|"));
     }
 

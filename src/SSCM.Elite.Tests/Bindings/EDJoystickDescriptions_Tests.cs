@@ -77,6 +77,22 @@ public class EDJoystickDescriptions_Tests
     }
 
     [Test]
+    public void WarnUnattached_WarnsForBindsDevicesMissingFromTheFile()
+    {
+        // Arrange
+        var descriptions = JoystickBindingsFile.Parse(Markdown);
+        var attached = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "231D0200", "FFFFFFFF" };
+        var warnings = new List<string>();
+
+        // Act
+        EDJoystickDescriptions.WarnUnattached(descriptions, attached, warnings.Add);
+
+        // Assert
+        Assert.That(warnings, Has.Some.Contain("FFFFFFFF").And.Contain("{NOT_FOUND}"));
+        Assert.That(warnings, Has.None.Contain("231D0200' is in your binds"));
+    }
+
+    [Test]
     public void Apply_DescribesEachJoystickSlotAndMarksUnknownInputs()
     {
         // Arrange

@@ -41,6 +41,12 @@ public class SCFolders : ISCFolders
     {
         get
         {
+            if (!Directory.Exists(this.GameRoot))
+            {
+                throw new DirectoryNotFoundException(
+                    $"Star Citizen was not found at [{this.GameRoot}]. Set SCFolders:GameRoot in appsettings.local.json to your Star Citizen install folder.");
+            }
+
             var gameConfigDir = Path.Combine(this.GameEnvironmentDir, SC_PROFILES_DEFAULT_DIR);
             if (!Directory.Exists(gameConfigDir)) throw new DirectoryNotFoundException($"Could not find Star Citizen game config directory [{gameConfigDir}].");
             return gameConfigDir;

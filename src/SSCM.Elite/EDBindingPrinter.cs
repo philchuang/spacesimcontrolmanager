@@ -131,6 +131,12 @@ public class EDBindingPrinter
         var path = File.Exists(workingPath) ? workingPath : File.Exists(gamePath) ? gamePath : null;
         if (path == null)
         {
+            if (!Directory.Exists(this._folders.GameRoot))
+            {
+                throw new SscmException(
+                    $"Elite Dangerous was not found at [{this._folders.GameRoot}]. The default is the Steam Odyssey product folder, so an Epic or Frontier install will not match. Set EDFolders:GameRoot in appsettings.local.json to your product folder, or place {fileName} in the current directory.");
+            }
+
             this.WarningOutput($"Could not find {fileName} at [{workingPath}] or [{gamePath}]. Default bind columns will be empty. Set EDFolders:GameRoot and EDFolders:DefaultBinds in appsettings.local.json if your Elite Dangerous product folder or scheme name is different.");
             return null;
         }

@@ -102,10 +102,25 @@ public class SCFolders_Tests
     }
 
     [Test]
-    public void GameConfigDir_ThrowsWhenConstructedPathDoesNotExist()
+    public void GameConfigDir_ThrowsWhenTheInstallFolderIsMissing()
     {
         // Arrange
         var gameRoot = Path.Combine(Path.GetTempPath(), TestContext.CurrentContext.Test.ID, "StarCitizen");
+        var folders = CreateFolders(gameRoot, "hotfix");
+
+        // Act
+        var ex = Assert.Throws<DirectoryNotFoundException>(() => _ = folders.GameConfigDir);
+
+        // Assert
+        Assert.That(ex!.Message, Does.Contain(gameRoot).And.Contain("SCFolders:GameRoot").And.Contain("appsettings.local.json"));
+    }
+
+    [Test]
+    public void GameConfigDir_ThrowsWhenTheProfileFolderIsMissing()
+    {
+        // Arrange
+        var gameRoot = Path.Combine(Path.GetTempPath(), TestContext.CurrentContext.Test.ID, "StarCitizen");
+        Directory.CreateDirectory(Path.Combine(gameRoot, "HOTFIX"));
         var folders = CreateFolders(gameRoot, "hotfix");
         var expected = Path.Combine(gameRoot, "HOTFIX", SCFolders.SC_PROFILES_DEFAULT_DIR);
 

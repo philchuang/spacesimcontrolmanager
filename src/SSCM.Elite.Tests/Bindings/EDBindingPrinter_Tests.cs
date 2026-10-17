@@ -101,6 +101,34 @@ public class EDBindingPrinter_Tests
     }
 
     [Test]
+    public void Print_ThrowsWhenTheProductFolderIsMissing()
+    {
+        // Arrange
+        var missingRoot = Path.Combine(this._root, "no-install");
+        var generator = this.CreateGenerator(gameRoot: missingRoot, createGameRoot: false);
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<SscmException>(() => generator.Print(null));
+        Assert.That(ex!.Message, Does.Contain(missingRoot).And.Contain("EDFolders:GameRoot").And.Contain("appsettings.local.json").And.Contain("Steam"));
+    }
+
+    [Test]
+    public async Task Print_UsesASchemeInTheWorkingDirectoryWhenTheProductFolderIsMissing()
+    {
+        // Arrange
+        var missingRoot = Path.Combine(this._root, "no-install");
+        File.WriteAllText(Path.Combine(this._workingDir, EDFolders.DEFAULT_BINDS + EDFolders.BINDS_EXTENSION), GenericJoystickDefaultsXml);
+        var generator = this.CreateGenerator(gameRoot: missingRoot, createGameRoot: false);
+
+        // Act
+        var result = await generator.Print("markdown");
+
+        // Assert
+        Assert.AreEqual(3, result.ActionCount);
+        Assert.That(File.ReadAllText(Path.Combine(generator.OutputDir, "bindings.md")), Does.Contain("|(Key_B)|"));
+    }
+
+    [Test]
     public void Print_ThrowsFriendlyErrorWhenTheBindsFileIsMissing()
     {
         // Arrange
@@ -173,11 +201,13 @@ public class EDBindingPrinter_Tests
         Assert.That(ex!.Message, Does.Contain("[pdf]").And.Contain("markdown, tsv, html"));
     }
 
-    private EDBindingPrinter CreateGenerator(string? gameRoot = null)
+    private EDBindingPrinter CreateGenerator(string? gameRoot = null, bool createGameRoot = true)
     {
+        gameRoot ??= Path.Combine(this._root, "install");
+        if (createGameRoot) Directory.CreateDirectory(gameRoot);
         var folders = new EDFoldersForTest
         {
-            GameRoot = gameRoot ?? Path.Combine(this._root, "install"),
+            GameRoot = gameRoot,
             GameConfigDir = Path.GetDirectoryName(this._bindsPath)!,
             GameConfigPath = this._bindsPath,
             EliteDataDir = Path.Combine(this._root, "data"),
