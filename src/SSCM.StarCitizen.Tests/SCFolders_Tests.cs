@@ -109,10 +109,11 @@ public class SCFolders_Tests
         var folders = CreateFolders(gameRoot, "hotfix");
 
         // Act
-        var ex = Assert.Throws<DirectoryNotFoundException>(() => _ = folders.GameConfigDir);
+        var ex = Assert.Throws<SscmException>(() => _ = folders.GameConfigDir);
 
         // Assert
         Assert.That(ex!.Message, Does.Contain(gameRoot).And.Contain("SCFolders:GameRoot").And.Contain("appsettings.local.json"));
+        Assert.That(ex.Message, Does.Not.Contain("Start Star Citizen"));
     }
 
     [Test]

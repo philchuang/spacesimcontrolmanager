@@ -43,7 +43,8 @@ public class SCFolders : ISCFolders
         {
             if (!Directory.Exists(this.GameRoot))
             {
-                throw new DirectoryNotFoundException(
+                // SscmException, not DirectoryNotFoundException: callers append "start the game" to that type, which is the wrong advice for a missing install folder.
+                throw new SscmException(
                     $"Star Citizen was not found at [{this.GameRoot}]. Set SCFolders:GameRoot in appsettings.local.json to your Star Citizen install folder.");
             }
 

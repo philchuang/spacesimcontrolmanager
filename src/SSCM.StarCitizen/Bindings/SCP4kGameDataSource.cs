@@ -42,7 +42,7 @@ public partial class SCP4kGameDataSource : ISCGameDataSource
 
         // One scan of the archive's directory serves every entry.
         var entryNames = includeLocalization ? new[] { EntryName, LocalizationEntryName } : new[] { EntryName };
-        var entries = await Task.Run(() => P4kArchive.ReadEntries(p4kPath, entryNames), cancellationToken).ConfigureAwait(false);
+        var entries = await Task.Run(() => P4kArchive.ReadEntries(p4kPath, entryNames, cancellationToken), cancellationToken).ConfigureAwait(false);
 
         if (!entries.TryGetValue(EntryName, out var profileData))
         {

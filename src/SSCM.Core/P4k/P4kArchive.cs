@@ -26,6 +26,7 @@ public static class P4kArchive
 
     private const int CentralDirectoryFixedSize = 46;
     private const int LocalHeaderFixedSize = 30;
+    private const int CancellationCheckInterval = 256;
 
     // A corrupt directory entry can declare 0xFFFFFFFF. Cap the allocation so that fails
     // with a clear error instead of reserving gigabytes.
@@ -60,17 +61,18 @@ public static class P4kArchive
     /// Names match the same way as <see cref="ReadEntry(string, string)"/>. The result is keyed by the name as requested
     /// (case-insensitively) and leaves out any entry that is not in the archive, so callers decide which ones are required.
     /// </summary>
-    public static Dictionary<string, byte[]> ReadEntries(string archivePath, IReadOnlyCollection<string> entryNames)
+    public static Dictionary<string, byte[]> ReadEntries(string archivePath, IReadOnlyCollection<string> entryNames, CancellationToken cancellationToken = default)
     {
         using var stream = new FileStream(archivePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1 << 20, FileOptions.RandomAccess);
-        return ReadEntries(stream, entryNames);
+        return ReadEntries(stream, entryNames, cancellationToken);
     }
 
-    public static Dictionary<string, byte[]> ReadEntries(Stream stream, IReadOnlyCollection<string> entryNames)
+    public static Dictionary<string, byte[]> ReadEntries(Stream stream, IReadOnlyCollection<string> entryNames, CancellationToken cancellationToken = default)
     {
         var result = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
-        foreach (var (name, entry) in FindEntries(stream, entryNames))
+        foreach (var (name, entry) in FindEntries(stream, entryNames, cancellationToken))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             result[name] = ReadData(stream, entry, name);
         }
 
@@ -209,7 +211,7 @@ public static class P4kArchive
     }
 
     /// <summary>Scans the directory once for all the names, stopping early when every one has been found. Entries that are absent are left out.</summary>
-    private static Dictionary<string, Entry> FindEntries(Stream stream, IReadOnlyCollection<string> entryNames)
+    private static Dictionary<string, Entry> FindEntries(Stream stream, IReadOnlyCollection<string> entryNames, CancellationToken cancellationToken)
     {
         var targets = entryNames.Distinct(StringComparer.OrdinalIgnoreCase).Select(name => (Name: name, Bytes: Encoding.UTF8.GetBytes(name))).ToList();
         var found = new Dictionary<string, Entry>(StringComparer.OrdinalIgnoreCase);
@@ -225,6 +227,7 @@ public static class P4kArchive
 
         for (long i = 0; i < entryCount && found.Count < targets.Count; i++)
         {
+            if ((i & (CancellationCheckInterval - 1)) == 0) cancellationToken.ThrowIfCancellationRequested();
             buffered.ReadExactly(fixedPart);
             if (BinaryPrimitives.ReadUInt32LittleEndian(fixedPart) != CentralDirectorySignature)
             {

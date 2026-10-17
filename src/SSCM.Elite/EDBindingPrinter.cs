@@ -133,6 +133,7 @@ public class EDBindingPrinter
         {
             if (!Directory.Exists(this._folders.GameRoot))
             {
+                // The product folder is the install. A wrong path used to warn and print empty defaults; that hid an Epic or Frontier install sitting at another path.
                 throw new SscmException(
                     $"Elite Dangerous was not found at [{this._folders.GameRoot}]. The default is the Steam Odyssey product folder, so an Epic or Frontier install will not match. Set EDFolders:GameRoot in appsettings.local.json to your product folder, or place {fileName} in the current directory.");
             }

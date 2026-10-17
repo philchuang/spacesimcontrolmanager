@@ -128,6 +128,20 @@ public class P4kArchive_Tests
     }
 
     [Test]
+    public void ReadEntries_StopsWhenCancelled()
+    {
+        // Arrange
+        var data = Encoding.UTF8.GetBytes("x");
+        var archive = ArchiveBuilder.Build(false, new ArchiveBuilder.Entry("a.txt", Store, data, data));
+        using var stream = new MemoryStream(archive);
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        // Act & Assert
+        Assert.Throws<OperationCanceledException>(() => P4kArchive.ReadEntries(stream, ["a.txt"], cancellation.Token));
+    }
+
+    [Test]
     public void ReadEntry_ThrowsWhenEntryIsEncrypted()
     {
         // Arrange
